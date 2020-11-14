@@ -9,10 +9,12 @@ def no_abort(a, b, c):
     sys.__excepthook__(a, b, c)
 sys.excepthook = no_abort
 class MainWindow(QtWidgets.QMainWindow):
+  
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent=parent)
         self.setupUi(self)
         self.show()
+
     def setupUi(self, MainWindow):
         MainWindow.setFixedSize(1109, 600)
         MainWindow.setStyleSheet("background-color: #1E1E1E;")
@@ -96,6 +98,7 @@ class MainWindow(QtWidgets.QMainWindow):
         MainWindow.setCentralWidget(self.centralwidget)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         self.set_functions()
+
     def set_functions(self):
         self.current_page = "home"
         self.home_tab.mousePressEvent = lambda event: self.change_page(event,"home")

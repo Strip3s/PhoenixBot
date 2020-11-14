@@ -46,7 +46,7 @@ class Encryption:
         return hashlib.md5(key).digest()
 
 def return_data(path):
-    with open(path,"r") as file:
+    with open(path,"r+") as file:
         data = json.load(file)
     file.close()
     return data
