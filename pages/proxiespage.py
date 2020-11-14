@@ -99,7 +99,7 @@ class ProxiesPage(QtWidgets.QWidget):
         if proxies != "" and list_name != "":
             for item in proxies.splitlines():
                 if ":" not in item or item == "":
-                    QtWidgets.QMessageBox.critical(self, "Bird Bot", "Incorrect Proxies")
+                    QtWidgets.QMessageBox.critical(self, "Phoenix Bot", "Incorrect Proxies")
                     return
             proxies_data = {
                 "list_name": list_name,
@@ -115,9 +115,9 @@ class ProxiesPage(QtWidgets.QWidget):
             if self.loadlist_box.findText(list_name) == -1:
                 self.loadlist_box.addItem(list_name)
                 self.parent().parent().createdialog.proxies_box.addItem(list_name)
-            QtWidgets.QMessageBox.information(self, "Bird Bot", "Saved Proxies")
+            QtWidgets.QMessageBox.information(self, "Phoenix Bot", "Saved Proxies")
         else:
-            QtWidgets.QMessageBox.critical(self, "Bird Bot", "Missing Fields")
+            QtWidgets.QMessageBox.critical(self, "Phoenix Bot", "Missing Fields")
     
     def delete_proxies(self):
         list_name = self.listname_edit.text()
@@ -132,5 +132,4 @@ class ProxiesPage(QtWidgets.QWidget):
         self.loadlist_box.setCurrentIndex(0)
         self.listname_edit.setText("")
         self.proxies_edit.setText("")
-        QtWidgets.QMessageBox.information(self, "Bird Bot", "Deleted Proxy List")
-
+        QtWidgets.QMessageBox.information(self, "Phoenix Bot", "Deleted Proxy List")

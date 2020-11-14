@@ -89,7 +89,7 @@ def format_proxy(proxy):
 
 def send_webhook(webhook_type,site,profile,task_id,image_url):
     if settings.webhook !="":
-        webhook = DiscordWebhook(url=settings.webhook, username="Bird Bot", avatar_url="https://i.imgur.com/fy26LbM.png")
+        webhook = DiscordWebhook(url=settings.webhook, username="Phoenix Bot", avatar_url="https://i.imgur.com/60G42xE.png")
         if webhook_type == "OP":
             if not settings.webhook_on_order:
                 return
@@ -102,7 +102,7 @@ def send_webhook(webhook_type,site,profile,task_id,image_url):
             if not settings.webhook_on_failed:
                 return
             embed = DiscordEmbed(title="Payment Failed",color=0xfc5151)
-        embed.set_footer(text="Via Bird Bot",icon_url="https://i.imgur.com/fy26LbM.png")
+        embed.set_footer(text="Via Phoenix Bot",icon_url="https://i.imgur.com/60G42xE.png")
         embed.add_embed_field(name="Site", value=site,inline=True)
         embed.add_embed_field(name="Profile", value=profile,inline=True)
         embed.add_embed_field(name="Task ID", value=task_id,inline=True)

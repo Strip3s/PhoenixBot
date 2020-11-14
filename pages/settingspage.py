@@ -111,7 +111,7 @@ class SettingsPage(QtWidgets.QWidget):
                     'onlybuyone':self.buy_one_checkbox.isChecked()}
         write_data("./data/settings.json",settings)
         self.update_settings(settings)
-        QtWidgets.QMessageBox.information(self, "Bird Bot", "Saved Settings")
+        QtWidgets.QMessageBox.information(self, "Phoenix Bot", "Saved Settings")
 
     def update_settings(self,settings_data):
         global webhook, webhook_on_browser, webhook_on_order, webhook_on_failed, browser_on_failed
