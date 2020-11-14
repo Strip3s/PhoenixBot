@@ -16,9 +16,8 @@ normal_color = Fore.CYAN
 def write_data(path,data):
     with open(path, "w") as file:
         json.dump(data, file)
-    file.close()
-
-#TODO: Enable this as an app setting for user to choose their own optional key & regenerate button
+    
+#TODO: Enable this as an app setting for user to choose their own optional key & regenerate key on the fly button
 try:
   with open("./data/vault.json","r") as file:
       keys = json.load(file)
@@ -65,13 +64,11 @@ def return_data(path):
   try:
     with open(path,"r") as file:
         data = json.load(file)
-    file.close()
     return data
   except FileNotFoundError:
     write_data(path,[])
     with open(path,"r") as file:
         data = json.load(file)
-    file.close()
     return data
 
 def get_profile(profile_name):
