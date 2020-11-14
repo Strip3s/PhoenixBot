@@ -22,13 +22,11 @@ def write_data(path,data):
 try:
   with open("./data/vault.json","r") as file:
       keys = json.load(file)
-  file.close()
 except FileNotFoundError:
   generateKeySecret = "".join(random.choices(string.ascii_letters + string.digits, k=16))
   write_data("./data/vault.json",[{ "generated_key_secret": generateKeySecret }])
   with open("./data/vault.json","r") as file:
       keys = json.load(file)
-  file.close()
 
 e_key = keys[0]['generated_key_secret'].encode() 
 BLOCK_SIZE=16
