@@ -48,7 +48,7 @@ class Walmart:
                     if self.is_captcha(r.text):
                         self.status_signal.emit({"msg":"CAPTCHA - Opening Product Page","status":"error"})
                         self.handle_captcha(self.product)
-                        return
+                        continue
 
                     doc = lxml.html.fromstring(r.text)
                     if not image_found:
