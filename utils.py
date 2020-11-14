@@ -12,9 +12,25 @@ from webhook import DiscordWebhook, DiscordEmbed
 from chromedriver_py import binary_path as driver_path
 import json, platform, darkdetect, random, settings, threading, hashlib, base64, string
 normal_color = Fore.CYAN
-#TODO: Enable this as an app setting for user to choose their own optional key - Possible Feature
-generatedKey = "".join(random.choices(string.ascii_letters + string.digits, k=16))
-e_key = generatedKey.encode() 
+
+def write_data(path,data):
+    with open(path, "w") as file:
+        json.dump(data, file)
+    file.close()
+
+#TODO: Enable this as an app setting for user to choose their own optional key & regenerate button
+try:
+  with open("./data/vault.json","r") as file:
+      keys = json.load(file)
+  file.close()
+except FileNotFoundError:
+  generateKeySecret = "".join(random.choices(string.ascii_letters + string.digits, k=16))
+  write_data("./data/vault.json",[{ "generated_key_secret": generateKeySecret }])
+  with open("./data/vault.json","r") as file:
+      keys = json.load(file)
+  file.close()
+
+e_key = keys[0]['generated_key_secret'].encode() 
 BLOCK_SIZE=16
 if platform.system() == "Windows":
     init(convert=True)
@@ -59,11 +75,6 @@ def return_data(path):
         data = json.load(file)
     file.close()
     return data
-
-def write_data(path,data):
-    with open(path, "w") as file:
-        json.dump(data, file)
-    file.close()
 
 def get_profile(profile_name):
     profiles = return_data("./data/profiles.json")

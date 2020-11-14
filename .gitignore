@@ -6,6 +6,7 @@ data/profiles.json
 data/settings.json
 data/proxies.json
 data/tasks.json
+data/vault.json
 
 # Environments
 .env
