@@ -15,7 +15,7 @@ class SettingsPage(QtWidgets.QWidget):
         self.settingspage.setGeometry(QtCore.QRect(60, 0, 1041, 601))
         self.settingspage.setStyleSheet("QComboBox::drop-down {    border: 0px;}QComboBox::down-arrow {    image: url(:/images/down_icon.png);    width: 14px;    height: 14px;}QComboBox{    padding: 1px 0px 1px 3px;}QLineEdit:focus {   border: none;   outline: none;}")
         self.settings_card = QtWidgets.QWidget(self.settingspage)
-        self.settings_card.setGeometry(QtCore.QRect(30, 70, 471, 501))
+        self.settings_card.setGeometry(QtCore.QRect(30, 70, 941, 501))
         font = QtGui.QFont()
         font.setPointSize(13) if platform.system() == "Darwin" else font.setPointSize(13*.75)
         font.setFamily("Arial")
@@ -47,7 +47,7 @@ class SettingsPage(QtWidgets.QWidget):
         self.savesettings_btn.setText("Save")
         self.savesettings_btn.clicked.connect(self.save_settings)
         self.browser_checkbox = QtWidgets.QCheckBox(self.settings_card)
-        self.browser_checkbox.setGeometry(QtCore.QRect(30, 90, 111, 20))
+        self.browser_checkbox.setGeometry(QtCore.QRect(30, 90, 300, 20))
         self.browser_checkbox.setStyleSheet("color: #FFFFFF;border: none;")
         self.browser_checkbox.setText("Browser Opened")
         self.order_checkbox = QtWidgets.QCheckBox(self.settings_card)
@@ -75,6 +75,10 @@ class SettingsPage(QtWidgets.QWidget):
         self.buy_one_checkbox.setGeometry(QtCore.QRect(30, 250, 221, 20))
         self.buy_one_checkbox.setStyleSheet("color: #FFFFFF;border: none;")
         self.buy_one_checkbox.setText("Stop All after success")
+        self.dont_buy_checkbox = QtWidgets.QCheckBox(self.settings_card)
+        self.dont_buy_checkbox.setGeometry(QtCore.QRect(30, 280, 400, 20))
+        self.dont_buy_checkbox.setStyleSheet("color: #FFFFFF;border: none;")
+        self.dont_buy_checkbox.setText("Don't actually buy items. (Used for dev and testing)")
         self.proxies_header = QtWidgets.QLabel(self.settingspage)
         self.proxies_header.setGeometry(QtCore.QRect(30, 10, 81, 31))
         font = QtGui.QFont()
@@ -100,6 +104,8 @@ class SettingsPage(QtWidgets.QWidget):
             self.onfailed_checkbox.setChecked(True)
         if settings['onlybuyone']:
             self.buy_one_checkbox.setChecked(True)
+        if settings['dont_buy']:
+            self.dont_buy_checkbox.setChecked(True)
         self.update_settings(settings)
 
     def save_settings(self):
@@ -108,14 +114,15 @@ class SettingsPage(QtWidgets.QWidget):
                     "webhookonorder":self.order_checkbox.isChecked(),
                     "webhookonfailed":self.paymentfailed_checkbox.isChecked(),
                     "browseronfailed":self.onfailed_checkbox.isChecked(),
-                    'onlybuyone':self.buy_one_checkbox.isChecked()}
+                    "onlybuyone":self.buy_one_checkbox.isChecked(),
+                    "dont_buy":self.dont_buy_checkbox.isChecked()}
         write_data("./data/settings.json",settings)
         self.update_settings(settings)
-        QtWidgets.QMessageBox.information(self, "Bird Bot", "Saved Settings")
+        QtWidgets.QMessageBox.information(self, "Phoenix Bot", "Saved Settings")
 
     def update_settings(self,settings_data):
-        global webhook, webhook_on_browser, webhook_on_order, webhook_on_failed, browser_on_failed
-        settings.webhook, settings.webhook_on_browser, settings.webhook_on_order, settings.webhook_on_failed, settings.browser_on_failed, settings.buy_one = settings_data["webhook"], settings_data["webhookonbrowser"], settings_data["webhookonorder"], settings_data["webhookonfailed"], settings_data["browseronfailed"], settings_data['onlybuyone']
+        global webhook, webhook_on_browser, webhook_on_order, webhook_on_failed, browser_on_failed, dont_buy
+        settings.webhook, settings.webhook_on_browser, settings.webhook_on_order, settings.webhook_on_failed, settings.browser_on_failed, settings.buy_one, settings.dont_buy = settings_data["webhook"], settings_data["webhookonbrowser"], settings_data["webhookonorder"], settings_data["webhookonfailed"], settings_data["browseronfailed"], settings_data['onlybuyone'], settings_data['dont_buy']
 
 
 

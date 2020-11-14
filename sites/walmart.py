@@ -4,9 +4,6 @@ import urllib,requests,time,lxml.html,json,sys,settings
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 
-# SET THIS SO YOU DONT BUY STUFF
-DONT_BUY = True # TODO: make this a task option?
-
 
 class Walmart:
     def __init__(self,task_id,status_signal,image_signal,product,profile,proxy,monitor_delay,error_delay,max_price):
@@ -14,7 +11,10 @@ class Walmart:
         self.session = requests.Session()
         if proxy != False:
             self.session.proxies.update(proxy)
-        self.status_signal.emit({"msg":"Starting","status":"normal"})
+        starting_msg = "Starting"
+        if settings.dont_buy:
+            starting_msg = "Starting in dev mode will not actually checkout (dont_buy = True)"
+        self.status_signal.emit({"msg":starting_msg,"status":"normal"})
         self.product_image, offer_id = self.monitor()
         did_add = False
         while did_add is False:
@@ -27,6 +27,8 @@ class Walmart:
         pi_hash = self.submit_payment(card_data,PIE_key_id,PIE_phase)
         self.submit_billing(pi_hash)
         self.submit_order()
+        print(settings.dont_buy)
+
     def monitor(self):
         headers = {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -37,7 +39,7 @@ class Walmart:
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.193 Safari/537.36"
         }
         image_found = False
-        sproduct_image = ""
+        product_image = ""
         while True:
             self.status_signal.emit({"msg":"Loading Product Page","status":"normal"})
             try:
@@ -77,7 +79,6 @@ class Walmart:
                 time.sleep(self.error_delay)
     
     def atc(self,offer_id):
-
         headers={
             "accept": "application/json",
             "accept-encoding": "gzip, deflate, br",
@@ -107,7 +108,7 @@ class Walmart:
                     self.status_signal.emit({"msg":"Added To Cart","status":"carted"})
                     return True
                 else:
-                    self.handle_captca("https://www.walmart.com/cart")
+                    self.handle_captcha("https://www.walmart.com/cart")
                     self.status_signal.emit({"msg":"Error Adding To Cart","status":"error"})
                     time.sleep(self.error_delay) 
                     return False
@@ -388,7 +389,7 @@ class Walmart:
             "wm_vertical_id": "0"
         }
         
-        if DONT_BUY is True:
+        if settings.dont_buy is True:
             # TODO: this used to open the page up with everything filled out but walmart may have changed how that works...
             self.handle_captcha("https://www.walmart.com/checkout/#/payment") # OPEN BROWSER TO SEE IF SHIT WORKED
             self.check_browser()  
