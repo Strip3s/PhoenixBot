@@ -16,7 +16,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def setupUi(self, MainWindow):
         MainWindow.setFixedSize(1109, 600)
         MainWindow.setStyleSheet("background-color: #1E1E1E;")
-        MainWindow.setWindowTitle("Pheonix Bot")
+        MainWindow.setWindowTitle("Phoenix Bot")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setStyleSheet("QMessageBox QLabel { color: #FFFFFF; }QMessageBox QPushButton { background-color: #5D43FB;color: #FFFFFF;}")
         self.sidebar = QtWidgets.QWidget(self.centralwidget)
