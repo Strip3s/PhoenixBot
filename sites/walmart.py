@@ -27,7 +27,6 @@ class Walmart:
         pi_hash = self.submit_payment(card_data,PIE_key_id,PIE_phase)
         self.submit_billing(pi_hash)
         self.submit_order()
-        print(settings.dont_buy)
 
     def monitor(self):
         headers = {
