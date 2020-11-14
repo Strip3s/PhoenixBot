@@ -10,9 +10,11 @@ from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from webhook import DiscordWebhook, DiscordEmbed
 from chromedriver_py import binary_path as driver_path
-import json, platform, darkdetect, random, settings, threading, hashlib, base64
+import json, platform, darkdetect, random, settings, threading, hashlib, base64, string
 normal_color = Fore.CYAN
-e_key = "YnJ1aG1vbWVudA==".encode() #TODO: this needs to become an app setting the user sets. On app start could just generate a key randomly too. 
+#TODO: Enable this as an app setting for user to choose their own optional key - Possible Feature
+generatedKey = "".join(random.choices(string.ascii_letters + string.digits, k=16))
+e_key = generatedKey.encode() 
 BLOCK_SIZE=16
 if platform.system() == "Windows":
     init(convert=True)
