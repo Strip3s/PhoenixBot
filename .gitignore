@@ -1,2 +1,17 @@
 __pycache__/
 debug.log
+
+#Data folder
+data/profiles.json
+data/settings.json
+data/proxies.json
+data/tasks.json
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
