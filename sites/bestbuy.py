@@ -120,7 +120,7 @@ class BestBuy:
         while True:
             self.status_signal.emit({"msg":"Adding To Cart","status":"normal"})
             try:
-                r = self.session.post("https://www.bestbuy.com/cart/api/v1/addToCart",json=body,headers=headers)
+                r = self.session.post("https://api.bestbuy.com/click/-/skuId/cart",json=body,headers=headers)
                 if r.status_code == 200 and json.loads(r.text)["cartCount"] == 1:
                     self.status_signal.emit({"msg":"Added To Cart","status":"carted"})
                     return
