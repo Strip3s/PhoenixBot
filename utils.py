@@ -10,15 +10,30 @@ from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from webhook import DiscordWebhook, DiscordEmbed
 from chromedriver_py import binary_path as driver_path
-import json, platform, darkdetect, random, settings, threading, hashlib, base64
+import json, platform, darkdetect, random, settings, threading, hashlib, base64, string
 normal_color = Fore.CYAN
-e_key = "YnJ1aG1vbWVudA==".encode() #TODO: this needs to become an app setting the user sets. On app start could just generate a key randomly too. 
+
+def write_data(path,data):
+    with open(path, "w") as file:
+        json.dump(data, file)
+    
+#TODO: Enable this as an app setting for user to choose their own optional key & regenerate key on the fly button
+try:
+  with open("./data/vault.json","r") as file:
+      keys = json.load(file)
+except FileNotFoundError:
+  generateKeySecret = "".join(random.choices(string.ascii_letters + string.digits, k=16))
+  write_data("./data/vault.json",[{ "generated_key_secret": generateKeySecret }])
+  with open("./data/vault.json","r") as file:
+      keys = json.load(file)
+
+e_key = keys[0]['generated_key_secret'].encode() 
 BLOCK_SIZE=16
 if platform.system() == "Windows":
     init(convert=True)
 else:
     init()
-print(normal_color + "Welcome To Pheonix Bot")
+print(normal_color + "Welcome To Phoenix Bot - In times of crisis, the wise build bridges while the foolish build barriers.")
 
 class BirdLogger:
     def ts(self):
@@ -46,15 +61,15 @@ class Encryption:
         return hashlib.md5(key).digest()
 
 def return_data(path):
+  try:
     with open(path,"r") as file:
         data = json.load(file)
-    file.close()
     return data
-
-def write_data(path,data):
-    with open(path, "w") as file:
-        json.dump(data, file)
-    file.close()
+  except FileNotFoundError:
+    write_data(path,[])
+    with open(path,"r") as file:
+        data = json.load(file)
+    return data
 
 def get_profile(profile_name):
     profiles = return_data("./data/profiles.json")
@@ -89,7 +104,7 @@ def format_proxy(proxy):
 
 def send_webhook(webhook_type,site,profile,task_id,image_url):
     if settings.webhook !="":
-        webhook = DiscordWebhook(url=settings.webhook, username="Bird Bot", avatar_url="https://i.imgur.com/fy26LbM.png")
+        webhook = DiscordWebhook(url=settings.webhook, username="Phoenix Bot", avatar_url="https://i.imgur.com/60G42xE.png")
         if webhook_type == "OP":
             if not settings.webhook_on_order:
                 return
@@ -102,7 +117,7 @@ def send_webhook(webhook_type,site,profile,task_id,image_url):
             if not settings.webhook_on_failed:
                 return
             embed = DiscordEmbed(title="Payment Failed",color=0xfc5151)
-        embed.set_footer(text="Via Bird Bot",icon_url="https://i.imgur.com/fy26LbM.png")
+        embed.set_footer(text="Via Phoenix Bot",icon_url="https://i.imgur.com/60G42xE.png")
         embed.add_embed_field(name="Site", value=site,inline=True)
         embed.add_embed_field(name="Profile", value=profile,inline=True)
         embed.add_embed_field(name="Task ID", value=task_id,inline=True)
