@@ -103,7 +103,7 @@ class Walmart:
                     self.handle_captcha(self.product)
                     return False
 
-                if r.status_code == 201 and json.loads(r.text)["checkoutable"] == True:
+                if r.status_code == 201 or r.status_code == 200 and json.loads(r.text)["checkoutable"] == True:
                     self.status_signal.emit({"msg":"Added To Cart","status":"carted"})
                     return True
                 else:
@@ -147,7 +147,7 @@ class Walmart:
                 print(r.status_code)
                 print(r.text) # this sometimes returns json data related to loading a captcha.js file so that could be intercepted when requests fail
 
-                if r.status_code == 201:
+                if r.status_code == 201 or r.status_code == 200:
                     r = json.loads(r.text)["items"][0]
                     item_id = r["id"]
                     fulfillment_option = r["fulfillmentSelection"]["fulfillmentOption"]
