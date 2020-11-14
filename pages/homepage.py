@@ -2,6 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from sites.walmart import Walmart
 from sites.bestbuy import BestBuy
 from pages.createdialog import CreateDialog
+from pages.pollbrowser import PollBrowserDialog
 from utils import get_profile, get_proxy, BirdLogger, return_data, write_data, open_browser
 import urllib.request,sys,platform
 import settings
@@ -376,6 +377,16 @@ class TaskTab(QtWidgets.QWidget):
             self.status_label.setStyleSheet("color: rgb(163, 149, 255);")
             logger.alt(self.task_id,msg["msg"])
             carted_count.setText(str(int(carted_count.text())+1))
+    
+    def wait_browser_poll(self):
+        # Initiate dialog and block until dismissed
+        poll_browser_dialog = PollBrowserDialog(self.parent())
+        poll_browser_dialog.exec()
+
+        # set wait condition
+        self.task.wait_condition.wakeAll()
+
+        pass
 
     def update_image(self,image_url):
         self.image_thread = ImageThread(image_url)
@@ -391,6 +402,13 @@ class TaskTab(QtWidgets.QWidget):
             self.task = TaskThread()
             self.task.status_signal.connect(self.update_status)
             self.task.image_signal.connect(self.update_image)
+            self.task.wait_condition = QtCore.QWaitCondition()
+            
+            # Special case for Walmart, not sure if should disambiguate
+            # allowing other stores to use functionality
+            if self.site == "Walmart":
+                self.task.wait_poll_signal.connect(self.wait_browser_poll)
+
             self.task.set_data(
                 self.task_id,
                 self.site_label.text(),
@@ -467,6 +485,7 @@ class TaskTab(QtWidgets.QWidget):
 class TaskThread(QtCore.QThread):
     status_signal = QtCore.pyqtSignal("PyQt_PyObject")
     image_signal = QtCore.pyqtSignal("PyQt_PyObject")
+    wait_poll_signal = QtCore.pyqtSignal()
     def __init__(self):
         QtCore.QThread.__init__(self)
 
@@ -482,7 +501,7 @@ class TaskThread(QtCore.QThread):
             self.status_signal.emit({"msg":"Invalid proxy list","status":"error"})
             return
         if self.site == "Walmart":
-            Walmart(self.task_id,self.status_signal,self.image_signal,self.product,profile,proxy,self.monitor_delay,self.error_delay,self.max_price)
+            Walmart(self.task_id,self.status_signal,self.image_signal,  self.wait_poll_signal, self.wait_condition, self.product,profile,proxy,self.monitor_delay,self.error_delay,self.max_price)
         elif self.site == "Bestbuy":
             BestBuy(self.task_id,self.status_signal,self.image_signal,self.product,profile,proxy,self.monitor_delay,self.error_delay)
 

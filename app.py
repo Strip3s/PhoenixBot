@@ -4,6 +4,7 @@ from pages.createdialog import CreateDialog
 from pages.profilespage import ProfilesPage
 from pages.proxiespage import ProxiesPage
 from pages.settingspage import SettingsPage
+from pages.pollbrowser import PollBrowserDialog
 import images.images, sys, os
 def no_abort(a, b, c):
     sys.__excepthook__(a, b, c)
