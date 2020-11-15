@@ -10,7 +10,7 @@ from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from webhook import DiscordWebhook, DiscordEmbed
 from chromedriver_py import binary_path as driver_path
-import json, platform, darkdetect, random, settings, threading, hashlib, base64, string, config
+import json, platform, darkdetect, random, settings, threading, hashlib, base64, string
 normal_color = Fore.CYAN
 
 def write_data(path,data):

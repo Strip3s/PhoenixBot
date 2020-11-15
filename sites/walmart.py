@@ -3,7 +3,7 @@ from utils import send_webhook
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from PyQt5 import QtCore
-import urllib, requests, time, lxml.html, json, sys, settings, config
+import urllib, requests, time, lxml.html, json, sys, settings
 
 class Walmart:
     def __init__(self,task_id,status_signal,image_signal, wait_poll_signal, polling_wait_condition, product,profile,proxy,monitor_delay,error_delay,max_price):
@@ -43,7 +43,7 @@ class Walmart:
             "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
             "cache-control": "max-age=0",
             "upgrade-insecure-requests": "1",
-            "user-agent": config.userAgent
+            "user-agent": settings.userAgent
         }
         image_found = False
         product_image = ""
@@ -93,7 +93,7 @@ class Walmart:
             "content-type": "application/json",
             "origin": "https://www.walmart.com",
             "referer": self.product,
-            "user-agent": config.userAgent,
+            "user-agent": settings.userAgent,
             "wm_offer_id": offer_id
         }
         body = {"offerId":offer_id,"quantity":1, "location":{"postalCode":self.profile["shipping_zipcode"],"city":self.profile["shipping_city"],"state":self.profile["shipping_state"],"isZipLocated":True},"shipMethodDefaultRule":"SHIP_RULE_1"}
@@ -133,7 +133,7 @@ class Walmart:
             "content-type": "application/json",
             "origin": "https://www.walmart.com",
             "referer": "https://www.walmart.com/checkout/",
-            "user-agent": config.userAgent,
+            "user-agent": settings.userAgent,
             "wm_vertical_id": "0",
             "wm_cvv_in_session": "true",
         }
@@ -183,7 +183,7 @@ class Walmart:
             "content-type": "application/json",
             "origin": "https://www.walmart.com",
             "referer": "https://www.walmart.com/checkout/",
-            "user-agent": config.userAgent,
+            "user-agent": settings.userAgent,
             "wm_vertical_id": "0"
         }
         body = {"groups":[{"fulfillmentOption":fulfillment_option,"itemIds":[item_id],"shipMethod":ship_method}]}
@@ -213,7 +213,7 @@ class Walmart:
             "inkiru_precedence": "false",
             "origin": "https://www.walmart.com",
             "referer": "https://www.walmart.com/checkout/",
-            "user-agent": config.userAgent,
+            "user-agent": settings.userAgent,
             "wm_vertical_id": "0"
         }
         profile = self.profile
@@ -258,7 +258,7 @@ class Walmart:
             "Connection": "keep-alive",
             "Host": "securedataweb.walmart.com",
             "Referer": "https://www.walmart.com/",
-            "User-Agent": config.userAgent
+            "User-Agent": settings.userAgent
         }
         profile = self.profile
         while True:
@@ -288,7 +288,7 @@ class Walmart:
             "content-type": "application/json",
             "origin": "https://www.walmart.com",
             "referer": "https://www.walmart.com/checkout/",
-            "user-agent": config.userAgent
+            "user-agent": settings.userAgent
         }
             # "inkiru_precedence": "false",
         profile = self.profile
@@ -336,7 +336,7 @@ class Walmart:
             "content-type": "application/json",
             "origin": "https://www.walmart.com",
             "referer": "https://www.walmart.com/checkout/",
-            "user-agent": config.userAgent,
+            "user-agent": settings.userAgent,
             "wm_vertical_id": "0"
         }
 
@@ -392,7 +392,7 @@ class Walmart:
             "content-type": "application/json",
             "origin": "https://www.walmart.com",
             "referer": "https://www.walmart.com/checkout/",
-            "user-agent": config.userAgent,
+            "user-agent": settings.userAgent,
             "wm_vertical_id": "0"
         }
         
