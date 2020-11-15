@@ -6,7 +6,7 @@ except:
     from Cryptodome.Cipher import PKCS1_OAEP
 from base64 import b64encode
 from utils import send_webhook
-import requests,time,lxml.html,json,sys,settings
+import requests, time, lxml.html, json, sys, settings
 
 
 # TODO: Implement settings.dont_buy global as to not checkout
@@ -46,7 +46,7 @@ class BestBuy:
             "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
             "content-type": "application/json",
             "referer": "https://www.bestbuy.com/checkout/r/payment",
-            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36"
+            "user-agent": settings.userAgent
         }
         while True:
             try:
@@ -95,7 +95,7 @@ class BestBuy:
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
             "accept-encoding": "gzip, deflate, br",
             "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
-            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36"
+            "user-agent": settings.userAgent
         }
         while True:
             self.status_signal.emit({"msg":"Checking Stock","status":"normal"})
@@ -116,13 +116,13 @@ class BestBuy:
             "content-type": "application/json; charset=UTF-8",
             "origin": "https://www.bestbuy.com",
             "referer": self.product,
-            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36"
+            "user-agent": settings.userAgent
         }
         body = {"items":[{"skuId":self.sku_id}]}
         while True:
             self.status_signal.emit({"msg":"Adding To Cart","status":"normal"})
             try:
-                r = self.session.post("https://www.bestbuy.com/cart/api/v1/addToCart",json=body,headers=headers)
+                r = self.session.post("https://api.bestbuy.com/click/-/skuId/cart",json=body,headers=headers)
                 if r.status_code == 200 and json.loads(r.text)["cartCount"] == 1:
                     self.status_signal.emit({"msg":"Added To Cart","status":"carted"})
                     return
@@ -139,7 +139,7 @@ class BestBuy:
             "accept-encoding": "gzip, deflate, br",
             "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
             "upgrade-insecure-requests": "1",
-            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36",
+            "user-agent": settings.userAgent,
         }
         while True:
             self.status_signal.emit({"msg":"Starting Checkout","status":"normal"})
@@ -165,7 +165,7 @@ class BestBuy:
             "content-type": "application/json",
             "origin": "https://www.bestbuy.com",
             "referer": "https://www.bestbuy.com/checkout/r/fulfillment",
-            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36",
+            "user-agent": settings.userAgent,
             "x-user-interface": "DotCom-Optimized"
         }
         profile = self.profile
@@ -209,7 +209,7 @@ class BestBuy:
             "content-type": "application/json",
             "origin": "https://www.bestbuy.com",
             "referer": "https://www.bestbuy.com/checkout/r/fulfillment",
-            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36",
+            "user-agent": settings.userAgent,
             "x-user-interface": "DotCom-Optimized"
         }
         profile = self.profile
@@ -273,10 +273,10 @@ class BestBuy:
             "content-type": "application/json",
             "origin": "https://www.bestbuy.com",
             "referer": "https://www.bestbuy.com/checkout/r/payment",
-            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36",
+            "user-agent": settings.userAgent,
             "x-user-interface": "DotCom-Optimized"
         }
-        body = {"browserInfo":{"javaEnabled":False,"language":"en-US","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36","height":"1057","width":"1057","timeZone":"240","colorDepth":"24"}}
+        body = {"browserInfo":{"javaEnabled":False,"language":"en-US","userAgent":settings.userAgent,"height":"1057","width":"1057","timeZone":"240","colorDepth":"24"}}
         while True:
             self.status_signal.emit({"msg":"Submitting Order","status":"alt"})
             try:
@@ -308,7 +308,7 @@ class BestBuy:
             "origin": "https://www.bestbuy.com",
             "referer": "https://www.bestbuy.com/",
             "upgrade-insecure-requests": "1",
-            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36"
+            "user-agent": settings.userAgent
         }
         body = {
             "JWT": jwt,
@@ -339,7 +339,7 @@ class BestBuy:
             "Origin": "https://centinelapi.cardinalcommerce.com",
             "Referer": "https://centinelapi.cardinalcommerce.com/",
             "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36"
+            "User-Agent": settings.userAgent
         }
         body = {
             "PaReq": pa_req,
@@ -370,7 +370,7 @@ class BestBuy:
             "Origin": "https://1eaf.cardinalcommerce.com",
             "Referer": "https://1eaf.cardinalcommerce.com/",
             "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36"
+            "User-Agent": settings.userAgent
         }
         body = {
             "PaReq": pa_req,
@@ -413,7 +413,7 @@ class BestBuy:
             "Origin": "https://secure4.arcot.com",
             "Referer": "https://secure4.arcot.com/",
             "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36"
+            "User-Agent": settings.userAgent
         }
         body = {
             "PaRes": pa_res,
@@ -451,7 +451,7 @@ class BestBuy:
             "origin": "https://1eaf.cardinalcommerce.com",
             "referer": "https://1eaf.cardinalcommerce.com/",
             "upgrade-insecure-requests": "1",
-            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36"
+            "user-agent": settings.userAgent
         }
         body = {
             "PaRes": pa_res,
@@ -475,7 +475,7 @@ class BestBuy:
             "origin": "https://centinelapi.cardinalcommerce.com",
             "referer": "https://centinelapi.cardinalcommerce.com/V2/Cruise/StepUp",
             "upgrade-insecure-requests": "1",
-            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36"
+            "user-agent": settings.userAgent
         }
         body = {
             "McsId": md,
@@ -502,7 +502,7 @@ class BestBuy:
             "content-type": "application/json",
             "origin": "https://www.bestbuy.com",
             "referer": "https://www.bestbuy.com/checkout/r/payment",
-            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.92 Safari/537.36",
+            "user-agent": settings.userAgent,
             "x-user-interface": "DotCom-Optimized",
             "x-native-checkout-version": "__VERSION__"
         }

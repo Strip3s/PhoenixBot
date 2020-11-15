@@ -1,3 +1,4 @@
+####### Global Variables ######
 global webhook
 webhook = ""
 global webhook_on_browser
@@ -10,3 +11,6 @@ global browser_on_failed
 browser_on_failed = True
 global dont_buy
 dont_buy = False
+global userAgent
+userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36"
+#################################################

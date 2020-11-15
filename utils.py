@@ -33,6 +33,7 @@ if platform.system() == "Windows":
     init(convert=True)
 else:
     init()
+   
 print(normal_color + "Welcome To Phoenix Bot - In times of crisis, the wise build bridges while the foolish build barriers.")
 
 class BirdLogger:

@@ -5,10 +5,12 @@ from pages.profilespage import ProfilesPage
 from pages.proxiespage import ProxiesPage
 from pages.settingspage import SettingsPage
 from pages.pollbrowser import PollBrowserDialog
-import images.images, sys, os
+import images.images, sys, os, settings
+
 def no_abort(a, b, c):
     sys.__excepthook__(a, b, c)
 sys.excepthook = no_abort
+
 class MainWindow(QtWidgets.QMainWindow):
   
     def __init__(self, parent=None):
