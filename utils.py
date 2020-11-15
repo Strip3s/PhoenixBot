@@ -10,7 +10,7 @@ from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from webhook import DiscordWebhook, DiscordEmbed
 from chromedriver_py import binary_path as driver_path
-import json, platform, darkdetect, random, settings, threading, hashlib, base64, string
+import json, platform, darkdetect, random, settings, threading, hashlib, base64, string, config
 normal_color = Fore.CYAN
 
 def write_data(path,data):
@@ -33,6 +33,7 @@ if platform.system() == "Windows":
     init(convert=True)
 else:
     init()
+   
 print(normal_color + "Welcome To Phoenix Bot - In times of crisis, the wise build bridges while the foolish build barriers.")
 
 class BirdLogger:

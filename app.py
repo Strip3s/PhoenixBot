@@ -5,7 +5,7 @@ from pages.profilespage import ProfilesPage
 from pages.proxiespage import ProxiesPage
 from pages.settingspage import SettingsPage
 from pages.pollbrowser import PollBrowserDialog
-import images.images, sys, os
+import images.images, sys, os, config
 def no_abort(a, b, c):
     sys.__excepthook__(a, b, c)
 sys.excepthook = no_abort
@@ -146,6 +146,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
 #(.*)
 if __name__ == "__main__":
+    config.init()
     ui_app = QtWidgets.QApplication(sys.argv)
     ui = MainWindow()
     ui.setWindowIcon(QtGui.QIcon("images/birdbot.png"))
