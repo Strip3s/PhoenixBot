@@ -6,9 +6,11 @@ def no_abort(a, b, c):
 sys.excepthook = no_abort
 
 class ProfilesPage(QtWidgets.QWidget):
+
     def __init__(self,parent=None):
         super(ProfilesPage, self).__init__(parent)
         self.setupUi(self)
+
     def setupUi(self, profilespage):
         self.profilespage = profilespage
         self.profilespage.setAttribute(QtCore.Qt.WA_StyledBackground, True)
@@ -360,7 +362,7 @@ class ProfilesPage(QtWidgets.QWidget):
         if self.loadprofile_box.findText(profile_name) == -1:
             self.loadprofile_box.addItem(profile_name)
             self.parent().parent().createdialog.profile_box.addItem(profile_name)
-        QtWidgets.QMessageBox.information(self, "Bird Bot", "Saved Profile")
+        QtWidgets.QMessageBox.information(self, "Phoenix Bot", "Saved Profile")
     
     def delete_profile(self):
         profile_name = self.profilename_edit.text()
@@ -401,4 +403,4 @@ class ProfilesPage(QtWidgets.QWidget):
         self.cardyear_box.setCurrentIndex(0)
         self.cardtype_box.setCurrentIndex(0)
         self.cardcvv_edit.setText("")
-        QtWidgets.QMessageBox.information(self, "Bird Bot", "Deleted Profile")
+        QtWidgets.QMessageBox.information(self, "Phoenix Bot", "Deleted Profile")

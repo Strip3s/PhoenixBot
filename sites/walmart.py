@@ -4,10 +4,20 @@ import urllib,requests,time,lxml.html,json,sys,settings
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 
+from PyQt5 import QtCore
+
 
 class Walmart:
-    def __init__(self,task_id,status_signal,image_signal,product,profile,proxy,monitor_delay,error_delay,max_price):
+    def __init__(self,task_id,status_signal,image_signal, wait_poll_signal, polling_wait_condition, product,profile,proxy,monitor_delay,error_delay,max_price):
         self.task_id,self.status_signal,self.image_signal,self.product,self.profile,self.monitor_delay,self.error_delay,self.max_price = task_id,status_signal,image_signal,product,profile,float(monitor_delay),float(error_delay),max_price
+        
+        ####### Browser/Captcha Polling Variables ######
+        self.captcha_mutex = QtCore.QMutex()
+        self.captcha_wait_condition = polling_wait_condition
+        self.wait_poll_signal = wait_poll_signal
+        #################################################
+
+        
         self.session = requests.Session()
         if proxy != False:
             self.session.proxies.update(proxy)
@@ -443,10 +453,18 @@ class Walmart:
 
         browser.get(url_to_open)
 
-        # pass the cookies back to the session to continue process
-        # TODO: this should be a UI popup instead of from the console...
-        input("Press Enter after page loads and interact in the page. Complete the Captcha first if prompted ...")
+        # lock the mutex and let the thread handler know we are awaiting
+        # a gui event
+        self.captcha_mutex.lock()
+        self.wait_poll_signal.emit()
+        try:
+            # wait for condition to be released 
+            self.captcha_wait_condition.wait(self.captcha_mutex)
+        finally:
+            # unlock the thread
+            self.captcha_mutex.unlock()
         
+
         for c in browser.get_cookies():
             if c['name'] not in [x.name for x in self.session.cookies]:
                 self.session.cookies.set(c['name'], c['value'], path=c['path'], domain=c['domain'])
