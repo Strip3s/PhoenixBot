@@ -8,3 +8,5 @@ global webhook_on_failed
 webhook_on_failed = True
 global browser_on_failed
 browser_on_failed = True
+global dont_buy
+dont_buy = False
