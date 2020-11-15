@@ -16,8 +16,9 @@ Phoenix Bot is inspired by Natewong1313's Bird Bot project yet due to lack of ac
 
 ## Quick Install for Windows
 1. Make sure your Chrome browser is updated to the latest
-2. Open Powershell as Administrator within your desired directory for the application to live.
-3. Run the following commands: 
+1. Ensure you have Microsoft Visual C++ SDK installed. [Installer link](https://aka.ms/vs/16/release/vs_buildtools.exe)
+1. Open Powershell as Administrator within your desired directory for the application to live.
+1. Run the following commands: 
       ```
       git clone https://github.com/Strip3s/PhoenixBot/
       ```
@@ -33,13 +34,13 @@ Phoenix Bot is inspired by Natewong1313's Bird Bot project yet due to lack of ac
       ```
       pip install -r requirements.txt
       ```
-4. If you encounter any errors during installation, please consider the following:
+1. If you encounter any errors during installation, please consider the following:
     * If you get a red text error remove and you previously installed pyqt5 or lxml on your python,  remove the versions from the **requirements.txt** for both lxml and pyqt5.
     * If you get an error with red text run the following: 
      ```
      pip install pycryptodomex
      ```
-5. Run the following command:
+1. Run the following command:
    ```
    python app.py
    ```
@@ -48,7 +49,7 @@ Phoenix Bot is inspired by Natewong1313's Bird Bot project yet due to lack of ac
 **It is highly recommended you install brew and update python3 to latest version**
 
 1. Make sure your Chrome browser is updated to the latest
-2. Run the following commands: 
+1. Run the following commands: 
       ```
       git clone https://github.com/Strip3s/PhoenixBot/
       ```
@@ -64,13 +65,13 @@ Phoenix Bot is inspired by Natewong1313's Bird Bot project yet due to lack of ac
       ```
       pip install -r requirements.txt
       ```
-3. If you encounter any errors during installation, please consider the following:
+1. If you encounter any errors during installation, please consider the following:
     * If you get a red text error remove and you previously installed pyqt5 or lxml on your python,  remove the versions from the **requirements.txt** for both lxml and pyqt5.
     * If you get an error with red text run the following: 
      ```
      pip3 install pycryptodomex
      ```
-4. Run the following command:
+1. Run the following command:
 
    ```
    python3 app.py
