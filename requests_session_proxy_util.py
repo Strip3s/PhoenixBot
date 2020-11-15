@@ -3,7 +3,6 @@ import random
 import requests
 
 from http_request_randomizer.requests.proxy.requestProxy import RequestProxy
-from IPython import embed
 
 logging.getLogger("http_request_randomizer").setLevel(logging.ERROR)
 
