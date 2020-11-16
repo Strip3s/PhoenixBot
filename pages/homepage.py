@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from sites.walmart import Walmart
 from sites.bestbuy import BestBuy
+from sites.target import Target
 from pages.createdialog import CreateDialog
 from pages.pollbrowser import PollBrowserDialog
 from utils import get_profile, get_proxy, BirdLogger, return_data, write_data, open_browser
@@ -504,6 +505,9 @@ class TaskThread(QtCore.QThread):
             Walmart(self.task_id,self.status_signal,self.image_signal,  self.wait_poll_signal, self.wait_condition, self.product,profile,proxy,self.monitor_delay,self.error_delay,self.max_price)
         elif self.site == "Bestbuy":
             BestBuy(self.task_id,self.status_signal,self.image_signal,self.product,profile,proxy,self.monitor_delay,self.error_delay)
+        # TODO: Add Target service here!
+        elif self.site == "Target":
+            Target(self.task_id,self.status_signal,self.image_signal,self.product,profile,proxy,self.monitor_delay,self.error_delay)
 
     def stop(self):
         self.terminate()
