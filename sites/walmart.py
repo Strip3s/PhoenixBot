@@ -51,7 +51,6 @@ class Walmart:
             self.status_signal.emit({"msg":"Loading Product Page","status":"normal"})
             try:
                 r = self.session.get(self.product,headers=headers)
-                print(r.status_code)
                 if r.status_code == 200:
                     # check for captcha page
                     if self.is_captcha(r.text):
@@ -81,7 +80,6 @@ class Walmart:
                     self.status_signal.emit({"msg":"Product Not Found","status":"normal"})
                     time.sleep(random_delay(self.monitor_delay, settings.rand_delay_start, settings.rand_delay_stop))
             except Exception as e:
-                print(r.text)
                 self.status_signal.emit({"msg":"Error Loading Product Page (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e),"status":"error"})
                 time.sleep(self.error_delay)
     
@@ -103,7 +101,6 @@ class Walmart:
             self.status_signal.emit({"msg":"Adding To Cart","status":"normal"})
             try:
                 r = self.session.post("https://www.walmart.com/api/v3/cart/guest/:CID/items",json=body,headers=headers)
-                print(r.status_code)
 
                 # check for captcha page
                 if self.is_captcha(r.text):
@@ -120,7 +117,6 @@ class Walmart:
                     time.sleep(self.error_delay) 
                     return False
             except Exception as e:
-                print(r.text)
                 self.status_signal.emit({"msg":"Error Adding To Cart (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e),"status":"error"})
                 time.sleep(self.error_delay)
                 return False
@@ -137,23 +133,15 @@ class Walmart:
             "wm_vertical_id": "0",
             "wm_cvv_in_session": "true",
         }
-        for c in self.session.cookies:
-            print(c)
             
 
         profile = self.profile
         body = {"postalCode":profile["shipping_zipcode"],"city":profile["shipping_city"],"state":profile["shipping_state"],"isZipLocated":True,"crt:CRT":"","customerId:CID":"","customerType:type":"","affiliateInfo:com.wm.reflector":"","storeList": []}
-        print(body)
         
         while True:
             self.status_signal.emit({"msg":"Loading Cart Items","status":"normal"})
             try:
-                # self.handle_captcha("https://www.walmart.com/checkout") 
-
-
                 r = self.session.post("https://www.walmart.com/api/checkout/v3/contract?page=CHECKOUT_VIEW",json=body,headers=headers)
-                print(r.status_code)
-                print(r.text) # this sometimes returns json data related to loading a captcha.js file so that could be intercepted when requests fail
 
                 if r.status_code == 201 or r.status_code == 200:
                     r = json.loads(r.text)["items"][0]
@@ -315,7 +303,7 @@ class Walmart:
             self.status_signal.emit({"msg":"Submitting Payment","status":"normal"})
             try:
                 r = self.session.post("https://www.walmart.com/api/checkout-customer/:CID/credit-card",json=body,headers=headers)
-                print(r.text)
+
                 if r.status_code == 200:
                     pi_hash = json.loads(r.text)["piHash"]
                     self.status_signal.emit({"msg":"Submitted Payment","status":"normal"})
@@ -397,18 +385,16 @@ class Walmart:
         }
         
         if settings.dont_buy is True:
-            # TODO: this used to open the page up with everything filled out but walmart may have changed how that works...
-            self.handle_captcha("https://www.walmart.com/checkout/#/payment") # OPEN BROWSER TO SEE IF SHIT WORKED
+            # TODO: this used to open the page up with everything filled out but only works for some users
+            self.status_signal.emit({"msg":"Opening Checkout Page","status":"alt"})
+            self.handle_captcha("https://www.walmart.com/checkout/#/payment", close_window_after=False) # OPEN BROWSER TO SEE IF SHIT WORKED
             self.check_browser()  
-            return               # TODO: HARD STOP TO STOP BUYING SHIT
+            return              
 
         while True:
             self.status_signal.emit({"msg":"Submitting Order","status":"alt"})
             try:
                 r = self.session.put("https://www.walmart.com/api/checkout/v3/contract/:PCID/order",json={},headers=headers)
-                print('-------')
-                print(r.status_code)
-                print(r.text)
                 try:
                     json.loads(r.text)["order"]
                     self.status_signal.emit({"msg":"Order Placed","status":"success"})
@@ -435,7 +421,7 @@ class Walmart:
             return True
         return False
 
-    def handle_captcha(self, url_to_open):
+    def handle_captcha(self, url_to_open, close_window_after=True):
         # this opens up chrome browser to get prompted with captcha
         browser = webdriver.Chrome(ChromeDriverManager().install()) # I used ChromeDriverManager to not worry about what chrome driver i had installed
         browser.get("https://www.walmart.com")
@@ -461,11 +447,13 @@ class Walmart:
         finally:
             # unlock the thread
             self.captcha_mutex.unlock()
-        
 
         for c in browser.get_cookies():
             if c['name'] not in [x.name for x in self.session.cookies]:
                 self.session.cookies.set(c['name'], c['value'], path=c['path'], domain=c['domain'])
 
+        if close_window_after:
+            browser.quit()
+
     def is_captcha(self, text):
-        return "captchajs" in text or "captcha.js" in text
+        return '<div class="re-captcha">' in text
