@@ -1,5 +1,5 @@
 from sites.walmart_encryption import walmart_encryption as w_e
-from utils import send_webhook
+from utils import send_webhook, random_delay
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from PyQt5 import QtCore
@@ -70,16 +70,16 @@ class Walmart:
                             if float(self.max_price) < price:
                                 self.status_signal.emit({"msg":"Waiting For Price Restock","status":"normal"})
                                 self.session.cookies.clear()
-                                time.sleep(self.random_delay(self.monitor_delay, settings.rand_delay_start, settings.rand_delay_stop))
+                                time.sleep(random_delay(self.monitor_delay, settings.rand_delay_start, settings.rand_delay_stop))
                                 continue
                         offer_id = json.loads(doc.xpath('//script[@id="item"]/text()')[0])["item"]["product"]["buyBox"]["products"][0]["offerId"]
                         return product_image, offer_id
                     self.status_signal.emit({"msg":"Waiting For Restock","status":"normal"})
                     self.session.cookies.clear()
-                    time.sleep(self.random_delay(self.monitor_delay, settings.rand_delay_start, settings.rand_delay_stop))
+                    time.sleep(random_delay(self.monitor_delay, settings.rand_delay_start, settings.rand_delay_stop))
                 else:
                     self.status_signal.emit({"msg":"Product Not Found","status":"normal"})
-                    time.sleep(self.random_delay(self.monitor_delay, settings.rand_delay_start, settings.rand_delay_stop))
+                    time.sleep(random_delay(self.monitor_delay, settings.rand_delay_start, settings.rand_delay_stop))
             except Exception as e:
                 print(r.text)
                 self.status_signal.emit({"msg":"Error Loading Product Page (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e),"status":"error"})
@@ -165,7 +165,7 @@ class Walmart:
                 else:
                     if json.loads(r.text)["message"] == "Item is no longer in stock.":
                         self.status_signal.emit({"msg":"Waiting For Restock","status":"normal"})
-                        time.sleep(self.random_delay(self.monitor_delay, settings.rand_delay_start, settings.rand_delay_stop))
+                        time.sleep(random_delay(self.monitor_delay, settings.rand_delay_start, settings.rand_delay_stop))
                     else:
                         if self.is_captcha(r.text):
                             self.handle_captcha("https://www.walmart.com/checkout")
@@ -469,10 +469,3 @@ class Walmart:
 
     def is_captcha(self, text):
         return "captchajs" in text or "captcha.js" in text
-
-    def random_delay(self, delay, start, stop):
-        """
-        Returns the delay argument combined with a random number between start
-        and stop dividied by 100.
-        """
-        return delay + (random.randint(start, stop) / 100)

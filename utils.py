@@ -165,3 +165,10 @@ def start_browser(link,cookies):
             "domain" : cookie["domain"]
         })
     driver.get(link)
+
+def random_delay(self, delay, start, stop):
+    """
+    Returns the delay argument combined with a random number between start
+    and stop dividied by 100.
+    """
+    return delay + (random.randint(start, stop) / 100)
