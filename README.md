@@ -56,13 +56,13 @@ Phoenix Bot is inspired by Natewong1313's Bird Bot project yet due to lack of ac
       cd PhoenixBot
       ```
       ```
-      python -m venv ./env
+      python3 -m venv ./env
       ```
       ```
-      ./env/Scripts/activate
+      source env/bin/activate
       ```
       ```
-      pip install -r requirements.txt
+      pip3 install -r requirements.txt
       ```
 3. If you encounter any errors during installation, please consider the following:
     * If you get a red text error remove and you previously installed pyqt5 or lxml on your python,  remove the versions from the **requirements.txt** for both lxml and pyqt5.
