@@ -1,9 +1,9 @@
-import urllib, requests, time, lxml.html, json, sys, settings
+import requests, string, random
 from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait as wait
-from selenium.webdriver.common.action_chains import ActionChains
+from webdriver_manager.chrome import ChromeDriverManager
 
 DONT_BUY = True
 
@@ -23,9 +23,20 @@ class Target:
         # self.product_image, offer_id = self.monitor()
 
     def run(self):
-        options = webdriver.ChromeOptions()
-        options.binary_location = "/Applications/Chromium.app/Contents/MacOS/Chromium"
-        browser = webdriver.Chrome(options=options)
+        driver_manager = ChromeDriverManager()
+        driver_manager.install()
+
+        driver_path = driver_manager._get_driver_path(driver_manager.driver)
+        self.change_driver(driver_path)
+        browser = webdriver.Chrome()
+
+        browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+            "source": """
+            Object.defineProperty(navigator, 'webdriver', {
+             get: () => undefined
+            })
+          """
+        })
 
         browser.get("https://www.target.com")
 
@@ -41,6 +52,18 @@ class Target:
         password.send_keys(my_password)
         browser.find_element_by_id("login").click()
 
+    # https://stackoverflow.com/questions/33225947/can-a-website-detect-when-you-are-using-selenium-with-chromedriver
+    def change_driver(self, loc):
+        file = open(loc, 'rb')
+        filedata = file.read()
+        file.close()
+
+        val = "".join(random.choices(string.ascii_letters + string.digits, k=22))
+        filedata.replace(b"lasutopfhvcZLmcfl", str.encode(val))
+
+        file = open(loc, 'wb')
+        file.write(filedata)
+        file.close()
 
     def send_msg(self, msg, status):
         return {"msg": msg, "status": status}
