@@ -5,7 +5,7 @@ except:
     from Cryptodome.PublicKey import RSA
     from Cryptodome.Cipher import PKCS1_OAEP
 from base64 import b64encode
-from utils import send_webhook
+from utils import send_webhook, random_delay
 import requests, time, lxml.html, json, sys, settings
 
 
@@ -82,10 +82,10 @@ class BestBuy:
                     if self.check_stock():
                         return product_image
                     self.status_signal.emit({"msg":"Waiting For Restock","status":"normal"})
-                    time.sleep(self.monitor_delay)
+                    time.sleep(random_delay(self.monitor_delay, settings.rand_delay_start, settings.rand_delay_stop))
                 else:
                     self.status_signal.emit({"msg":"Product Not Found","status":"normal"})
-                    time.sleep(self.monitor_delay)
+                    time.sleep(random_delay(self.monitor_delay, settings.rand_delay_start, settings.rand_delay_stop))
             except Exception as e:
                 self.status_signal.emit({"msg":"Error Loading Product Page (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e),"status":"error"})
                 time.sleep(self.error_delay)
