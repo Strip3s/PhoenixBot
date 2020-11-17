@@ -4,6 +4,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait as wait
 from webdriver_manager.chrome import ChromeDriverManager
+from chromedriver_py import binary_path as driver_path
+import re
 
 DONT_BUY = True
 
@@ -26,9 +28,8 @@ class Target:
         driver_manager = ChromeDriverManager()
         driver_manager.install()
 
-        driver_path = driver_manager._get_driver_path(driver_manager.driver)
         self.change_driver(driver_path)
-        browser = webdriver.Chrome()
+        browser = webdriver.Chrome(driver_path)
 
         browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
             "source": """
@@ -54,16 +55,23 @@ class Target:
 
     # https://stackoverflow.com/questions/33225947/can-a-website-detect-when-you-are-using-selenium-with-chromedriver
     def change_driver(self, loc):
-        file = open(loc, 'rb')
-        filedata = file.read()
-        file.close()
+        print(loc)
+        fin = open(loc, 'rb')
+        data = fin.read()
+        val = "$cdc_" + "".join(random.choices(string.ascii_letters + string.digits, k=22)) + "_"
 
-        val = "".join(random.choices(string.ascii_letters + string.digits, k=22))
-        filedata.replace(b"lasutopfhvcZLmcfl", str.encode(val))
+        result = re.search(b"[$]cdc_[a-zA-Z0-9]{22}_", data)
 
-        file = open(loc, 'wb')
-        file.write(filedata)
-        file.close()
+        if result is not None:
+            data = data.replace(result.group(0), val.encode())
+            fin.close()
+            fin = open(loc, 'wb')
+            fin.truncate()
+            fin.write(data)
+            fin.close()
+        else:
+            fin.close()
+
 
     def send_msg(self, msg, status):
         return {"msg": msg, "status": status}
