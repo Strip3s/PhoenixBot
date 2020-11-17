@@ -3,7 +3,7 @@ from utils import send_webhook, random_delay
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from PyQt5 import QtCore
-import urllib, requests, time, lxml.html, json, sys, settings, random
+import urllib, requests, time, lxml.html, json, sys, settings
 
 class Walmart:
     def __init__(self,task_id,status_signal,image_signal, wait_poll_signal, polling_wait_condition, product,profile,proxy,monitor_delay,error_delay,max_price):
