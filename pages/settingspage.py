@@ -145,7 +145,7 @@ class SettingsPage(QtWidgets.QWidget):
         global webhook, webhook_on_browser, webhook_on_order, webhook_on_failed, browser_on_failed, dont_buy, random_delay_start, random_delay_stop
         settings.webhook, settings.webhook_on_browser, settings.webhook_on_order, settings.webhook_on_failed, settings.browser_on_failed, settings.buy_one, settings.dont_buy = settings_data["webhook"], settings_data["webhookonbrowser"], settings_data["webhookonorder"], settings_data["webhookonfailed"], settings_data["browseronfailed"], settings_data['onlybuyone'], settings_data['dont_buy']
 
-        if settings_data["random_delay_start"] != "":
+        if settings_data.get("random_delay_start", "") != "":
             settings.random_delay_start = settings_data["random_delay_start"]
-        if settings_data["random_delay_stop"] != "":
+        if settings_data.get("random_delay_stop", "") != "":
             settings.random_delay_stop = settings_data["random_delay_stop"]
