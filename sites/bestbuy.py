@@ -7,14 +7,14 @@ except:
 from base64 import b64encode
 from utils import send_webhook
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 from selenium.common import exceptions
 import requests, time, lxml.html, json, sys, settings, urllib3, threading
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-# TODO: Implement settings.dont_buy global as to not checkout
 class BestBuy:
 
     def __init__(self, task_id, status_signal, image_signal, product, profile, proxy, monitor_delay, error_delay):
@@ -22,7 +22,7 @@ class BestBuy:
             monitor_delay), float(error_delay)
         self.session = requests.Session()
         self.sku_id = self.product.split('=')[1]
-        self.cookies_from_browser = self.get_cookies_using_browser()
+        self.cookies_from_browser = self.get_cookies_using_browser
         self.kill_cookie_thread = False
         cookie_thread = threading.Thread(
             target=self.launch_cookie_thread,
@@ -34,7 +34,10 @@ class BestBuy:
 
         if proxy != False:
             self.session.proxies.update(proxy)
-        self.status_signal.emit({"msg": "Starting", "status": "normal"})
+        starting_msg = "Starting"
+        if settings.dont_buy:
+            starting_msg = "Starting in dev mode - Phoenix Bot will not actually checkout (dont_buy = True)"
+        self.status_signal.emit({"msg": starting_msg, "status": "normal"})
 
         while True:
             self.status_signal.emit({"msg": "Checking Stock", "status": "normal"})
@@ -52,34 +55,41 @@ class BestBuy:
 
             while True:
                 success, jwt = self.submit_order()
-                if not success and jwt != None:
+                if not success and jwt is not None:
                     transaction_id = self.handle_3dsecure(jwt)
                     self.submit_card(transaction_id)
                 else:
                     if success:
-                        send_webhook("OP", "Bestbuy", self.profile["profile_name"], task_id, product_image)
+                        send_webhook("OP", "Bestbuy", self.profile["profile_name"],
+                                     task_id, product_image)
                     else:
                         if settings.browser_on_failed:
-                            self.status_signal.emit({"msg": "Browser Ready", "status": "alt",
-                                                     "url": "https://www.bestbuy.com/checkout/r/fulfillment",
-                                                     "cookies": [
-                                                         {"name": cookie.name, "value": cookie.value,
-                                                          "domain": cookie.domain} for cookie in
-                                                         self.session.cookies]})
-                            send_webhook("B", "Bestbuy", self.profile["profile_name"], task_id, product_image)
+                            self.status_signal.emit(
+                                {"msg": "Browser Ready", "status": "alt",
+                                 "url": "https://www.bestbuy.com/checkout/r/fulfillment",
+                                 "cookies": [
+                                     {"name": cookie.name, "value": cookie.value,
+                                      "domain": cookie.domain} for cookie in
+                                     self.session.cookies]})
+                            send_webhook("B", "Bestbuy",
+                                         self.profile["profile_name"], task_id,
+                                         product_image)
                         else:
-                            send_webhook("PF", "Bestbuy", self.profile["profile_name"], task_id, product_image)
+                            send_webhook("PF", "Bestbuy",
+                                         self.profile["profile_name"], task_id,
+                                         product_image)
                     break
             if success:
                 break
-        self.kill_cookie_thread = True
-        cookie_thread.join()
+
+            self.kill_cookie_thread = True
+            cookie_thread.join()
 
     def launch_cookie_thread(self):
         while not self.kill_cookie_thread:
             self.status_signal.emit(
                 {"msg": "Getting Cookies Using Browser", "status": "normal"})
-            self.cookies_from_browser = self.get_cookies_using_browser()
+            self.cookies_from_browser = self.get_cookies_using_browser
             self.status_signal.emit(
                 {"msg": "Got Cookies Using Browser", "status": "normal"})
             time.sleep(600)
@@ -98,25 +108,22 @@ class BestBuy:
             self.status_signal.emit(
                 {"msg": "Got Cookies from Selenium", "status": "normal"})
 
+    @property
     def get_cookies_using_browser(self):
         # setting options for headless, profile to
-        # ignore certs, firefox driver & timeout
+        # ignore certs, chrome driver & timeout
         options = Options()
         options.headless = True
-        options.log.level = "trace"
-        firefox_profile = webdriver.FirefoxProfile()
-        firefox_profile.accept_untrusted_certs = True
-        driver = None
+        options.add_argument('ignore-certificate-errors')
+        browser = None
         try:
-            driver = webdriver.Firefox(
-                options=options,
-                firefox_profile=firefox_profile
-            )
-            driver.get(self.product)
-            driver.get('https://www.bestbuy.com/cart')
+            browser = webdriver.Chrome(
+                ChromeDriverManager().install())
+            browser.get(self.product)
+            browser.get('https://www.bestbuy.com/cart')
             # Waiting a few seconds to for the JS to execute.
             time.sleep(5)
-            return driver.get_cookies()
+            return browser.get_cookies()
         except exceptions.TimeoutException:
             print(f"Timeout while connecting to {self.product}")
             return None
@@ -127,8 +134,8 @@ class BestBuy:
                 "status": "error"})
             return None
         finally:
-            if driver is not None:
-                driver.quit()
+            if browser is not None:
+                browser.quit()
 
     def get_tas_data(self):
         headers = {
@@ -192,7 +199,6 @@ class BestBuy:
                     self.sku_id)
                 r = self.session.get(url, headers=headers, verify=False)
                 return "ADD_TO_CART" in r.text
-                # time.sleep(self.monitor_delay)
             except Exception as e:
                 self.status_signal.emit({"msg": "Error Checking Stock (line {} {} {})".format(
                     sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
@@ -297,8 +303,6 @@ class BestBuy:
                     self.item_id = r["items"][0]["id"]
                     self.customerOrderId = r['customerOrderId']
                     self.status_signal.emit({"msg": "Started Checkout", "status": "normal"})
-                    # TODO: Verify New Cart Checkout method is a valid approach. This approach still needs some work
-                    #  since it still errors on the adding to cart functionality
                     self.cart_checkout()
                     self.go_identity_url()
                     return
@@ -394,19 +398,18 @@ class BestBuy:
         body = {
             "billingAddress": {
                 "country": "US",
-                "saveToProfile": False,
-                "street2": profile["billing_a2"],
                 "useAddressAsBilling": True,
                 "middleInitial": "",
                 "lastName": profile["billing_lname"],
-                "street": profile["billing_a1"],
                 "city": profile["billing_city"],
-                "override": False,
-                "zipcode": profile["billing_zipcode"],
                 "state": profile["billing_state"],
-                "dayPhoneNumber": profile["billing_phone"],
                 "firstName": profile["billing_fname"],
-                "isWishListAddress": False
+                "isWishListAddress": False,
+                "addressLine1": profile["billing_a1"],
+                "addressLine2": profile["billing_a2"],
+                "dayPhone": profile["billing_phone"],
+                "postalCode": profile["billing_zipcode"],
+                "userOverridden": False
             },
             "creditCard": {
                 "hasCID": False,
@@ -478,6 +481,12 @@ class BestBuy:
                 time.sleep(self.error_delay)
 
     def submit_order(self):
+        if settings.dont_buy is True:
+            self.status_signal.emit(
+                {"msg": "DEV MODE ENABLED - Skipping Order Submission Task",
+                 "status": "normal"})
+            return
+
         headers = {
             "Accept": "application/com.bestbuy.order+json",
             "Accept-Encoding": "gzip, deflate",
@@ -625,8 +634,6 @@ class BestBuy:
                     doc.xpath('//input[@name="mescIterationCount"]/@value')[0]
                 desc = doc.xpath('//input[@name="desc"]/@value')[0]
                 is_DNA_done = doc.xpath('//input[@name="isDNADone"]/@value')[0]
-                arcot_flash_cookie = \
-                    doc.xpath('//input[@name="arcotFlashCookie"]/@value')[0]
                 url = doc.xpath("//form/@action")[0]
                 break
             except Exception as e:
@@ -723,7 +730,6 @@ class BestBuy:
                                       data=body, headers=headers, verify=False)
                 doc = lxml.html.fromstring(r.text)
                 transaction_id = doc.xpath('//input[@name="TransactionId"]/@value')[0]
-                # url = doc.xpath("//form/@action")[0] 
                 return transaction_id
             except Exception as e:
                 self.status_signal.emit({"msg": "Error Authorizing Card (line {} {} {})".format(
