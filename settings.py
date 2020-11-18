@@ -20,9 +20,9 @@ dont_buy = False
 global userAgent
 userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36"
 
-global rand_delay_start
-rand_delay_start = 10
+global random_delay_start
+random_delay_start = 10
 
-global rand_delay_stop
-rand_delay_stop = 40
+global random_delay_stop
+random_delay_stop = 40
 #################################################

@@ -85,13 +85,13 @@ class SettingsPage(QtWidgets.QWidget):
         font.setPointSize(13) if platform.system() == "Darwin" else font.setPointSize(13*.75)
         font.setFamily("Arial")
         self.random_delay_start = QtWidgets.QLineEdit(self.settings_card)
-        self.random_delay_start.setGeometry(QtCore.QRect(30, 310, 200, 20))
+        self.random_delay_start.setGeometry(QtCore.QRect(30, 310, 275, 20))
         self.random_delay_start.setFont(font)
         self.random_delay_start.setStyleSheet("outline: 0;border: 1px solid #5D43FB;border-width: 0 0 2px;color: rgb(234, 239, 239);")
         self.random_delay_start.setPlaceholderText("Random Start Delay (Default is 10 milliseconds)")
         self.random_delay_start.setAttribute(QtCore.Qt.WA_MacShowFocusRect, 0)
         self.random_delay_stop = QtWidgets.QLineEdit(self.settings_card)
-        self.random_delay_stop.setGeometry(QtCore.QRect(30, 335, 200, 20))
+        self.random_delay_stop.setGeometry(QtCore.QRect(30, 335, 275, 20))
         self.random_delay_stop.setFont(font)
         self.random_delay_stop.setStyleSheet("outline: 0;border: 1px solid #5D43FB;border-width: 0 0 2px;color: rgb(234, 239, 239);")
         self.random_delay_stop.setPlaceholderText("Random Stop Delay (Default is 40 milliseconds)")
@@ -142,10 +142,10 @@ class SettingsPage(QtWidgets.QWidget):
         QtWidgets.QMessageBox.information(self, "Phoenix Bot", "Saved Settings")
 
     def update_settings(self, settings_data):
-        global webhook, webhook_on_browser, webhook_on_order, webhook_on_failed, browser_on_failed, dont_buy, rand_delay_start, rand_delay_stop
+        global webhook, webhook_on_browser, webhook_on_order, webhook_on_failed, browser_on_failed, dont_buy, random_delay_start, random_delay_stop
         settings.webhook, settings.webhook_on_browser, settings.webhook_on_order, settings.webhook_on_failed, settings.browser_on_failed, settings.buy_one, settings.dont_buy = settings_data["webhook"], settings_data["webhookonbrowser"], settings_data["webhookonorder"], settings_data["webhookonfailed"], settings_data["browseronfailed"], settings_data['onlybuyone'], settings_data['dont_buy']
 
         if settings_data["random_delay_start"] != "":
-            settings.rand_delay_start = settings_data["random_delay_start"]
+            settings.random_delay_start = settings_data["random_delay_start"]
         if settings_data["random_delay_stop"] != "":
-            settings.rand_delay_stop = settings_data["random_delay_stop"]
+            settings.random_delay_stop = settings_data["random_delay_stop"]

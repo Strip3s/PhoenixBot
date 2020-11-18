@@ -82,10 +82,10 @@ class BestBuy:
                     if self.check_stock():
                         return product_image
                     self.status_signal.emit({"msg":"Waiting For Restock","status":"normal"})
-                    time.sleep(random_delay(self.monitor_delay, settings.rand_delay_start, settings.rand_delay_stop))
+                    time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
                 else:
                     self.status_signal.emit({"msg":"Product Not Found","status":"normal"})
-                    time.sleep(random_delay(self.monitor_delay, settings.rand_delay_start, settings.rand_delay_stop))
+                    time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
             except Exception as e:
                 self.status_signal.emit({"msg":"Error Loading Product Page (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e),"status":"error"})
                 time.sleep(self.error_delay)
