@@ -6,7 +6,7 @@ from pages.proxiespage import ProxiesPage
 from pages.settingspage import SettingsPage
 from pages.pollbrowser import PollBrowserDialog
 import images.images, sys, os, settings
-
+from notifications import NotificationHandler
 def no_abort(a, b, c):
     sys.__excepthook__(a, b, c)
 sys.excepthook = no_abort

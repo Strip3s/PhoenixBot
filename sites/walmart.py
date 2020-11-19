@@ -6,7 +6,7 @@ from PyQt5 import QtCore
 import urllib, requests, time, lxml.html, json, sys, settings
 
 class Walmart:
-    def __init__(self,task_id,status_signal,image_signal, wait_poll_signal, polling_wait_condition, product,profile,proxy,monitor_delay,error_delay,max_price):
+    def __init__(self,task_id,status_signal,image_signal, wait_poll_signal, polling_wait_condition, product,profile,proxy,monitor_delay,error_delay,max_price,notification_handler):
         self.task_id,self.status_signal,self.image_signal,self.product,self.profile,self.monitor_delay,self.error_delay,self.max_price = task_id,status_signal,image_signal,product,profile,float(monitor_delay),float(error_delay),max_price
         
         ####### Browser/Captcha Polling Variables ######
@@ -17,6 +17,9 @@ class Walmart:
 
         
         self.session = requests.Session()
+        self.notification_handler = notification_handler
+        #self.notification_handler.send_notification("Walmart bot starting up now. Will send a notification when a PS5 has been added to the cart")
+
         if proxy != False:
             self.session.proxies.update(proxy)
         starting_msg = "Starting"
@@ -27,15 +30,21 @@ class Walmart:
         did_add = False
         while did_add is False:
             did_add = self.atc(offer_id)
+        self.notification_handler.send_notification("Item added to cart baby!")
 
         item_id, fulfillment_option, ship_method = self.check_cart_items()
+        self.notification_handler.send_notification("{0} {1} {2}".format(item_id, fulfillment_option, ship_method))
         self.submit_shipping_method(item_id, fulfillment_option, ship_method)
+        self.notification_handler.send_notification("Shipping method submitted!")
         self.submit_shipping_address()
+        self.notification_handler.send_notification("Shipping address submitted!")
         card_data,PIE_key_id,PIE_phase = self.get_PIE()
         pi_hash = self.submit_payment(card_data,PIE_key_id,PIE_phase)
+        self.notification_handler.send_notification("Credit card data hash calculated!")
         self.submit_billing(pi_hash)
+        self.notification_handler.send_notification("Billing submitted!")
         self.submit_order()
-
+        self.notification_handler.send_notification("Order fucking submitted!")
     def monitor(self):
         headers = {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -59,10 +68,15 @@ class Walmart:
                         continue
 
                     doc = lxml.html.fromstring(r.text)
-                    if not image_found:
-                        product_image = doc.xpath('//meta[@property="og:image"]/@content')[0]
-                        self.image_signal.emit(product_image)
-                        image_found = True
+
+                    try:
+                        if not image_found:
+                            product_image = doc.xpath('//meta[@property="og:image"]/@content')[0]
+                            self.image_signal.emit(product_image)
+                            image_found = True
+                    except:
+                        pass
+
                     price = float(doc.xpath('//span[@itemprop="price"]/@content')[0])
                     if "add to cart" in r.text.lower():
                         if self.max_price !="":
@@ -112,7 +126,7 @@ class Walmart:
                     self.status_signal.emit({"msg":"Added To Cart","status":"carted"})
                     return True
                 else:
-                    self.handle_captcha("https://www.walmart.com/cart")
+                    #self.handle_captcha("https://www.walmart.com/cart")
                     self.status_signal.emit({"msg":"Error Adding To Cart","status":"error"})
                     time.sleep(self.error_delay) 
                     return False
@@ -136,7 +150,8 @@ class Walmart:
             
 
         profile = self.profile
-        body = {"postalCode":profile["shipping_zipcode"],"city":profile["shipping_city"],"state":profile["shipping_state"],"isZipLocated":True,"crt:CRT":"","customerId:CID":"","customerType:type":"","affiliateInfo:com.wm.reflector":"","storeList": []}
+        body = {"postalCode":profile["shipping_zipcode"],"city":profile["shipping_city"],"state":profile["shipping_state"],"isZipLocated":True,"crt:CRT":self.session.cookies['CRT'],"customerId:CID":"","customerType:type":"","affiliateInfo:com.wm.reflector":"","storeList": []}
+        print(body)
         
         while True:
             self.status_signal.emit({"msg":"Loading Cart Items","status":"normal"})
@@ -422,6 +437,7 @@ class Walmart:
         return False
 
     def handle_captcha(self, url_to_open, close_window_after=True):
+        self.notification_handler.send_notification("@Jesse, you need to do a captcha")
         # this opens up chrome browser to get prompted with captcha
         browser = webdriver.Chrome(ChromeDriverManager().install()) # I used ChromeDriverManager to not worry about what chrome driver i had installed
         browser.get("https://www.walmart.com")

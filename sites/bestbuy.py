@@ -23,6 +23,12 @@ class BestBuy:
         self.start_checkout()
         self.submit_shipping()
         self.submit_payment(tas_data)
+
+        if settings.dont_buy is True:
+            self.handle_captcha("https://www.bestbuy.com/checkout/r/fulfillment") # OPEN BROWSER TO SEE IF SHIT WORKED
+            self.check_browser()
+            return               # TODO: HARD STOP TO STOP BUYING SHIT
+
         while True:
             success,jwt = self.submit_order()
             if not success and jwt != None:

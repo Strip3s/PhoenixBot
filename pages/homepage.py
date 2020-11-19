@@ -6,6 +6,7 @@ from pages.pollbrowser import PollBrowserDialog
 from utils import get_profile, get_proxy, BirdLogger, return_data, write_data, open_browser
 import urllib.request,sys,platform
 import settings
+from notifications import NotificationHandler
 def no_abort(a, b, c):
     sys.__excepthook__(a, b, c)
 sys.excepthook = no_abort
@@ -501,7 +502,7 @@ class TaskThread(QtCore.QThread):
             self.status_signal.emit({"msg":"Invalid proxy list","status":"error"})
             return
         if self.site == "Walmart":
-            Walmart(self.task_id,self.status_signal,self.image_signal,  self.wait_poll_signal, self.wait_condition, self.product,profile,proxy,self.monitor_delay,self.error_delay,self.max_price)
+            Walmart(self.task_id,self.status_signal,self.image_signal,  self.wait_poll_signal, self.wait_condition, self.product,profile,proxy,self.monitor_delay,self.error_delay,self.max_price, NotificationHandler())
         elif self.site == "Bestbuy":
             BestBuy(self.task_id,self.status_signal,self.image_signal,self.product,profile,proxy,self.monitor_delay,self.error_delay)
 

@@ -8,3 +8,4 @@ selenium==3.141.0
 chromedriver-py==86.0.4240.22
 pycryptodome
 webdriver_manager==3.2.2
+apprise==0.8.9
