@@ -24,6 +24,8 @@ class Walmart:
             starting_msg = "Starting in dev mode will not actually checkout (dont_buy = True)"
         self.status_signal.emit({"msg":starting_msg,"status":"normal"})
         self.product_image, offer_id = self.monitor()
+        if offer_id is None:
+            return
         did_add = False
         while did_add is False:
             did_add = self.atc(offer_id)
@@ -59,6 +61,11 @@ class Walmart:
                         continue
 
                     doc = lxml.html.fromstring(r.text)
+
+                    check_delivery = doc.xpath('//*[@id="add-on-atc-container"]/div[3]/div[2]/span/div/div/div[1]/span/text()')[0]
+                    if "delivery not available" in check_delivery.lower():
+                        self.status_signal.emit({"msg":"Product is not available for delivery. Ending task.", "status":"error"})
+                        return None, None
                     if not image_found:
                         product_image = doc.xpath('//meta[@property="og:image"]/@content')[0]
                         self.image_signal.emit(product_image)
