@@ -10,6 +10,7 @@ from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium.common import exceptions
+from urllib import parse
 import requests, time, lxml.html, json, sys, settings, urllib3, threading
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -18,10 +19,10 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 class BestBuy:
 
     def __init__(self, task_id, status_signal, image_signal, product, profile, proxy, monitor_delay, error_delay):
-        self.status_signal, self.image_signal, self.product, self.profile, self.monitor_delay, self.error_delay = status_signal, image_signal, product, profile, float(
-            monitor_delay), float(error_delay)
+        self.status_signal, self.image_signal, self.product, self.profile, self.monitor_delay, self.error_delay = status_signal, image_signal, product, profile, float(monitor_delay), float(error_delay)
         self.session = requests.Session()
-        self.sku_id = self.product.split('=')[1]
+        self.sku
+        self.sku_id = parse.parse_qs(parse.urlparse(self.product).query)['skuId'][0]
         self.cookies_from_browser = self.get_cookies_using_browser
         self.kill_cookie_thread = False
         cookie_thread = threading.Thread(
