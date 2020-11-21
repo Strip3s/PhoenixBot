@@ -26,7 +26,7 @@ class Walmart:
             starting_msg = "Starting in dev mode - Phoenix Bot will not actually checkout (dont_buy = True)"
         self.status_signal.emit({"msg": starting_msg, "status": "normal"})
         self.product_image, offer_id = self.monitor()
-        did_add = False
+        did_add = self.atc(offer_id)
         while did_add is False:
             did_add = self.atc(offer_id)
 
