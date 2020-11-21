@@ -5,7 +5,7 @@ except:
     from Cryptodome.PublicKey import RSA
     from Cryptodome.Cipher import PKCS1_OAEP
 from base64 import b64encode
-from utils import send_webhook
+from utils import send_webhook, random_delay
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
@@ -177,10 +177,10 @@ class BestBuy:
                         image_found = True
                         return product_image
                     self.status_signal.emit({"msg": "Waiting For Restock", "status": "normal"})
-                    time.sleep(self.monitor_delay)
+                    time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
                 else:
                     self.status_signal.emit({"msg": "Product Not Found", "status": "normal"})
-                    time.sleep(self.monitor_delay)
+                    time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
             except Exception as e:
                 self.status_signal.emit({"msg": "Error Loading Product Page (line {} {} {})".format(
                     sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
