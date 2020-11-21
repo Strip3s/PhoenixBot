@@ -11,7 +11,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium.common import exceptions
 from urllib import parse
-import requests, time, lxml.html, json, sys, settings, urllib3, threading
+import requests, time, lxml.html, json, sys, settings, urllib3, threading, random
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -507,8 +507,8 @@ class BestBuy:
                 "javaEnabled": False,
                 "language": "en-US",
                 "userAgent": settings.userAgent,
-                "height": "1057",
-                "width": "1057",
+                "height": "{}".format(random.randint(1000, 1300)),
+                "width": "{}".format(random.randint(1000, 1300)),
                 "timeZone": "240",
                 "colorDepth": "24"
             }
@@ -519,6 +519,10 @@ class BestBuy:
                 r = self.session.post("https://www.bestbuy.com/checkout/orders/{}/".format(
                     self.order_id), json=body, headers=headers, verify=False)
                 r = json.loads(r.text)
+
+
+
+
                 try:
                     r = r["errors"][0]
                     if r["errorCode"] == "PAY_SECURE_REDIRECT":
