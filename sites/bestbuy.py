@@ -41,7 +41,11 @@ class BestBuy:
 
         while True:
             self.status_signal.emit({"msg": "Checking Stock", "status": "normal"})
-            self.check_stock()
+            in_stock = False
+            while in_stock is False:
+                self.status_signal.emit({"msg": "Waiting For Restock", "status": "normal"})
+                time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
+                in_stock = self.check_stock()
             tas_data = self.get_tas_data()
             # Get Cookies using the browser
             self.set_cookies_using_browser()
