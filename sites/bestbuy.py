@@ -50,7 +50,7 @@ class BestBuy:
             tas_data = self.get_tas_data()
             # Get Cookies using the browser
             self.set_cookies_using_browser()
-            product_image = self.monitor()
+            product_image = self.setup_product_metadata()
             if not self.add_to_cart():
                 continue
             self.start_checkout()
@@ -161,7 +161,7 @@ class BestBuy:
                     sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
                 time.sleep(self.error_delay)
 
-    def monitor(self):
+    def setup_product_metadata(self):
         headers = {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Encoding": "gzip, deflate",
