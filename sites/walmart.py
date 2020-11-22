@@ -413,10 +413,10 @@ class Walmart:
 
         if settings.dont_buy is True:
             # TODO: this used to open the page up with everything filled out but only works for some users
-            self.handle_captcha("https://www.walmart.com/checkout/#/payment")  # OPEN BROWSER TO SEE IF SHIT WORKED
-            self.handle_captcha("https://www.walmart.com/checkout/#/payment", close_window_after=False) # OPEN BROWSER TO SEE IF SHIT WORKED
-            self.check_browser()
-            return  # TODO: HARD STOP TO STOP BUYING SHIT
+            self.status_signal.emit({"msg":"Opening Checkout Page","status":"alt"})
+            self.handle_captcha("https://www.walmart.com/checkout/#/payment", close_window_after=False,redirect=True) # OPEN BROWSER TO SEE IF SHIT WORKED
+            self.check_browser()  
+            return              
 
         while True:
             self.status_signal.emit({"msg": "Submitting Order", "status": "alt"})
@@ -453,10 +453,12 @@ class Walmart:
             return True
         return False
 
-    def handle_captcha(self, url_to_open, close_window_after=True):
+    def handle_captcha(self, url_to_open, close_window_after=True,redirect=False): #added redirect arg since captchas are lost when redirecting to the page that triggered them
         # this opens up chrome browser to get prompted with captcha
-        browser = webdriver.Chrome(
-            ChromeDriverManager().install())  # I used ChromeDriverManager to not worry about what chrome driver i had installed
+        options = webdriver.ChromeOptions()
+        options.add_argument('--ignore-certificate-errors') #removes SSL errors from terminal
+        options.add_experimental_option("excludeSwitches", ["enable-logging"]) #removes device adapter errors from terminal   
+        browser = webdriver.Chrome(ChromeDriverManager().install(),chrome_options=options)
         browser.get("https://www.walmart.com")
 
         # pass current session cookies to browser before loading url
@@ -468,7 +470,8 @@ class Walmart:
                 'path': c.path
             })
 
-        browser.get(url_to_open)
+        if redirect:
+            browser.get(url_to_open)
 
         # lock the mutex and let the thread handler know we are awaiting
         # a gui event
