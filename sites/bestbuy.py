@@ -20,6 +20,7 @@ class BestBuy:
 
     def __init__(self, task_id, status_signal, image_signal, product, profile, proxy, monitor_delay, error_delay):
         self.status_signal, self.image_signal, self.product, self.profile, self.monitor_delay, self.error_delay = status_signal, image_signal, product, profile, float(monitor_delay), float(error_delay)
+        self.payment_id = None
         self.session = requests.Session()
         self.sku
         self.sku_id = parse.parse_qs(parse.urlparse(self.product).query)['skuId'][0]
@@ -232,14 +233,14 @@ class BestBuy:
             try:
                 r = self.session.post("https://www.bestbuy.com/cart/api/v1/addToCart", json=body,
                                       headers=headers, verify=False)
-                if r.status_code == 200 and json.loads(r.text)["cartCount"] == 1:
+                if r.status_code == 200 and json.loads(r.text)["cartCount"] >= 1:
                     self.status_signal.emit({"msg": "Added To Cart", "status": "carted"})
                     return True
                 else:
                     self.status_signal.emit({"msg": "Error Adding To Cart", "status": "error"})
                     if tries == 3:
                         return False
-                    tries = tries + 1
+                    tries += 1
                     time.sleep(self.error_delay)
             except Exception as e:
                 self.status_signal.emit({"msg": "Error Adding To Cart (line {} {} {})".format(
@@ -305,7 +306,7 @@ class BestBuy:
                 if r.status_code == 200:
                     r = json.loads(r.text.split("var orderData = ")[1].split(";")[0])
                     self.order_id = r["id"]
-                    self.item_id = r["items"][0]["id"]
+                    self.items_id = r["items"][0]["id"]
                     self.customerOrderId = r['customerOrderId']
                     self.status_signal.emit({"msg": "Started Checkout", "status": "normal"})
                     self.cart_checkout()
@@ -331,7 +332,7 @@ class BestBuy:
         }
         profile = self.profile
         body = {"items": [{
-            "id": self.item_id,
+            "id": self.items_id,
             "type": "DEFAULT",
             "selectedFulfillment": {
                 "shipping": {
@@ -363,9 +364,11 @@ class BestBuy:
         while True:
             self.status_signal.emit({"msg": "Submitting Shipping", "status": "normal"})
             try:
-                r = self.session.patch("https://www.bestbuy.com/checkout/orders/{}/".format(
-                    self.order_id), json=body, headers=headers, verify=False)
+                if self.payment_id is None:
+                    r = self.session.patch("https://www.bestbuy.com/checkout/orders/{}/".format(
+                        self.order_id), json=body, headers=headers, verify=False)
                 if json.loads(r.text)["id"] == self.order_id:
+
                     self.payment_id = json.loads(r.text)["payment"]['id']
                     self.status_signal.emit({"msg": "Submitted Shipping", "status": "normal"})
                     self.session.post("https://www.bestbuy.com/checkout/orders/{}/validate".format(
@@ -519,23 +522,19 @@ class BestBuy:
                 r = self.session.post("https://www.bestbuy.com/checkout/orders/{}/".format(
                     self.order_id), json=body, headers=headers, verify=False)
                 r = json.loads(r.text)
-
-
-
-
-                try:
-                    r = r["errors"][0]
-                    if r["errorCode"] == "PAY_SECURE_REDIRECT":
-                        self.status_signal.emit({"msg": "3DSecure Found, Starting Auth Process", "status": "error"})
-                        self.status_signal.emit({"msg": f"Payment error {r['errorCode']}", "status": "error"})
-                        return False, r["paySecureResponse"]["stepUpJwt"]
-                except:
-                    if r["state"] == "SUBMITTED":
-                        self.status_signal.emit({"msg": "Order Placed", "status": "success"})
-                        return True, None
-                self.status_signal.emit({"msg": "Payment Failed", "status": "error"})
-                return False, None
-
+                if r["state"] == "SUBMITTED":
+                    self.status_signal.emit({"msg": "Order Placed", "status": "success"})
+                    return True, None
+                else:
+                    errors = r.get("errors")
+                    if errors:
+                        if errors[0].get("errorCode") == "PAY_SECURE_REDIRECT":
+                            self.status_signal.emit({"msg": "3DSecure Found, Starting Auth Process", "status": "error"})
+                            self.status_signal.emit({"msg": f"Payment error {errors[0]['errorCode']}", "status": "error"})
+                            return False, r["paySecureResponse"]["stepUpJwt"]
+                        else:
+                            self.status_signal.emit({"msg": "Payment Failed", "status": "error"})
+                            return False, None
             except Exception as e:
                 self.status_signal.emit({"msg": "Error Submitting Order (line {} {} {})".format(
                     sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
