@@ -43,7 +43,7 @@ class BestBuy:
 
         while True:
             self.status_signal.emit({"msg": "Checking Stock", "status": "normal"})
-            in_stock = False
+            in_stock = self.check_stock()
             while in_stock is False:
                 self.status_signal.emit({"msg": "Waiting For Restock", "status": "normal"})
                 time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
