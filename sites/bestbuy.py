@@ -23,7 +23,9 @@ class BestBuy:
         self.payment_id = None
         self.session = requests.Session()
         self.sku_id = parse.parse_qs(parse.urlparse(self.product).query)['skuId'][0]
+        self.status_signal.emit({"msg": "Setting Up Cookies", "status": "normal"})
         self.cookies_from_browser = self.get_cookies_using_browser
+        self.status_signal.emit({"msg": "Retrieved Valid Product And Cart Tokens", "status": "normal"})
         self.kill_cookie_thread = False
         cookie_thread = threading.Thread(
             target=self.launch_cookie_thread,
@@ -59,6 +61,9 @@ class BestBuy:
             self.refresh_payment()
 
             while True:
+                if settings.dont_buy is True:
+                    self.status_signal.emit({"msg": "DEV MODE ENABLED - Skipping Order Submission", "status": "normal"})
+                    return
                 success, jwt = self.submit_order()
                 if not success and jwt is not None:
                     transaction_id = self.handle_3dsecure(jwt)
@@ -88,7 +93,6 @@ class BestBuy:
                 break
 
             self.kill_cookie_thread = True
-            cookie_thread.join()
 
     def launch_cookie_thread(self):
         while not self.kill_cookie_thread:
@@ -456,7 +460,7 @@ class BestBuy:
                 self.status_signal.emit({"msg": "Error Submitting Payment", "status": "error"})
                 time.sleep(self.error_delay)
             except Exception as e:
-                self.status_signal.emit({"msg": "Error Submitting Payment (line {} {} {})".format(
+                self.status_signal.emit({"msg": "Error Was Thrown During Payment Submission (line {} {} {})".format(
                     sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
                 time.sleep(self.error_delay)
 
@@ -492,10 +496,6 @@ class BestBuy:
                 time.sleep(self.error_delay)
 
     def submit_order(self):
-        if settings.dont_buy is True:
-            self.status_signal.emit({"msg": "DEV MODE ENABLED - Skipping Order Submission", "status": "normal"})
-            return
-
         headers = {
             "Accept": "application/com.bestbuy.order+json",
             "Accept-Encoding": "gzip, deflate",
