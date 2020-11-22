@@ -22,7 +22,6 @@ class BestBuy:
         self.status_signal, self.image_signal, self.product, self.profile, self.monitor_delay, self.error_delay = status_signal, image_signal, product, profile, float(monitor_delay), float(error_delay)
         self.payment_id = None
         self.session = requests.Session()
-        self.sku
         self.sku_id = parse.parse_qs(parse.urlparse(self.product).query)['skuId'][0]
         self.cookies_from_browser = self.get_cookies_using_browser
         self.kill_cookie_thread = False
