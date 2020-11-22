@@ -171,17 +171,19 @@ class BestBuy:
         }
         image_found = False
         while True:
-            self.status_signal.emit({"msg": "Loading Product Page", "status": "normal"})
+            self.status_signal.emit({"msg": "Loading Product Page For Metadata", "status": "normal"})
             try:
                 r = self.session.get(self.product, headers=headers, verify=False)
                 if r.status_code == 200:
                     doc = lxml.html.fromstring(r.text)
                     if not image_found:
+                        self.status_signal.emit({"msg": "Checking For Product Image", "status": "normal"})
                         product_image = doc.xpath('//img[@class="primary-image"]/@src')[0]
                         self.image_signal.emit(product_image)
                         image_found = True
+                        self.status_signal.emit({"msg": "Retrieved Product Image", "status": "normal"})
                         return product_image
-                    self.status_signal.emit({"msg": "Waiting For Restock", "status": "normal"})
+                    self.status_signal.emit({"msg": "Unable To Retrieve Product Image", "status": "normal"}) # not really an error since we don't really care about the image
                     time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
                 else:
                     self.status_signal.emit({"msg": "Product Not Found", "status": "normal"})
@@ -368,14 +370,17 @@ class BestBuy:
                     r = self.session.patch("https://www.bestbuy.com/checkout/orders/{}/".format(
                         self.order_id), json=body, headers=headers, verify=False)
                 if json.loads(r.text)["id"] == self.order_id:
-
                     self.payment_id = json.loads(r.text)["payment"]['id']
-                    self.status_signal.emit({"msg": "Submitted Shipping", "status": "normal"})
-                    self.session.post("https://www.bestbuy.com/checkout/orders/{}/validate".format(
+                    r = self.session.post("https://www.bestbuy.com/checkout/orders/{}/validate".format(
                         self.order_id), headers=headers, verify=False)
+                    if r.status_code is 200 or r.status_code is 201:
+                        self.status_signal.emit({"msg": "Submitted Shipping", "status": "normal"})
+                    else:
+                        self.status_signal.emit({"msg": "Error Submitting Shipping - Received following status code: {}", "status": "error"}).format(
+                            r.status_code
+                        )
+                        time.sleep(self.error_delay)
                     return
-                self.status_signal.emit({"msg": "Error Submitting Shipping", "status": "error"})
-                time.sleep(self.error_delay)
             except Exception as e:
                 self.status_signal.emit({"msg": "Error Submitting Shipping (line {} {} {})".format(
                     sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
@@ -477,9 +482,7 @@ class BestBuy:
                     verify=False)
                 r = json.loads(r.text)
                 if r['id'] == self.order_id:
-                    self.status_signal.emit(
-                        {"msg": "Payment Refreshed",
-                         "status": "normal"})
+                    self.status_signal.emit({"msg": "Payment Refreshed", "status": "normal"})
                     return
             except Exception as e:
                 self.status_signal.emit({
@@ -490,9 +493,7 @@ class BestBuy:
 
     def submit_order(self):
         if settings.dont_buy is True:
-            self.status_signal.emit(
-                {"msg": "DEV MODE ENABLED - Skipping Order Submission Task",
-                 "status": "normal"})
+            self.status_signal.emit({"msg": "DEV MODE ENABLED - Skipping Order Submission", "status": "normal"})
             return
 
         headers = {
@@ -763,6 +764,7 @@ class BestBuy:
                 r = self.session.post("https://www.bestbuy.com/checkout/api/1.0/paysecure/submitCardAuthentication",
                                       json=body, headers=headers, verify=False)
                 if r.status_code == 200:
+                    self.status_signal.emit({"msg": "Submitted Card", "status": "normal"})
                     return
                 else:
                     self.status_signal.emit({"msg": "Error Submitting Card", "status": "error"})
