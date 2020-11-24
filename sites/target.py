@@ -149,7 +149,7 @@ class Target:
             try:
                 self.browser.find_element_by_xpath('//button[@data-test= "checkout-button"]').click()
                 did_checkout = True
-                time.sleep(random_delay(self.monitor_delay, settings.rand_delay_start, settings.rand_delay_stop))
+                time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
             except:
                 continue
 
