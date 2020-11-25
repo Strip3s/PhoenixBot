@@ -11,9 +11,6 @@ class ProfilesPage(QtWidgets.QWidget):
         super(ProfilesPage, self).__init__(parent)
         self.setupUi(self)
 
-
-
-
     def setupUi(self, profilespage):
         self.profilespage = profilespage
         self.profilespage.setAttribute(QtCore.Qt.WA_StyledBackground, True)
