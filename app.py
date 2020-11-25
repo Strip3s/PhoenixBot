@@ -1,3 +1,4 @@
+from theming.styles import globalStyles
 from PyQt5 import QtCore, QtGui, QtWidgets
 from pages.homepage import HomePage,TaskTab
 from pages.createdialog import CreateDialog
@@ -6,6 +7,7 @@ from pages.proxiespage import ProxiesPage
 from pages.settingspage import SettingsPage
 from pages.pollbrowser import PollBrowserDialog
 import images.images, sys, os, settings
+from theming.styles import globalStyles
 
 def no_abort(a, b, c):
     sys.__excepthook__(a, b, c)
@@ -20,26 +22,30 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def setupUi(self, MainWindow):
         MainWindow.setFixedSize(1109, 600)
-        MainWindow.setStyleSheet("background-color: #1E1E1E;")
+        # background color for main UI
+        MainWindow.setStyleSheet("background-color: {};".format(globalStyles["backgroundDark"]))
         MainWindow.setWindowTitle("Phoenix Bot")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setStyleSheet("QMessageBox QLabel { color: #FFFFFF; }QMessageBox QPushButton { background-color: #5D43FB;color: #FFFFFF;}")
+        self.centralwidget.setStyleSheet("QMessageBox QLabel { color: #FFFFFF; }QMessageBox QPushButton { background-color: %s;color: #FFFFFF;}" % (globalStyles["primary"]) )
         self.sidebar = QtWidgets.QWidget(self.centralwidget)
         self.sidebar.setGeometry(QtCore.QRect(0, 0, 61, 601))
-        self.sidebar.setStyleSheet("background-color: #232323;border-right: 1px solid #2e2d2d;")
+        # SIDE BAR COLOR
+        self.sidebar.setStyleSheet('background-color: {};border-right: 1px solid #2e2d2d;'.format(globalStyles['backgroundLight']))
         self.home_tab = QtWidgets.QWidget(self.sidebar)
         self.home_tab.setGeometry(QtCore.QRect(0, 85, 60, 45))
         self.home_tab.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.home_tab.setStyleSheet("background-color: #272342;border: none;")
+        #initial selected color background
+        self.home_tab.setStyleSheet("background-color: {};border: none;".format(globalStyles['primaryAscent']))
         self.home_active_tab = QtWidgets.QWidget(self.home_tab)
         self.home_active_tab.setGeometry(QtCore.QRect(0, 0, 4, 45))
-        self.home_active_tab.setStyleSheet("background-color: #5D43FB;border: none;")
+        #initial selected color side bar
+        self.home_active_tab.setStyleSheet("background-color: {};border: none;".format(globalStyles["primary"]))
         self.home_active_tab.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.home_icon = QtWidgets.QLabel(self.home_tab)
         self.home_icon.setGeometry(QtCore.QRect(21, 13, 20, 20))
         self.home_icon.setStyleSheet("border: none;")
         self.home_icon.setText("")
-        self.home_icon.setPixmap(QtGui.QPixmap(":/images/home_alt.png"))
+        self.home_icon.setPixmap(QtGui.QPixmap("images/home_alt.png"))
         self.home_icon.setScaledContents(True)
         self.home_icon.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.profiles_tab = QtWidgets.QWidget(self.sidebar)
@@ -54,7 +60,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.profiles_icon.setGeometry(QtCore.QRect(21, 13, 20, 20))
         self.profiles_icon.setStyleSheet("border: none;")
         self.profiles_icon.setText("")
-        self.profiles_icon.setPixmap(QtGui.QPixmap(":/images/profiles.png"))
+        self.profiles_icon.setPixmap(QtGui.QPixmap("images/profiles.png"))
         self.profiles_icon.setScaledContents(True)
         self.profiles_icon.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.proxies_tab = QtWidgets.QWidget(self.sidebar)
@@ -67,7 +73,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.proxies_icon = QtWidgets.QLabel(self.proxies_tab)
         self.proxies_icon.setGeometry(QtCore.QRect(21, 13, 20, 20))
         self.proxies_icon.setStyleSheet("border: none;")
-        self.proxies_icon.setPixmap(QtGui.QPixmap(":/images/proxies.png"))
+        self.proxies_icon.setPixmap(QtGui.QPixmap("images/proxies.png"))
         self.proxies_icon.setScaledContents(True)
         self.settings_tab = QtWidgets.QWidget(self.sidebar)
         self.settings_tab.setGeometry(QtCore.QRect(0, 220, 60, 45))
@@ -79,13 +85,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings_icon = QtWidgets.QLabel(self.settings_tab)
         self.settings_icon.setGeometry(QtCore.QRect(21, 13, 20, 20))
         self.settings_icon.setStyleSheet("border: none;")
-        self.settings_icon.setPixmap(QtGui.QPixmap(":/images/settings.png"))
+        self.settings_icon.setPixmap(QtGui.QPixmap("images/settings.png"))
         self.settings_icon.setScaledContents(True)
         self.logo = QtWidgets.QLabel(self.sidebar)
         self.logo.setGeometry(QtCore.QRect(10, 23, 41, 41))
-        self.logo.setStyleSheet("border: none;")
+        self.logo.setStyleSheet("border: none;color:red;")
         self.logo.setText("")
-        self.logo.setPixmap(QtGui.QPixmap(":/images/birdbot.png"))
+        self.logo.setPixmap(QtGui.QPixmap("images/birdbot.png"))
         self.logo.setScaledContents(True)
         self.homepage = HomePage(self.centralwidget)
         self.createdialog = CreateDialog(self)
@@ -112,13 +118,17 @@ class MainWindow(QtWidgets.QMainWindow):
     
     def change_page(self,event,current_page):
         eval('self.{}_active_tab.setStyleSheet("background-color: transparent;border: none;")'.format(self.current_page))
-        eval('self.{}_icon.setPixmap(QtGui.QPixmap(":/images/{}.png"))'.format(self.current_page,self.current_page))
+        # reseting image after deselect
+        eval('self.{}_icon.setPixmap(QtGui.QPixmap("images/{}.png"))'.format(self.current_page,self.current_page))
         eval('self.{}_tab.setStyleSheet("background-color: transparent;border: none;")'.format(self.current_page))
         eval("self.{}page.hide()".format(self.current_page))
         self.current_page = current_page
-        eval('self.{}_active_tab.setStyleSheet("background-color: #5D43FB;border: none;")'.format(self.current_page))
-        eval('self.{}_icon.setPixmap(QtGui.QPixmap(":/images/{}_alt.png"))'.format(self.current_page,self.current_page))
-        eval('self.{}_tab.setStyleSheet("background-color: #272342;border: none;")'.format(self.current_page))
+        # after initial tab side color
+        eval('self.{}_active_tab.setStyleSheet("background-color: {};border: none;")'.format(self.current_page,globalStyles["primary"]))
+        # grabing same image for selected tab
+        eval('self.{}_icon.setPixmap(QtGui.QPixmap("images/{}_alt.png"))'.format(self.current_page,self.current_page))
+        # after initial tab side background color
+        eval('self.{}_tab.setStyleSheet("background-color: {};border: none;")'.format(self.current_page,globalStyles["primaryAscent"]))
         eval("self.{}page.show()".format(self.current_page))
     
     def create_task(self):
