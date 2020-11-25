@@ -6,8 +6,9 @@
 */
 const fs = require('fs')
 
-let test = fs.readFileSync('theming/styles.py',{encoding:'utf-8'})
-eval(test)
+// Read in the globalStyles python dict and add it to the JS global scope
+let importedPythonStyleDict = fs.readFileSync('theming/styles.py',{encoding:'utf-8'})
+eval(importedPythonStyleDict)
 
 
 
