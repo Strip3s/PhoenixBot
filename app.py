@@ -6,7 +6,7 @@ from pages.profilespage import ProfilesPage
 from pages.proxiespage import ProxiesPage
 from pages.settingspage import SettingsPage
 from pages.pollbrowser import PollBrowserDialog
-import images.images, sys, os, settings
+import sys, os, settings
 from theming.styles import globalStyles
 
 def no_abort(a, b, c):
