@@ -111,7 +111,6 @@ class GameStop:
 
         while not in_stock:
             try: 
-                wait(self.browser, self.LONG_TIMEOUT).until(EC.visibility_of_element_located((By.XPATH, '//button[@data-buttontext="Add to Cart"]')))
                 wait(self.browser, random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop)).until(EC.element_to_be_clickable((By.XPATH, '//button[@data-buttontext="Add to Cart"]')))
                 add_to_cart_btn = self.browser.find_element_by_xpath('//button[@data-buttontext="Add to Cart"]')
                 add_to_cart_btn.click()
@@ -121,7 +120,6 @@ class GameStop:
                 self.browser.get("https://www.gamestop.com/cart/")
             except:
                 self.status_signal.emit(self.create_msg("Waiting For Restock", "normal"))
-                time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
                 self.browser.refresh()
 
 
