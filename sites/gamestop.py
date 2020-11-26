@@ -110,9 +110,10 @@ class GameStop:
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == self.product)
 
         while not in_stock:
-            wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.XPATH, '//button[@data-buttontext="Add to Cart"]')))
+            wait(self.browser, self.LONG_TIMEOUT).until(EC.visibility_of_element_located((By.XPATH, '//button[@data-buttontext="Add to Cart"]')))
             add_to_cart_btn = self.browser.find_element_by_xpath('//button[@data-buttontext="Add to Cart"]')
             if add_to_cart_btn.is_enabled():
+                wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.XPATH, '//button[@data-buttontext="Add to Cart"]')))
                 add_to_cart_btn.click()
                 in_stock = True
                 self.status_signal.emit(self.create_msg("Added to cart", "normal"))
