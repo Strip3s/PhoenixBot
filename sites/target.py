@@ -189,11 +189,10 @@ class Target:
         self.status_signal.emit(self.create_msg("Submitting Order", "normal"))
         while not did_submit:
             try:
-                self.browser.find_element_by_xpath("button@[data-test= 'placeOrderButton']").click()
+                self.browser.find_element_by_xpath('//button[@data-test= "placeOrderButton"]').click()
                 self.status_signal.emit(self.create_msg("Order Placed", "success"))
                 send_webhook("OP", "Target", self.profile["profile_name"], self.task_id, self.product_image)
                 did_submit = True
             except:
                 continue
-
 
