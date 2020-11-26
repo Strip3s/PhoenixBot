@@ -110,16 +110,16 @@ class GameStop:
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == self.product)
 
         while not in_stock:
-            wait(self.browser, self.LONG_TIMEOUT).until(EC.visibility_of_element_located((By.XPATH, '//button[@data-buttontext="Add to Cart"]')))
-            add_to_cart_btn = self.browser.find_element_by_xpath('//button[@data-buttontext="Add to Cart"]')
-            if add_to_cart_btn.is_enabled():
-                wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.XPATH, '//button[@data-buttontext="Add to Cart"]')))
+            try: 
+                wait(self.browser, self.LONG_TIMEOUT).until(EC.visibility_of_element_located((By.XPATH, '//button[@data-buttontext="Add to Cart"]')))
+                wait(self.browser, random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop)).until(EC.element_to_be_clickable((By.XPATH, '//button[@data-buttontext="Add to Cart"]')))
+                add_to_cart_btn = self.browser.find_element_by_xpath('//button[@data-buttontext="Add to Cart"]')
                 add_to_cart_btn.click()
                 in_stock = True
                 self.status_signal.emit(self.create_msg("Added to cart", "normal"))
                 time.sleep(3)
                 self.browser.get("https://www.gamestop.com/cart/")
-            else:
+            except:
                 self.status_signal.emit(self.create_msg("Waiting For Restock", "normal"))
                 time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
                 self.browser.refresh()
@@ -145,8 +145,8 @@ class GameStop:
         self.status_signal.emit(self.create_msg("Entering CVV #", "normal"))
 
         wait(self.browser, self.SHORT_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "saved-payment-security-code")))
-        cc_input = self.browser.find_element_by_id("saved-payment-security-code")
-        cc_input.send_keys(self.profile["card_cvv"])
+        cvv_input = self.browser.find_element_by_id("saved-payment-security-code")
+        cvv_input.send_keys(self.profile["card_cvv"])
         order_review_btn = self.browser.find_element_by_xpath('//*[@id="checkout-main"]/div[1]/div[1]/div[7]/div/div/div/div[11]/button[2]')
         order_review_btn.click()
 
