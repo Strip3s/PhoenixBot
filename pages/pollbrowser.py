@@ -1,3 +1,4 @@
+from theming.styles import globalStyles
 from pages.createdialog import CreateDialog
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys,platform
@@ -22,7 +23,7 @@ class PollBrowserDialog(QtWidgets.QDialog):
         self.background.setGeometry(QtCore.QRect(0,0,380, 200))
 
 
-        self.background.setStyleSheet("* {background-color: #1E1E1E} QPushButton { background-color: #5D43FB;color: #FFFFFF;}")
+        self.background.setStyleSheet("* {background-color: {}} QPushButton { background-color: %s;color: #FFFFFF;}" % (globalStyles["primary"]) .format(globalStyles["backgroundDark"]))
         font = QtGui.QFont()
         font.setPointSize(16) if platform.system() == "Darwin" else font.setPointSize(16 * .75)
         font.setFamily("Arial")
@@ -37,7 +38,7 @@ class PollBrowserDialog(QtWidgets.QDialog):
         self.confirmButton.setGeometry(QtCore.QRect(150, 150, 100, 25))
         self.confirmButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.confirmButton.setFont(font)
-        self.confirmButton.setStyleSheet("color: rgb(234, 239, 239); background-color: #5D43FB")
+        self.confirmButton.setStyleSheet("color: rgb(234, 239, 239); background-color: {}".format(globalStyles["primary"]))
         self.confirmButton.setText("All Done.")
         
 
