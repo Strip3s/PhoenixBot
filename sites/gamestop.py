@@ -132,17 +132,14 @@ class GameStop:
         try:
             seventeen_or_older_btn = self.browser.find_element_by_xpath('//*[@id="age-gate-modal"]/div/div/div[2]/div/div[2]/button')
             seventeen_or_older_btn.click()
-            time.sleep(2)
+            time.sleep(2) # short delay for age verification modal to disappear
             self.browser.get("https://www.gamestop.com/checkout/?stage=payment#payment")
         except:
             self.browser.get("https://www.gamestop.com/checkout/?stage=payment#payment")
         
 
     def submit_billing(self):
-        current_url = self.browser.current_url
-        if current_url != "https://www.gamestop.com/checkout/?stage=payment#payment":
-            self.browser.get("https://www.gamestop.com/checkout/?stage=payment#payment")
-            wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/checkout/?stage=payment#payment")
+        wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/checkout/?stage=payment#payment")
 
         self.status_signal.emit(self.create_msg("Entering CVV #", "normal"))
 
