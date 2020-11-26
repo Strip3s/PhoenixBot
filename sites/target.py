@@ -4,8 +4,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait as wait
 from webdriver_manager.chrome import ChromeDriverManager
 from chromedriver_py import binary_path as driver_path
-from utils import random_delay, send_webhook
-import string, random, settings, time, re
+from utils import random_delay, send_webhook, change_driver
+import settings, time
 
 class Target:
     def __init__(self, task_id, status_signal, image_signal, product, profile, proxy, monitor_delay, error_delay):
@@ -33,30 +33,10 @@ class Target:
             self.status_signal.emit(self.create_msg("Mock Order Placed", "success"))
             send_webhook("OP", "Target", self.profile["profile_name"], self.task_id, self.product_image)
 
-    # https://stackoverflow.com/questions/33225947/can-a-website-detect-when-you-are-using-selenium-with-chromedriver
-    def change_driver(self, loc):
-        print(loc)
-        fin = open(loc, 'rb')
-        data = fin.read()
-        val = "$cdc_" + "".join(random.choices(string.ascii_letters + string.digits, k=22)) + "_"
-
-        result = re.search(b"[$]cdc_[a-zA-Z0-9]{22}_", data)
-
-        if result is not None:
-            self.status_signal.emit(self.create_msg("Changing value in Chromedriver", "normal"))
-            data = data.replace(result.group(0), val.encode())
-            fin.close()
-            fin = open(loc, 'wb')
-            fin.truncate()
-            fin.write(data)
-            fin.close()
-        else:
-            fin.close()
-
     def init_driver(self):
         driver_manager = ChromeDriverManager()
         driver_manager.install()
-        self.change_driver(driver_path)
+        change_driver(driver_path)
         browser = webdriver.Chrome(driver_path)
 
         browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
