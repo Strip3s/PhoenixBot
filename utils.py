@@ -131,7 +131,6 @@ def send_webhook(webhook_type,site,profile,task_id,image_url):
 
 # https://stackoverflow.com/questions/33225947/can-a-website-detect-when-you-are-using-selenium-with-chromedriver
 def change_driver(status_signal, loc):
-    print("")
     fin = open(loc, 'rb')
     data = fin.read()
     val = "$" + "".join(random.choices(string.ascii_lowercase, k=3)) + "_" +\
