@@ -13,7 +13,7 @@ class Target:
             monitor_delay), float(error_delay)
 
         starting_msg = "Starting Target"
-        self.browser = self.init_driver()
+        self.browser = self.init_driver(driver_path)
         self.product_image = None
 
         if settings.dont_buy:
