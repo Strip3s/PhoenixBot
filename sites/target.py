@@ -115,6 +115,7 @@ class Target:
                 self.status_signal.emit(self.create_msg("Added to cart", "normal"))
             except Exception as e:
                 self.status_signal.emit(self.create_msg("Waiting on Restock", "normal"))
+                time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
                 self.browser.refresh()
 
     def atc(self):
@@ -194,6 +195,5 @@ class Target:
                 did_submit = True
             except:
                 continue
-
 
 
