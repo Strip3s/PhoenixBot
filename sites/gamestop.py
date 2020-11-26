@@ -16,6 +16,9 @@ class GameStop:
         self.browser = self.init_driver()
         self.product_image = None
 
+        self.SHORT_TIMEOUT = 5
+        self.LONG_TIMEOUT = 15
+
         if settings.dont_buy:
             starting_msg = "Starting GameStop in dev mode; will not actually checkout."
 
@@ -78,12 +81,12 @@ class GameStop:
 
         self.browser.get("https://www.gamestop.com")
 
-        wait(self.browser, 5).until(EC.element_to_be_clickable((By.LINK_TEXT, "MY ACCOUNT")))
+        wait(self.browser, self.SHORT_TIMEOUT).until(EC.element_to_be_clickable((By.LINK_TEXT, "MY ACCOUNT")))
         self.browser.find_element_by_link_text('MY ACCOUNT').click()
 
-        wait(self.browser, 3).until(EC.element_to_be_clickable((By.ID, "signIn"))).click()
+        wait(self.browser, self.SHORT_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "signIn"))).click()
 
-        wait(self.browser, 5).until(EC.presence_of_element_located((By.ID, "login-form-email"))).send_keys(my_username)
+        wait(self.browser, self.SHORT_TIMEOUT).until(EC.presence_of_element_located((By.ID, "login-form-email"))).send_keys(my_username)
 
         password = self.browser.find_element_by_id("login-form-password")
         password.send_keys(my_password)
@@ -97,14 +100,17 @@ class GameStop:
 
 
     def monitor(self):
+        wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/account/")
+
         self.status_signal.emit(self.create_msg("Checking Stock..", "normal"))
 
         in_stock = False
 
         self.browser.get(self.product)
+        wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == self.product)
 
         while not in_stock:
-            wait(self.browser, 5).until(EC.element_to_be_clickable((By.XPATH, '//button[@data-buttontext="Add to Cart"]')))
+            wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.XPATH, '//button[@data-buttontext="Add to Cart"]')))
             add_to_cart_btn = self.browser.find_element_by_xpath('//button[@data-buttontext="Add to Cart"]')
             if add_to_cart_btn.is_enabled():
                 add_to_cart_btn.click()
@@ -119,6 +125,8 @@ class GameStop:
 
 
     def add_to_cart(self):
+        wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/cart/")
+        
         self.status_signal.emit(self.create_msg("Checking Age Verification", "normal"))
 
         try:
@@ -134,11 +142,11 @@ class GameStop:
         current_url = self.browser.current_url
         if current_url != "https://www.gamestop.com/checkout/?stage=payment#payment":
             self.browser.get("https://www.gamestop.com/checkout/?stage=payment#payment")
-            time.sleep(3)
+            wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/checkout/?stage=payment#payment")
 
         self.status_signal.emit(self.create_msg("Entering CVV #", "normal"))
 
-        wait(self.browser, 5).until(EC.element_to_be_clickable((By.ID, "saved-payment-security-code")))
+        wait(self.browser, self.SHORT_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "saved-payment-security-code")))
         cc_input = self.browser.find_element_by_id("saved-payment-security-code")
         cc_input.send_keys(self.profile["card_cvv"])
         order_review_btn = self.browser.find_element_by_xpath('//*[@id="checkout-main"]/div[1]/div[1]/div[7]/div/div/div/div[11]/button[2]')
@@ -146,9 +154,11 @@ class GameStop:
 
 
     def submit_order(self):
+        wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/checkout/?stage=placeOrder#placeOrder")
+
         self.status_signal.emit(self.create_msg("Submitting Order..", "normal"))
 
-        wait(self.browser, 3).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="checkout-main"]/div[1]/div[2]/div[1]/div[2]/div[11]/button')))
+        wait(self.browser, self.SHORT_TIMEOUT).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="checkout-main"]/div[1]/div[2]/div[1]/div[2]/div[11]/button')))
 
         if not settings.dont_buy:
             order_review_btn = self.browser.find_element_by_xpath('//*[@id="checkout-main"]/div[1]/div[1]/div[7]/div/div/div/div[11]/button[2]')
