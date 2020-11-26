@@ -85,7 +85,7 @@ class Target:
         self.browser.find_element_by_id("login").click()
 
         # Gives it time for the login to complete
-        time.sleep(random_delay(self.monitor_delay, settings.rand_delay_start, settings.rand_delay_stop))
+        time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
 
     def create_msg(self, msg, status):
         return {"msg": msg, "status": status}

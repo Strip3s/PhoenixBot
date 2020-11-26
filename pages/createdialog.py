@@ -102,7 +102,7 @@ class CreateDialog(QtWidgets.QDialog):
             self.site_box.setCurrentIndex(self.site_box.findText("Bestbuy"))
         elif "walmart" in self.input_edit.text():
             self.site_box.setCurrentIndex(self.site_box.findText("Walmart"))
-        elif "target" in self.input_edit_text():
+        elif "target" in self.input_edit.text():
             self.site_box.setCurrentIndex(self.site_box.findText("Target"))
 
     def load_data(self, task_tab):
