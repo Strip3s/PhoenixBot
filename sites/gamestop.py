@@ -91,7 +91,7 @@ class GameStop:
         password = self.browser.find_element_by_id("login-form-password")
         password.send_keys(my_password)
 
-        time.sleep(1)
+        time.sleep(1) # slight delay for in-between filling out login info and clicking Sign In
 
         self.browser.find_element_by_xpath('//*[@id="signinCheck"]/button').click()
 
