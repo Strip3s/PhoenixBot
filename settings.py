@@ -25,4 +25,10 @@ random_delay_start = 10
 
 global random_delay_stop
 random_delay_stop = 40
+
+global target_user
+target_user = ""
+
+global target_pass
+target_pass = ""
 #################################################
