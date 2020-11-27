@@ -60,7 +60,7 @@ class SettingsPage(QtWidgets.QWidget):
                                                   "Webhook Link")
         self.webhook_header = self.create_header(self.settings_card, QtCore.QRect(20, 10, 101, 31), self.header_font,
                                                  "Webhook")
-
+        
         self.savesettings_btn = QtWidgets.QPushButton(self.settings_card)
         self.savesettings_btn.setGeometry(QtCore.QRect(190, 450, 86, 32))
         self.savesettings_btn.setFont(self.small_font)
@@ -89,6 +89,7 @@ class SettingsPage(QtWidgets.QWidget):
                                                  self.small_font, "Target.com Username (Email/Cell #)")
         self.target_pass_edit = self.create_edit(self.settings_card, QtCore.QRect(30, 390, 235, 20),
                                                  self.small_font, "Target.com Password)")
+        
         self.set_data()
         QtCore.QMetaObject.connectSlotsByName(settingspage)
 
