@@ -1,3 +1,4 @@
+from theming.styles import globalStyles
 from PyQt5 import QtCore, QtGui, QtWidgets
 from utils import return_data,write_data,Encryption
 import sys,platform,settings
@@ -49,7 +50,7 @@ class SettingsPage(QtWidgets.QWidget):
         self.settingspage = settingspage
         self.settingspage.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.settingspage.setGeometry(QtCore.QRect(60, 0, 1041, 601))
-        self.settingspage.setStyleSheet("QComboBox::drop-down {    border: 0px;}QComboBox::down-arrow {    image: url(:/images/down_icon.png);    width: 14px;    height: 14px;}QComboBox{    padding: 1px 0px 1px 3px;}QLineEdit:focus {   border: none;   outline: none;}")
+        self.settingspage.setStyleSheet("QComboBox::drop-down {    border: 0px;}QComboBox::down-arrow {    image: url(images/down_icon.png);    width: 14px;    height: 14px;}QComboBox{    padding: 1px 0px 1px 3px;}QLineEdit:focus {   border: none;   outline: none;}")
         self.settings_card = QtWidgets.QWidget(self.settingspage)
         self.settings_card.setGeometry(QtCore.QRect(30, 70, 941, 501))
         self.settings_card.setFont(self.small_font)
@@ -59,12 +60,12 @@ class SettingsPage(QtWidgets.QWidget):
                                                   "Webhook Link")
         self.webhook_header = self.create_header(self.settings_card, QtCore.QRect(20, 10, 101, 31), self.header_font,
                                                  "Webhook")
-
+        
         self.savesettings_btn = QtWidgets.QPushButton(self.settings_card)
         self.savesettings_btn.setGeometry(QtCore.QRect(190, 450, 86, 32))
         self.savesettings_btn.setFont(self.small_font)
         self.savesettings_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.savesettings_btn.setStyleSheet("color: #FFFFFF;background-color: #5D43FB;border-radius: 10px;border: 1px solid #2e2d2d;")
+        self.savesettings_btn.setStyleSheet("color: #FFFFFF;background-color: {};border-radius: 10px;border: 1px solid #2e2d2d;".format(globalStyles["primary"]))
         self.savesettings_btn.setText("Save")
         self.savesettings_btn.clicked.connect(self.save_settings)
 
@@ -88,6 +89,7 @@ class SettingsPage(QtWidgets.QWidget):
                                                  self.small_font, "Target.com Username (Email/Cell #)")
         self.target_pass_edit = self.create_edit(self.settings_card, QtCore.QRect(30, 390, 235, 20),
                                                  self.small_font, "Target.com Password)")
+        
         self.set_data()
         QtCore.QMetaObject.connectSlotsByName(settingspage)
 
