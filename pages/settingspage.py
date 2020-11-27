@@ -109,6 +109,12 @@ class SettingsPage(QtWidgets.QWidget):
         if settings['dont_buy']:
             self.dont_buy_checkbox.setChecked(True)
 
+        if settings['random_delay_start']:
+            self.random_delay_start.setText(settings["random_delay_start"])
+
+        if settings['random_delay_stop']:
+            self.random_delay_stop.setText(settings["random_delay_stop"])
+
         try:
             self.target_user_edit.setText(settings["target_user"])
         except:
