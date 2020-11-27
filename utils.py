@@ -4,13 +4,13 @@ try:
 except:
     from Cryptodome import Random
     from Cryptodome.Cipher import AES
-from colorama import init, Fore, Back, Style
+from colorama import init, Fore
 from datetime import datetime
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from webhook import DiscordWebhook, DiscordEmbed
 from chromedriver_py import binary_path as driver_path
-import json, platform, darkdetect, random, settings, threading, hashlib, base64, string
+import json, platform, random, settings, threading, hashlib, base64, string
 
 normal_color = Fore.CYAN
 
@@ -193,3 +193,7 @@ def random_delay(delay, start, stop):
     and stop dividied by 1000.
     """
     return delay + (random.randint(int(start), int(stop)) / 1000)
+
+
+def create_log(msg, status):
+    return {"msg": msg, "status": status}

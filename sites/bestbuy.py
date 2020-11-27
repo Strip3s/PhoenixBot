@@ -5,9 +5,12 @@ except:
     from Cryptodome.PublicKey import RSA
     from Cryptodome.Cipher import PKCS1_OAEP
 from base64 import b64encode
-from utils import send_webhook, random_delay
+from utils import send_webhook, random_delay, create_log
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
+from chromedriver_py import binary_path as driver_path
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait as waitf
 from selenium.webdriver.chrome.options import Options
 from selenium.common import exceptions
 from urllib import parse
@@ -40,13 +43,13 @@ class BestBuy:
         starting_msg = "Starting"
         if settings.dont_buy:
             starting_msg = "Starting in dev mode - Phoenix Bot will not actually checkout (dont_buy = True)"
-        self.status_signal.emit({"msg": starting_msg, "status": "normal"})
+        self.status_signal.emit(create_log(starting_msg, "normal"))
 
         while True:
-            self.status_signal.emit({"msg": "Checking Stock", "status": "normal"})
+            self.status_signal.emit(create_log("Checking Stock","normal"))
             in_stock = self.check_stock()
             while in_stock is False:
-                self.status_signal.emit({"msg": "Waiting For Restock", "status": "normal"})
+                self.status_signal.emit(create_log("Waiting For Restock", "normal"))
                 time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
                 in_stock = self.check_stock()
             tas_data = self.get_tas_data()
@@ -62,7 +65,7 @@ class BestBuy:
 
             while True:
                 if settings.dont_buy is True:
-                    self.status_signal.emit({"msg": "DEV MODE ENABLED - Skipping Order Submission", "status": "normal"})
+                    self.status_signal.emit(create_log({"DEV MODE ENABLED - Skipping Order Submission", "normal"))
                     return
                 success, jwt = self.submit_order()
                 if not success and jwt is not None:
@@ -96,16 +99,13 @@ class BestBuy:
 
     def launch_cookie_thread(self):
         while not self.kill_cookie_thread:
-            self.status_signal.emit(
-                {"msg": "Getting Cookies Using Browser", "status": "normal"})
+            self.status_signal.emit(create_log("Getting Cookies Using Browser", "normal"))
             self.cookies_from_browser = self.get_cookies_using_browser
-            self.status_signal.emit(
-                {"msg": "Got Cookies Using Browser", "status": "normal"})
+            self.status_signal.emit(create_log("Got Cookies Using Browser", "normal"))
             time.sleep(600)
 
     def set_cookies_using_browser(self):
-        self.status_signal.emit(
-            {"msg": "Getting Cookies from Selenium", "status": "normal"})
+        self.status_signal.emit(create_log("Getting Cookies from Selenium", "normal"))
         cookies = self.cookies_from_browser
         if cookies is not None:
             for cookie in cookies:
@@ -114,8 +114,7 @@ class BestBuy:
                                          domain=cookie['domain'])
             self.session.cookies.set(name='G_ENABLED_IDPS', value='google',
                                      domain='www.bestbuy.com')
-            self.status_signal.emit(
-                {"msg": "Got Cookies from Selenium", "status": "normal"})
+            self.status_signal.emit(create_log("Got Cookies from Selenium", "normal"))
 
     @property
     def get_cookies_using_browser(self):
@@ -137,10 +136,7 @@ class BestBuy:
             print(f"Timeout while connecting to {self.product}")
             return None
         except Exception as e:
-            self.status_signal.emit({
-                "msg": "Error Getting Cookies From Browser(line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e),
-                "status": "error"})
+            self.status_signal.emit(create_log("Error Getting Cookies From Browser(line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
             return None
         finally:
             if browser is not None:
@@ -156,13 +152,12 @@ class BestBuy:
         }
         while True:
             try:
-                self.status_signal.emit({"msg": "Getting TAS Data", "status": "normal"})
+                self.status_signal.emit(create_log("Getting TAS Data", "normal"))
                 r = requests.get("https://www.bestbuy.com/api/csiservice/v2/key/tas", headers=headers)
                 self.status_signal.emit({"msg": "Got TAS Data", "status": "normal"})
                 return json.loads(r.text)
             except Exception as e:
-                self.status_signal.emit({"msg": "Error Getting TAS Data(line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
+                self.status_signal.emit(create_log("Error Getting TAS Data(line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
                 time.sleep(self.error_delay)
 
     def setup_product_metadata(self):
@@ -175,26 +170,25 @@ class BestBuy:
         }
         image_found = False
         while True:
-            self.status_signal.emit({"msg": "Loading Product Page For Metadata", "status": "normal"})
+            self.status_signal.emit(create_log("Loading Product Page For Metadata", "normal"))
             try:
                 r = self.session.get(self.product, headers=headers, verify=False)
                 if r.status_code == 200:
                     doc = lxml.html.fromstring(r.text)
                     if not image_found:
-                        self.status_signal.emit({"msg": "Checking For Product Image", "status": "normal"})
+                        self.status_signal.emit(create_log("Checking For Product Image", "normal"))
                         product_image = doc.xpath('//img[@class="primary-image"]/@src')[0]
                         self.image_signal.emit(product_image)
                         image_found = True
-                        self.status_signal.emit({"msg": "Retrieved Product Image", "status": "normal"})
+                        self.status_signal.emit(create_log("Retrieved Product Image", "normal"))
                         return product_image
-                    self.status_signal.emit({"msg": "Unable To Retrieve Product Image", "status": "normal"}) # not really an error since we don't really care about the image
+                    self.status_signal.emit(create_log("Unable To Retrieve Product Image", "normal")) # not really an error since we don't really care about the image
                     time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
                 else:
-                    self.status_signal.emit({"msg": "Product Not Found", "status": "normal"})
+                    self.status_signal.emit(create_log("Product Not Found", "normal"))
                     time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
             except Exception as e:
-                self.status_signal.emit({"msg": "Error Loading Product Page (line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
+                self.status_signal.emit(create_log("Error Loading Product Page (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
                 time.sleep(self.error_delay)
 
     def check_stock(self):
@@ -212,8 +206,7 @@ class BestBuy:
                 r = self.session.get(url, headers=headers, verify=False)
                 return "ADD_TO_CART" in r.text
             except Exception as e:
-                self.status_signal.emit({"msg": "Error Checking Stock (line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
+                self.status_signal.emit(create_log("Error Checking Stock (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
                 time.sleep(self.error_delay)
 
     def add_to_cart(self):
@@ -235,22 +228,21 @@ class BestBuy:
         }
         tries = 0
         while True:
-            self.status_signal.emit({"msg": "Adding To Cart", "status": "normal"})
+            self.status_signal.emit(create_log("Adding To Cart", "normal"))
             try:
                 r = self.session.post("https://www.bestbuy.com/cart/api/v1/addToCart", json=body,
                                       headers=headers, verify=False)
                 if r.status_code == 200 and json.loads(r.text)["cartCount"] >= 1:
-                    self.status_signal.emit({"msg": "Added To Cart", "status": "carted"})
+                    self.status_signal.emit(create_log("Added To Cart", "carted"))
                     return True
                 else:
-                    self.status_signal.emit({"msg": "Error Adding To Cart", "status": "error"})
+                    self.status_signal.emit(create_log("Error Adding To Cart", "error"))
                     if tries == 3:
                         return False
                     tries += 1
                     time.sleep(self.error_delay)
             except Exception as e:
-                self.status_signal.emit({"msg": "Error Adding To Cart (line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
+                self.status_signal.emit(create_log("Error Adding To Cart (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
                 time.sleep(self.error_delay)
 
     def go_identity_url(self):
@@ -269,6 +261,7 @@ class BestBuy:
                 "msg": "Error Starting Cart Checkout (line {} {} {})".format(
                     sys.exc_info()[-1].tb_lineno, type(e).__name__, e),
                 "status": "error"})
+            self.status_signal.emit(create_log("Error Starting Cart Checkout (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
 
     def cart_checkout(self):
         headers = {
@@ -288,14 +281,10 @@ class BestBuy:
                     r.text)
                 self.identity_url = r['updateData']['redirectUrl']
                 return
-            self.status_signal.emit(
-                {"msg": "Error Starting Cart Checkout", "status": "error"})
+            self.status_signal.emit(create_log("Error Starting Cart Checkout", "error"))
             time.sleep(self.error_delay)
         except Exception as e:
-            self.status_signal.emit({
-                "msg": "Error Starting Cart Checkout (line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e),
-                "status": "error"})
+            self.status_signal.emit(create_log("Error Starting Cart Checkout (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
 
     def start_checkout(self):
         headers = {
@@ -306,7 +295,7 @@ class BestBuy:
             "User-Agent": settings.userAgent,
         }
         while True:
-            self.status_signal.emit({"msg": "Starting Checkout", "status": "normal"})
+            self.status_signal.emit(create_log("Starting Checkout", "normal"))
             try:
                 r = self.session.get("https://www.bestbuy.com/checkout/r/fast-track", headers=headers, verify=False)
                 if r.status_code == 200:
@@ -318,11 +307,10 @@ class BestBuy:
                     self.cart_checkout()
                     self.go_identity_url()
                     return
-                self.status_signal.emit({"msg": "Error Starting Checkout", "status": "error"})
+                self.status_signal.emit(create_log("Error Starting Checkout", "error"))
                 time.sleep(self.error_delay)
             except Exception as e:
-                self.status_signal.emit({"msg": "Error Starting Checkout (line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
+                self.status_signal.emit(create_log("Error Starting Checkout (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
                 time.sleep(self.error_delay)
 
     def submit_shipping(self):
@@ -368,7 +356,7 @@ class BestBuy:
             "smsOptIn": False,
             "emailAddress": profile["shipping_email"]}
         while True:
-            self.status_signal.emit({"msg": "Submitting Shipping", "status": "normal"})
+            self.status_signal.emit(create_log("Submitting Shipping", "normal"))
             try:
                 if self.payment_id is None:
                     r = self.session.patch("https://www.bestbuy.com/checkout/orders/{}/".format(
@@ -378,16 +366,13 @@ class BestBuy:
                     r = self.session.post("https://www.bestbuy.com/checkout/orders/{}/validate".format(
                         self.order_id), headers=headers, verify=False)
                     if r.status_code is 200 or r.status_code is 201:
-                        self.status_signal.emit({"msg": "Submitted Shipping", "status": "normal"})
+                        self.status_signal.emit(create_log("Submitted Shipping", "normal"))
                     else:
-                        self.status_signal.emit({"msg": "Error Submitting Shipping - Received following status code: {}", "status": "error"}).format(
-                            r.status_code
-                        )
+                        self.status_signal.emit(create_log("Error Submitting Shipping - Received following status code: {}".format(r.status_code), "error"))
                         time.sleep(self.error_delay)
                     return
             except Exception as e:
-                self.status_signal.emit({"msg": "Error Submitting Shipping (line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
+                self.status_signal.emit(create_log("Error Submitting Shipping (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e),"error"))
                 time.sleep(self.error_delay)
 
     def submit_payment(self, tas_data):
@@ -455,13 +440,12 @@ class BestBuy:
                     self.payment_id), data=json.dumps(body), headers=headers, verify=False)
                 r = json.loads(r.text)
                 if r["paymentId"] == self.payment_id:
-                    self.status_signal.emit({"msg": "Submitted Payment", "status": "normal"})
+                    self.status_signal.emit(create_log("Submitted Payment", "normal"))
                     return
                 self.status_signal.emit({"msg": "Error Submitting Payment", "status": "error"})
                 time.sleep(self.error_delay)
             except Exception as e:
-                self.status_signal.emit({"msg": "Error Was Thrown During Payment Submission (line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
+                self.status_signal.emit(create_log("Error Was Thrown During Payment Submission (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
                 time.sleep(self.error_delay)
 
     def refresh_payment(self):
@@ -477,8 +461,7 @@ class BestBuy:
             "X-User-Interface": "DotCom-Optimized"
         }
         while True:
-            self.status_signal.emit(
-                {"msg": "Refreshing Payment", "status": "normal"})
+            self.status_signal.emit(create_log("Refreshing Payment", "normal"))
             try:
                 r = self.session.post(
                     "https://www.bestbuy.com/checkout/orders/{}/paymentMethods/refreshPayment".format(
@@ -486,13 +469,10 @@ class BestBuy:
                     verify=False)
                 r = json.loads(r.text)
                 if r['id'] == self.order_id:
-                    self.status_signal.emit({"msg": "Payment Refreshed", "status": "normal"})
+                    self.status_signal.emit(create_log("Payment Refreshed", "normal"))
                     return
             except Exception as e:
-                self.status_signal.emit({
-                    "msg": "Error Submitting Order (line {} {} {})".format(
-                        sys.exc_info()[-1].tb_lineno, type(e).__name__, e),
-                    "status": "error"})
+                self.status_signal.emit(create_log("Error Submitting Order (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
                 time.sleep(self.error_delay)
 
     def submit_order(self):
@@ -518,27 +498,26 @@ class BestBuy:
             }
         }
         while True:
-            self.status_signal.emit({"msg": "Submitting Order", "status": "alt"})
+            self.status_signal.emit(create_log("Submitting Order", "alt"))
             try:
                 r = self.session.post("https://www.bestbuy.com/checkout/orders/{}/".format(
                     self.order_id), json=body, headers=headers, verify=False)
                 r = json.loads(r.text)
                 if r["state"] == "SUBMITTED":
-                    self.status_signal.emit({"msg": "Order Placed", "status": "success"})
+                    self.status_signal.emit(create_log("Order Placed", "success"))
                     return True, None
                 else:
                     errors = r.get("errors")
                     if errors:
                         if errors[0].get("errorCode") == "PAY_SECURE_REDIRECT":
-                            self.status_signal.emit({"msg": "3DSecure Found, Starting Auth Process", "status": "error"})
-                            self.status_signal.emit({"msg": f"Payment error {errors[0]['errorCode']}", "status": "error"})
+                            self.status_signal.emit(create_log("3DSecure Found, Starting Auth Process", "error"))
+                            self.status_signal.emit(create_log(f"Payment error {errors[0]['errorCode']}","error"))
                             return False, r["paySecureResponse"]["stepUpJwt"]
                         else:
-                            self.status_signal.emit({"msg": "Payment Failed", "status": "error"})
+                            self.status_signal.emit(create_log("Payment Failed", "error"))
                             return False, None
             except Exception as e:
-                self.status_signal.emit({"msg": "Error Submitting Order (line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
+                self.status_signal.emit(create_log("Error Submitting Order (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
                 time.sleep(self.error_delay)
 
     def handle_3dsecure(self, jwt):
@@ -559,7 +538,7 @@ class BestBuy:
             "MD": ""
         }
         while True:
-            self.status_signal.emit({"msg": "Authorizing Card (1)", "status": "normal"})
+            self.status_signal.emit(create_log("Authorizing Card (1)", "normal"))
             try:
                 r = self.session.post("https://centinelapi.cardinalcommerce.com/V2/Cruise/StepUp",
                                       data=body, headers=headers, verify=False)
@@ -570,8 +549,7 @@ class BestBuy:
                 acs_url = doc.xpath('//input[@id="acsUrl"]/@value')[0]
                 break
             except Exception as e:
-                self.status_signal.emit({"msg": "Error Authorizing Card (line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
+                self.status_signal.emit(create_log("Error Authorizing Card (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
                 time.sleep(self.error_delay)
         headers = {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -592,7 +570,7 @@ class BestBuy:
             "TermUrl": term_url
         }
         while True:
-            self.status_signal.emit({"msg": "Authorizing Card (2)", "status": "normal"})
+            self.status_signal.emit(create_log("Authorizing Card (2)", "normal"))
             try:
                 r = self.session.post(acs_url, data=body, headers=headers, verify=False)
                 doc = lxml.html.fromstring(r.text)
@@ -602,8 +580,7 @@ class BestBuy:
                 url = doc.xpath("//form/@action")[0]
                 break
             except Exception as e:
-                self.status_signal.emit({"msg": "Error Authorizing Card (line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
+                self.status_signal.emit(create_log("Error Authorizing Card (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
                 time.sleep(self.error_delay)
         headers = {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -624,7 +601,7 @@ class BestBuy:
             "MD": md
         }
         while True:
-            self.status_signal.emit({"msg": "Authorizing Card (3)", "status": "normal"})
+            self.status_signal.emit(create_log("Authorizing Card (3)", "normal"))
             try:
                 r = self.session.post(url, data=body, headers=headers, verify=False)
                 doc = lxml.html.fromstring(r.text)
@@ -646,8 +623,7 @@ class BestBuy:
                 url = doc.xpath("//form/@action")[0]
                 break
             except Exception as e:
-                self.status_signal.emit({"msg": "Error Authorizing Card (line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
+                self.status_signal.emit(create_log("Error Authorizing Card (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
                 time.sleep(self.error_delay)
 
         headers = {
@@ -679,7 +655,7 @@ class BestBuy:
             "isDNADone": is_DNA_done
         }
         while True:
-            self.status_signal.emit({"msg": "Authorizing Card (4)", "status": "normal"})
+            self.status_signal.emit(create_log("Authorizing Card (4)", "normal"))
             try:
                 r = self.session.post(url, data=body, headers=headers, verify=False)
                 doc = lxml.html.fromstring(r.text)
@@ -688,8 +664,7 @@ class BestBuy:
                 url = doc.xpath("//form/@action")[0]
                 break
             except Exception as e:
-                self.status_signal.emit({"msg": "Error Authorizing Card (line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
+                self.status_signal.emit(create_log("Error Authorizing Card (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
                 time.sleep(self.error_delay)
         headers = {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -713,8 +688,7 @@ class BestBuy:
                 jwt = r.text.split('parent.postMessage("')[1].split('"')[0]
                 break
             except Exception as e:
-                self.status_signal.emit({"msg": "Error Authorizing Card (line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
+                self.status_signal.emit(create_log("Error Authorizing Card (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
                 time.sleep(self.error_delay)
         headers = {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -733,7 +707,7 @@ class BestBuy:
             "Error": ""
         }
         while True:
-            self.status_signal.emit({"msg": "Authorizing Card (6)", "status": "normal"})
+            self.status_signal.emit(create_log("Authorizing Card (6)", "normal"))
             try:
                 r = self.session.post("https://centinelapi.cardinalcommerce.com/V1/Cruise/TermRedirection",
                                       data=body, headers=headers, verify=False)
@@ -741,8 +715,7 @@ class BestBuy:
                 transaction_id = doc.xpath('//input[@name="TransactionId"]/@value')[0]
                 return transaction_id
             except Exception as e:
-                self.status_signal.emit({"msg": "Error Authorizing Card (line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
+                self.status_signal.emit(create_log("Error Authorizing Card (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
                 time.sleep(self.error_delay)
 
     def submit_card(self, transaction_id):
@@ -759,17 +732,16 @@ class BestBuy:
         }
         body = {"PaRes": "", "orderId": self.order_id, "TransactionId": transaction_id}
         while True:
-            self.status_signal.emit({"msg": "Submitting Card", "status": "normal"})
+            self.status_signal.emit(create_log("Submitting Card", "normal"))
             try:
                 r = self.session.post("https://www.bestbuy.com/checkout/api/1.0/paysecure/submitCardAuthentication",
                                       json=body, headers=headers, verify=False)
                 if r.status_code == 200:
-                    self.status_signal.emit({"msg": "Submitted Card", "status": "normal"})
+                    self.status_signal.emit(create_log("Submitted Card", "normal"))
                     return
                 else:
-                    self.status_signal.emit({"msg": "Error Submitting Card", "status": "error"})
+                    self.status_signal.emit(create_log("Error Submitting Card", "error"))
                     time.sleep(self.error_delay)
             except Exception as e:
-                self.status_signal.emit({"msg": "Error Submitting Card (line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "status": "error"})
+                self.status_signal.emit(create_log("Error Submitting Card (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
                 time.sleep(self.error_delay)
