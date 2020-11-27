@@ -93,6 +93,7 @@ class ProfilesPage(QtWidgets.QWidget):
         self.shipping_country_box.setStyleSheet("outline: 0;border: 1px solid {};border-width: 0 0 2px;color: rgb(234, 239, 239);".format(globalStyles["primary"]))
         self.shipping_country_box.addItem("Country")
         self.shipping_country_box.addItem("United States")
+        self.shipping_country_box.addItem("Canada")
         self.profiles_header = QtWidgets.QLabel(self.profilespage)
         self.profiles_header.setGeometry(QtCore.QRect(30, 10, 81, 31))
         font.setPointSize(22) if platform.system() == "Darwin" else font.setPointSize(22*.75)
@@ -177,6 +178,7 @@ class ProfilesPage(QtWidgets.QWidget):
         self.billing_country_box.setStyleSheet("outline: 0;border: 1px solid {};border-width: 0 0 2px;color: rgb(234, 239, 239);".format(globalStyles["primary"]))
         self.billing_country_box.addItem("Country")
         self.billing_country_box.addItem("United States")
+        self.billing_country_box.addItem("Canada")
         self.same_shipping_checkbox = QtWidgets.QCheckBox(self.billing_card)
         self.same_shipping_checkbox.setGeometry(QtCore.QRect(160, 16, 131, 20))
         self.same_shipping_checkbox.setFont(font)
@@ -262,11 +264,30 @@ class ProfilesPage(QtWidgets.QWidget):
         self.delete_btn.clicked.connect(self.delete_profile)
         self.set_data()
         QtCore.QMetaObject.connectSlotsByName(profilespage)
+
+    def updateShippingStateBox(self, newValue):
+         self.shipping_state_box.clear()
+         if newValue == "United States":
+             for state in ["AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FM", "FL", "GA", "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MH", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "MP", "OH", "OK", "OR", "PW", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VI", "VA", "WA", "WV", "WI", "WY"]:
+                 self.shipping_state_box.addItem(state)
+         elif newValue == "Canada":
+             for state in ["AB", "BC",  "MB", "NB", "NL", "NS", "NT", "NU",  "ON", "PE", "QC", "SK", "YT"]:
+                 self.shipping_state_box.addItem(state)
+
+    def updateBillingStateBox(self, newValue):
+         self.billing_state_box.clear()
+         if newValue == "United States":
+             for state in ["AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FM", "FL", "GA", "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MH", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "MP", "OH", "OK", "OR", "PW", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VI", "VA", "WA", "WV", "WI", "WY"]:
+                 self.billing_state_box.addItem(state)
+         elif newValue == "Canada":
+             for state in ["AB", "BC",  "MB", "NB", "NL", "NS", "NT", "NU",  "ON", "PE", "QC", "SK", "YT"]:
+                 self.billing_state_box.addItem(state)
     
     def set_data(self):
-        for state in ["AL", "AK", "AS", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FM", "FL", "GA", "GU", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MH", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "MP", "OH", "OK", "OR", "PW", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VI", "VA", "WA", "WV", "WI", "WY"]:
-            self.shipping_state_box.addItem(state)
-            self.billing_state_box.addItem(state)
+        self.shipping_state_box.clear()
+        self.billing_state_box.clear()
+        self.shipping_country_box.currentTextChanged.connect(self.updateShippingStateBox)
+        self.billing_country_box.currentTextChanged.connect(self.updateBillingStateBox)
         for month in range(1,13):
             self.cardmonth_box.addItem(str(month)) if month>9 else self.cardmonth_box.addItem("0"+str(month))
         for year in range(2020,2031):
