@@ -39,7 +39,7 @@ class SettingsPage(QtWidgets.QWidget):
     def create_text_edit(self, parent, rect, font, placeholder) -> QtWidgets.QLineEdit:
         text_edit = QtWidgets.QLineEdit(parent)
         text_edit.setGeometry(rect)
-        # text_edit.setStyleSheet("outline: 0;border: 1px solid #5D43FB;border-width: 0 0 2px;color: rgb(234, 239, 239);")
+        text_edit.setStyleSheet("outline: 0;border: 1px solid #5D43FB;border-width: 0 0 2px;color: rgb(234, 239, 239);")
         text_edit.setFont(font)
         text_edit.setPlaceholderText(placeholder)
         text_edit.setAttribute(QtCore.Qt.WA_MacShowFocusRect, 0)
@@ -84,6 +84,11 @@ class SettingsPage(QtWidgets.QWidget):
                                                        self.small_font, "Random Stop Delay (Default is 40ms)")
         self.proxies_header = self.create_header(self.settingspage, QtCore.QRect(30, 10, 81, 31),
                                                  self.create_font("Arial", 22), "Settings")
+
+        self.target_user = self.create_text_edit(self.settings_card, QtCore.QRect(30, 365, 235, 20),
+                                                 self.small_font, "Target.com Username (Email/Cell #)")
+        self.target_pass = self.create_text_edit(self.settings_card, QtCore.QRect(30, 390, 235, 20),
+                                                 self.small_font, "Target.com Password)")
         self.set_data()
         QtCore.QMetaObject.connectSlotsByName(settingspage)
 
