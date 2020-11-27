@@ -95,6 +95,7 @@ class CreateDialog(QtWidgets.QDialog):
 
         self.site_box.addItem("Bestbuy")
         self.site_box.addItem("Walmart")
+        self.site_box.addItem("Target")
         self.site_box.addItem("GameStop")
 
         QtCore.QMetaObject.connectSlotsByName(CreateDialog)
@@ -103,6 +104,8 @@ class CreateDialog(QtWidgets.QDialog):
             self.site_box.setCurrentIndex(self.site_box.findText("Bestbuy"))
         elif "walmart" in self.input_edit.text():
             self.site_box.setCurrentIndex(self.site_box.findText("Walmart"))
+        elif "target" in self.input_edit.text():
+            self.site_box.setCurrentIndex(self.site_box.findText("Target"))
         elif "gamestop" in self.input_edit.text():
             self.site_box.setCurrentIndex(self.site_box.findText("GameStop"))
 
