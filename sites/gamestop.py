@@ -68,9 +68,6 @@ class GameStop:
 
         self.browser.find_element_by_xpath('//*[@id="signinCheck"]/button').click()
 
-        # Gives it time for the login to complete
-        time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
-
 
     def monitor(self):
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/account/")
