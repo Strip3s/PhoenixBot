@@ -16,7 +16,7 @@ class GameStop:
         self.browser = self.init_driver()
 
         self.SHORT_TIMEOUT = 5
-        self.LONG_TIMEOUT = 15
+        self.LONG_TIMEOUT = 20
 
         if settings.dont_buy:
             starting_msg = "Starting GameStop in dev mode; will not actually checkout."
@@ -54,12 +54,12 @@ class GameStop:
 
         self.browser.get("https://www.gamestop.com")
 
-        wait(self.browser, self.SHORT_TIMEOUT).until(EC.element_to_be_clickable((By.LINK_TEXT, "MY ACCOUNT")))
+        wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.LINK_TEXT, "MY ACCOUNT")))
         self.browser.find_element_by_link_text('MY ACCOUNT').click()
 
-        wait(self.browser, self.SHORT_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "signIn"))).click()
+        wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "signIn"))).click()
 
-        wait(self.browser, self.SHORT_TIMEOUT).until(EC.presence_of_element_located((By.ID, "login-form-email"))).send_keys(settings.gamestop_user)
+        wait(self.browser, self.LONG_TIMEOUT).until(EC.presence_of_element_located((By.ID, "login-form-email"))).send_keys(settings.gamestop_user)
 
         password = self.browser.find_element_by_id("login-form-password")
         password.send_keys(settings.gamestop_pass)
@@ -84,6 +84,10 @@ class GameStop:
                 wait(self.browser, random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop)).until(EC.element_to_be_clickable((By.XPATH, '//button[@data-buttontext="Add to Cart"]')))
                 add_to_cart_btn = self.browser.find_element_by_xpath('//button[@data-buttontext="Add to Cart"]')
                 add_to_cart_btn.click()
+                time.sleep(1)
+                if not add_to_cart_btn.is_enabled():
+                    self.status_signal.emit(create_msg("Waiting For Restock", "normal"))
+                    continue
                 in_stock = True
                 self.status_signal.emit(create_msg("Added to cart", "normal"))
                 time.sleep(3)
@@ -124,7 +128,7 @@ class GameStop:
 
         self.status_signal.emit(create_msg("Submitting Order..", "normal"))
 
-        wait(self.browser, self.SHORT_TIMEOUT).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="checkout-main"]/div[1]/div[2]/div[1]/div[2]/div[11]/button')))
+        wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="checkout-main"]/div[1]/div[2]/div[1]/div[2]/div[11]/button')))
 
         if not settings.dont_buy:
             order_review_btn = self.browser.find_element_by_xpath('//*[@id="checkout-main"]/div[1]/div[1]/div[7]/div/div/div/div[11]/button[2]')
