@@ -142,7 +142,7 @@ class GameStop:
 
         self.status_signal.emit(self.create_msg("Entering CVV #", "normal"))
 
-        wait(self.browser, self.SHORT_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "saved-payment-security-code")))
+        wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "saved-payment-security-code")))
         cvv_input = self.browser.find_element_by_id("saved-payment-security-code")
         cvv_input.send_keys(self.profile["card_cvv"])
         order_review_btn = self.browser.find_element_by_xpath('//*[@id="checkout-main"]/div[1]/div[1]/div[7]/div/div/div/div[11]/button[2]')
