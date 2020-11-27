@@ -52,17 +52,11 @@ class Target:
 
     def login(self):
         self.browser.get("https://www.target.com")
-
         self.browser.find_element_by_id("account").click()
-
         wait(self.browser, 3).until(EC.element_to_be_clickable((By.ID, "accountNav-signIn"))).click()
-
-        my_username = "username"
-        my_password = "password"
-
-        wait(self.browser, 3).until(EC.presence_of_element_located((By.ID, "username"))).send_keys(my_username)
+        wait(self.browser, 3).until(EC.presence_of_element_located((By.ID, "username"))).send_keys(settings.target_user)
         password = self.browser.find_element_by_id("password")
-        password.send_keys(my_password)
+        password.send_keys(settings.target_pass)
         self.browser.find_element_by_id("login").click()
 
         # Gives it time for the login to complete
