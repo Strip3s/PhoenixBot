@@ -146,8 +146,7 @@ class SettingsPage(QtWidgets.QWidget):
             settings.random_delay_start = settings_data["random_delay_start"]
         if settings_data.get("random_delay_stop", "") != "":
             settings.random_delay_stop = settings_data["random_delay_stop"]
-        if settings_data.get("target_user_edit", "") != "":
+        if settings_data.get("target_user", "") != "":
             settings.target_user = settings_data["target_user"]
-        if settings_data.get("target_pass_edit", "") != "":
-            settings.target_pass = settings_data["target_pass"]
-
+        if settings_data.get("target_pass", "") != "":
+            settings.target_pass = (Encryption().decrypt(settings_data["target_pass"].encode("utf-8"))).decode("utf-8")
