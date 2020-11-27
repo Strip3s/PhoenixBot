@@ -4,8 +4,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait as wait
 from webdriver_manager.chrome import ChromeDriverManager
 from chromedriver_py import binary_path as driver_path
-from utils import random_delay, send_webhook
-import string, random, settings, time, re
+from utils import random_delay, send_webhook, change_driver, create_msg
+import settings, time
 
 class GameStop:
     def __init__(self, task_id, status_signal, image_signal, product, profile, proxy, monitor_delay, error_delay, max_price):
@@ -14,7 +14,6 @@ class GameStop:
 
         starting_msg = "Starting GameStop"
         self.browser = self.init_driver()
-        self.product_image = None
 
         self.SHORT_TIMEOUT = 5
         self.LONG_TIMEOUT = 15
@@ -22,7 +21,7 @@ class GameStop:
         if settings.dont_buy:
             starting_msg = "Starting GameStop in dev mode; will not actually checkout."
 
-        self.status_signal.emit(self.create_msg(starting_msg, "normal"))
+        self.status_signal.emit(create_msg(starting_msg, "normal"))
         self.login()
         self.monitor()
         self.add_to_cart()
@@ -31,35 +30,12 @@ class GameStop:
 
 
 
-    def create_msg(self, msg, status):
-        return {"msg": msg, "status": status}
-
-
-    # https://stackoverflow.com/questions/33225947/can-a-website-detect-when-you-are-using-selenium-with-chromedriver
-    def change_driver(self, loc):
-        print(loc)
-        fin = open(loc, 'rb')
-        data = fin.read()
-        val = "$cdc_" + "".join(random.choices(string.ascii_letters + string.digits, k=22)) + "_"
-
-        result = re.search(b"[$]cdc_[a-zA-Z0-9]{22}_", data)
-
-        if result is not None:
-            self.status_signal.emit(self.create_msg("Changing value in Chromedriver", "normal"))
-            data = data.replace(result.group(0), val.encode())
-            fin.close()
-            fin = open(loc, 'wb')
-            fin.truncate()
-            fin.write(data)
-            fin.close()
-        else:
-            fin.close()
-
 
     def init_driver(self):
         driver_manager = ChromeDriverManager()
         driver_manager.install()
-        # self.change_driver(driver_path)
+        # change_driver(self.status_signal, driver_path)
+        var = driver_path
         browser = webdriver.Chrome(driver_path)
 
         browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
@@ -74,10 +50,7 @@ class GameStop:
 
 
     def login(self):
-        my_username = "username"
-        my_password = "password"
-
-        self.status_signal.emit(self.create_msg("Logging In..", "normal"))
+        self.status_signal.emit(create_msg("Logging In..", "normal"))
 
         self.browser.get("https://www.gamestop.com")
 
@@ -86,10 +59,10 @@ class GameStop:
 
         wait(self.browser, self.SHORT_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "signIn"))).click()
 
-        wait(self.browser, self.SHORT_TIMEOUT).until(EC.presence_of_element_located((By.ID, "login-form-email"))).send_keys(my_username)
+        wait(self.browser, self.SHORT_TIMEOUT).until(EC.presence_of_element_located((By.ID, "login-form-email"))).send_keys(settings.gamestop_user)
 
         password = self.browser.find_element_by_id("login-form-password")
-        password.send_keys(my_password)
+        password.send_keys(settings.gamestop_pass)
 
         time.sleep(1) # slight delay for in-between filling out login info and clicking Sign In
 
@@ -102,7 +75,7 @@ class GameStop:
     def monitor(self):
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/account/")
 
-        self.status_signal.emit(self.create_msg("Checking Stock..", "normal"))
+        self.status_signal.emit(create_msg("Checking Stock..", "normal"))
 
         in_stock = False
 
@@ -115,18 +88,18 @@ class GameStop:
                 add_to_cart_btn = self.browser.find_element_by_xpath('//button[@data-buttontext="Add to Cart"]')
                 add_to_cart_btn.click()
                 in_stock = True
-                self.status_signal.emit(self.create_msg("Added to cart", "normal"))
+                self.status_signal.emit(create_msg("Added to cart", "normal"))
                 time.sleep(3)
                 self.browser.get("https://www.gamestop.com/cart/")
             except:
-                self.status_signal.emit(self.create_msg("Waiting For Restock", "normal"))
+                self.status_signal.emit(create_msg("Waiting For Restock", "normal"))
                 self.browser.refresh()
 
 
     def add_to_cart(self):
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/cart/")
         
-        self.status_signal.emit(self.create_msg("Checking Age Verification", "normal"))
+        self.status_signal.emit(create_msg("Checking Age Verification", "normal"))
 
         try:
             seventeen_or_older_btn = self.browser.find_element_by_xpath('//*[@id="age-gate-modal"]/div/div/div[2]/div/div[2]/button')
@@ -140,7 +113,7 @@ class GameStop:
     def submit_billing(self):
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/checkout/?stage=payment#payment")
 
-        self.status_signal.emit(self.create_msg("Entering CVV #", "normal"))
+        self.status_signal.emit(create_msg("Entering CVV #", "normal"))
 
         wait(self.browser, self.SHORT_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "saved-payment-security-code")))
         cvv_input = self.browser.find_element_by_id("saved-payment-security-code")
@@ -152,15 +125,15 @@ class GameStop:
     def submit_order(self):
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/checkout/?stage=placeOrder#placeOrder")
 
-        self.status_signal.emit(self.create_msg("Submitting Order..", "normal"))
+        self.status_signal.emit(create_msg("Submitting Order..", "normal"))
 
         wait(self.browser, self.SHORT_TIMEOUT).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="checkout-main"]/div[1]/div[2]/div[1]/div[2]/div[11]/button')))
 
         if not settings.dont_buy:
             order_review_btn = self.browser.find_element_by_xpath('//*[@id="checkout-main"]/div[1]/div[1]/div[7]/div/div/div/div[11]/button[2]')
             order_review_btn.click()
-            self.status_signal.emit(self.create_msg("Order Placed", "success"))
+            self.status_signal.emit(create_msg("Order Placed", "success"))
             send_webhook("OP", "GameStop", self.profile["profile_name"], self.task_id, self.product_image)
         else:
-            self.status_signal.emit(self.create_msg("Mock Order Placed", "success"))
+            self.status_signal.emit(create_msg("Mock Order Placed", "success"))
             send_webhook("OP", "GameStop", self.profile["profile_name"], self.task_id, self.product_image)
