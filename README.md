@@ -83,3 +83,14 @@ To resume working on the bot for testing after closing powershell, navigate agai
   ./env/Scripts/activate
   python app.py
   ```
+
+
+## Contributing
+This project uses pip-compile with the --generate-hashes flag to validate dependencies via checksums. This helps prevent updates to existing package versions on PyPI from adding new code to our project. When changing requirements, make updates in the requirements.in file, then compile using the command below to update requirements.txt before committing.
+```
+pip-compile --generate-hashes --no-index --output-file=requirements.txt requirements.in
+```
+If you receive an error when running this command related to pinning a version of pip, make sure your system or virtualenv pip version is up to date by running the following command:
+```
+python -m pip install --upgrade pip
+```
