@@ -4,8 +4,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait as wait
 from webdriver_manager.chrome import ChromeDriverManager
 from chromedriver_py import binary_path as driver_path
-from utils import random_delay, send_webhook
-import string, random, settings, time, re
+from utils import random_delay, send_webhook, change_driver, create_msg
+import settings, time
 
 class Target:
     def __init__(self, task_id, status_signal, image_signal, product, profile, proxy, monitor_delay, error_delay):
@@ -19,8 +19,8 @@ class Target:
         if settings.dont_buy:
             starting_msg = "Starting Target in dev mode; will not actually checkout"
 
-        self.status_signal.emit(self.create_msg(starting_msg, "normal"))
-        self.status_signal.emit(self.create_msg("Logging In..", "normal"))
+        self.status_signal.emit(create_msg(starting_msg, "normal"))
+        self.status_signal.emit(create_msg("Logging In..", "normal"))
         self.login()
         self.monitor()
         self.atc()
@@ -30,33 +30,14 @@ class Target:
         if not settings.dont_buy:
             self.submit_order()
         else:
-            self.status_signal.emit(self.create_msg("Mock Order Placed", "success"))
+            self.status_signal.emit(create_msg("Mock Order Placed", "success"))
             send_webhook("OP", "Target", self.profile["profile_name"], self.task_id, self.product_image)
-
-    # https://stackoverflow.com/questions/33225947/can-a-website-detect-when-you-are-using-selenium-with-chromedriver
-    def change_driver(self, loc):
-        print(loc)
-        fin = open(loc, 'rb')
-        data = fin.read()
-        val = "$cdc_" + "".join(random.choices(string.ascii_letters + string.digits, k=22)) + "_"
-
-        result = re.search(b"[$]cdc_[a-zA-Z0-9]{22}_", data)
-
-        if result is not None:
-            self.status_signal.emit(self.create_msg("Changing value in Chromedriver", "normal"))
-            data = data.replace(result.group(0), val.encode())
-            fin.close()
-            fin = open(loc, 'wb')
-            fin.truncate()
-            fin.write(data)
-            fin.close()
-        else:
-            fin.close()
 
     def init_driver(self):
         driver_manager = ChromeDriverManager()
         driver_manager.install()
-        self.change_driver(driver_path)
+        change_driver(self.status_signal, driver_path)
+        var = driver_path
         browser = webdriver.Chrome(driver_path)
 
         browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
@@ -87,9 +68,6 @@ class Target:
         # Gives it time for the login to complete
         time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
 
-    def create_msg(self, msg, status):
-        return {"msg": msg, "status": status}
-
     def monitor(self):
         img_found = False
         in_stock = False
@@ -112,16 +90,17 @@ class Target:
                 self.browser.execute_script("return arguments[0].scrollIntoView(true);", ship_btn)
                 ship_btn.click()
                 in_stock = True
-                self.status_signal.emit(self.create_msg("Added to cart", "normal"))
+                self.status_signal.emit(create_msg("Added to cart", "normal"))
             except Exception as e:
-                self.status_signal.emit(self.create_msg("Waiting on Restock", "normal"))
+                self.status_signal.emit(create_msg("Waiting on Restock", "normal"))
+                time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
                 self.browser.refresh()
 
     def atc(self):
         declined_ins = False
         at_checkout = False
 
-        self.status_signal.emit(self.create_msg("Declining Insurance", "normal"))
+        self.status_signal.emit(create_msg("Declining Insurance", "normal"))
 
         while not declined_ins:
             try:
@@ -131,7 +110,7 @@ class Target:
             except:
                 continue
 
-        self.status_signal.emit(self.create_msg("Viewing Cart before Checkout", "normal"))
+        self.status_signal.emit(create_msg("Viewing Cart before Checkout", "normal"))
 
         while not at_checkout:
             try:
@@ -143,7 +122,7 @@ class Target:
 
     def checkout(self):
         did_checkout = False
-        self.status_signal.emit(self.create_msg("Checking out", "normal"))
+        self.status_signal.emit(create_msg("Checking out", "normal"))
 
         while not did_checkout:
             try:
@@ -158,7 +137,7 @@ class Target:
         added_cc = False
         added_cvv = False
 
-        self.status_signal.emit(self.create_msg("Entering CC #", "normal"))
+        self.status_signal.emit(create_msg("Entering CC #", "normal"))
 
         while not added_cc:
             try:
@@ -167,33 +146,31 @@ class Target:
                 self.browser.find_element_by_xpath('//button[@data-test= "verify-card-button"]').click()
                 added_cc = True
             except:
-                self.status_signal.emit(self.create_msg("CC Verification not needed", "normal"))
+                self.status_signal.emit(create_msg("CC Verification not needed", "normal"))
                 return
 
         while not added_cvv:
             try:
                 cvv_input = self.browser.find_element_by_xpath("input[@data-test= 'credit-card-cvv-input']")
-                self.status_signal.emit(self.create_msg("Entering CC Last 3", "normal"))
+                self.status_signal.emit(create_msg("Entering CC Last 3", "normal"))
 
                 cvv_input.send_keys(self.profile["card-cvv"])
                 self.browser.find_element_by_xpath('//button[@data-test= "save-and-continue-button"]').click()
                 added_cvv = True
             except:
-                self.status_signal.emit(self.create_msg("No need to enter last 3", "normal"))
+                self.status_signal.emit(create_msg("No need to enter last 3", "normal"))
                 break
 
     def submit_order(self):
         did_submit = False
 
-        self.status_signal.emit(self.create_msg("Submitting Order", "normal"))
+        self.status_signal.emit(create_msg("Submitting Order", "normal"))
         while not did_submit:
             try:
-                self.browser.find_element_by_xpath("button@[data-test= 'placeOrderButton']").click()
-                self.status_signal.emit(self.create_msg("Order Placed", "success"))
+                self.browser.find_element_by_xpath('//button[@data-test= "placeOrderButton"]').click()
+                self.status_signal.emit(create_msg("Order Placed", "success"))
                 send_webhook("OP", "Target", self.profile["profile_name"], self.task_id, self.product_image)
                 did_submit = True
             except:
                 continue
-
-
 

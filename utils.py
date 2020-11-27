@@ -10,13 +10,13 @@ from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from webhook import DiscordWebhook, DiscordEmbed
 from chromedriver_py import binary_path as driver_path
-import json, platform, darkdetect, random, settings, threading, hashlib, base64, string
+import json, platform, darkdetect, random, settings, threading, hashlib, base64, string, re
 normal_color = Fore.CYAN
 
 def write_data(path,data):
     with open(path, "w") as file:
         json.dump(data, file)
-    
+
 #TODO: Enable this as an app setting for user to choose their own optional key & regenerate key on the fly button
 try:
   with open("./data/vault.json","r") as file:
@@ -27,13 +27,13 @@ except FileNotFoundError:
   with open("./data/vault.json","r") as file:
       keys = json.load(file)
 
-e_key = keys[0]['generated_key_secret'].encode() 
+e_key = keys[0]['generated_key_secret'].encode()
 BLOCK_SIZE=16
 if platform.system() == "Windows":
     init(convert=True)
 else:
     init()
-   
+
 print(normal_color + "Welcome To Phoenix Bot - In times of crisis, the wise build bridges while the foolish build barriers.")
 
 class BirdLogger:
@@ -86,7 +86,7 @@ def get_profile(profile_name):
 def get_proxy(list_name):
     if list_name == "Proxy List" or list_name == "None":
         return False
-    proxies = return_data("./data/proxies.json") 
+    proxies = return_data("./data/proxies.json")
     for proxy_list in proxies:
         if proxy_list["list_name"] == list_name:
             return format_proxy(random.choice(proxy_list["proxies"].splitlines()))
@@ -129,12 +129,32 @@ def send_webhook(webhook_type,site,profile,task_id,image_url):
         except:
             pass
 
+# https://stackoverflow.com/questions/33225947/can-a-website-detect-when-you-are-using-selenium-with-chromedriver
+def change_driver(status_signal, loc):
+    fin = open(loc, 'rb')
+    data = fin.read()
+    val = "$" + "".join(random.choices(string.ascii_lowercase, k=3)) + "_" +\
+          "".join(random.choices(string.ascii_letters + string.digits, k=22)) + "_"
+
+    result = re.search(b"[$][a-z]{3}_[a-zA-Z0-9]{22}_", data)
+
+    if result is not None:
+        status_signal.emit(create_msg("Changing value in Chromedriver", "normal"))
+        data = data.replace(result.group(0), val.encode())
+        fin.close()
+        fin = open(loc, 'wb')
+        fin.truncate()
+        fin.write(data)
+        fin.close()
+    else:
+        fin.close()
+
 def open_browser(link,cookies):
     threading.Thread(target = start_browser, args=(link,cookies)).start()
 
 def start_browser(link,cookies):
     caps = DesiredCapabilities().CHROME
-    caps["pageLoadStrategy"] = "eager" 
+    caps["pageLoadStrategy"] = "eager"
     chrome_options = ChromeOptions()
     chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
     chrome_options.add_experimental_option("useAutomationExtension", False)
@@ -172,3 +192,6 @@ def random_delay(delay, start, stop):
     and stop dividied by 1000.
     """
     return delay + (random.randint(int(start), int(stop)) / 1000)
+
+def create_msg(msg, status):
+    return {"msg": msg, "status": status}
