@@ -37,12 +37,13 @@ class BestBuy:
         cookie_thread.name = "cookieThread"
         cookie_thread.daemon = True
         cookie_thread.start()
+        self.browser = self.init_driver()
 
         if proxy != False:
             self.session.proxies.update(proxy)
-        starting_msg = "Starting"
+        starting_msg = "Starting Best Buy Task"
         if settings.dont_buy:
-            starting_msg = "Starting in dev mode - Phoenix Bot will not actually checkout (dont_buy = True)"
+            starting_msg = "Starting Best Buy Task in dev mode - Phoenix Bot will not actually checkout. Check Settings page to disable Dev Mode"
         self.status_signal.emit(create_log(starting_msg, "normal"))
 
         while True:
@@ -65,7 +66,7 @@ class BestBuy:
 
             while True:
                 if settings.dont_buy is True:
-                    self.status_signal.emit(create_log({"DEV MODE ENABLED - Skipping Order Submission", "normal"))
+                    self.status_signal.emit(create_log("DEV MODE ENABLED - Skipping Order Submission", "normal"))
                     return
                 success, jwt = self.submit_order()
                 if not success and jwt is not None:
@@ -141,6 +142,21 @@ class BestBuy:
         finally:
             if browser is not None:
                 browser.quit()
+
+    @staticmethod
+    def init_driver():
+        driver_manager = ChromeDriverManager()
+        driver_manager.install()
+        browser = webdriver.Chrome(driver_path)
+        browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+            "source": """
+                          Object.defineProperty(navigator, 'webdriver', {
+                           get: () => undefined
+                          })
+                        """
+        })
+
+        return browser
 
     def get_tas_data(self):
         headers = {
@@ -257,10 +273,6 @@ class BestBuy:
         try:
             r = self.session.get(self.identity_url, headers=headers, verify=False)
         except Exception as e:
-            self.status_signal.emit({
-                "msg": "Error Starting Cart Checkout (line {} {} {})".format(
-                    sys.exc_info()[-1].tb_lineno, type(e).__name__, e),
-                "status": "error"})
             self.status_signal.emit(create_log("Error Starting Cart Checkout (line {} {} {})".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e), "error"))
 
     def cart_checkout(self):
