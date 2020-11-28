@@ -99,7 +99,6 @@ class GameStop:
                     continue
                 in_stock = True
                 self.status_signal.emit(create_msg("Added to cart", "normal"))
-                time.sleep(3)
                 self.browser.get("https://www.gamestop.com/cart/")
             except:
                 self.status_signal.emit(create_msg("Waiting For Restock", "normal"))
