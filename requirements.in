@@ -1,0 +1,11 @@
+pyqt5==5.14.2
+js2py==0.68
+requests==2.23.0
+lxml==4.6.1
+darkdetect==0.1.1
+colorama==0.4.3
+selenium==3.141.0
+chromedriver-py==86.0.4240.22
+pycryptodome
+webdriver_manager==3.2.2
+pip-tools==5.4.0
