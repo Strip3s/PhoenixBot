@@ -31,10 +31,22 @@ Phoenix Bot is inspired by Natewong1313's Bird Bot project yet due to lack of ac
       ./env/Scripts/activate
       ```
       ```
+      python -m pip install --upgrade pip 
+      ```
+      ```
       pip install -r requirements.txt
       ```
 4. If you encounter any errors during installation, please consider the following:
-    * If you get a red text error remove and you previously installed pyqt5 or lxml on your python,  remove the versions from the **requirements.txt** for both lxml and pyqt5.
+    * If you get a red text error remove and you previously installed pyqt5 or lxml on your python, remove the versions from the **requirements.in** for both lxml and pyqt5, then run the following commands:
+    ```
+    pip install pip-tools==5.4.0
+    ```
+    ```
+    pip-compile --generate-hashes --no-index --output-file=requirements.txt requirements.in
+    ```
+    ```
+    pip install -r requirements.txt
+    ```
     * If you get an error with red text run the following: 
      ```
      pip install pycryptodomex
@@ -62,10 +74,22 @@ Phoenix Bot is inspired by Natewong1313's Bird Bot project yet due to lack of ac
       source env/bin/activate
       ```
       ```
+      python3 -m pip3 install --upgrade pip 
+      ```
+      ```
       pip3 install -r requirements.txt
       ```
 3. If you encounter any errors during installation, please consider the following:
-    * If you get a red text error remove and you previously installed pyqt5 or lxml on your python,  remove the versions from the **requirements.txt** for both lxml and pyqt5.
+    * If you get a red text error remove and you previously installed pyqt5 or lxml on your python,  remove the versions from the **requirements.in** for both lxml and pyqt5, then run the following commands:
+    ```
+    pip3 install pip-tools==5.4.0
+    ```
+    ```
+    pip-compile --generate-hashes --no-index --output-file=requirements.txt requirements.in
+    ```
+    ```
+    pip3 install -r requirements.txt
+    ```
     * If you get an error with red text run the following: 
      ```
      pip3 install pycryptodomex
@@ -83,3 +107,14 @@ To resume working on the bot for testing after closing powershell, navigate agai
   ./env/Scripts/activate
   python app.py
   ```
+
+
+## Contributing
+This project uses pip-compile with the --generate-hashes flag to validate dependencies via checksums. This helps prevent updates to existing package versions on PyPI from adding new code to our project. When changing requirements, make updates in the requirements.in file, then compile using the command below to update requirements.txt before committing.
+```
+pip-compile --generate-hashes --no-index --output-file=requirements.txt requirements.in
+```
+If you receive an error when running this command related to pinning a version of pip, make sure your system or virtualenv pip version is up to date by running the following command:
+```
+python -m pip install --upgrade pip
+```
