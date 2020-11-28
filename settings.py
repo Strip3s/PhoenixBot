@@ -31,4 +31,10 @@ target_user = ""
 
 global target_pass
 target_pass = ""
+
+global gamestop_user
+gamestop_user = ""
+
+global gamestop_pass
+gamestop_pass = ""
 #################################################
