@@ -87,6 +87,7 @@ class GameStop:
                 time.sleep(1)
                 if not add_to_cart_btn.is_enabled():
                     self.status_signal.emit(create_msg("Waiting For Restock", "normal"))
+                    self.browser.refresh()
                     continue
                 in_stock = True
                 self.status_signal.emit(create_msg("Added to cart", "normal"))
