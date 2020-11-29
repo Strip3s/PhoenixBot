@@ -14,6 +14,7 @@ class GameStop:
 
         starting_msg = "Starting GameStop"
         self.browser = self.init_driver()
+        self.product_image = None
 
         self.SHORT_TIMEOUT = 5
         self.LONG_TIMEOUT = 20
@@ -59,14 +60,21 @@ class GameStop:
 
         wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "signIn"))).click()
 
-        wait(self.browser, self.LONG_TIMEOUT).until(EC.presence_of_element_located((By.ID, "login-form-email"))).send_keys(settings.gamestop_user)
+        wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "login-form-email")))
+
+        email = self.browser.find_element_by_id("login-form-email")
+        email.send_keys(settings.gamestop_user)
+
+        wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "login-form-password")))
 
         password = self.browser.find_element_by_id("login-form-password")
         password.send_keys(settings.gamestop_pass)
 
         time.sleep(1) # slight delay for in-between filling out login info and clicking Sign In
 
-        self.browser.find_element_by_xpath('//*[@id="signinCheck"]/button').click()
+        wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="signinCheck"]/button')))
+        sign_in_btn = self.browser.find_element_by_xpath('//*[@id="signinCheck"]/button')
+        sign_in_btn.click()
 
 
     def monitor(self):
@@ -74,10 +82,10 @@ class GameStop:
 
         self.status_signal.emit(create_msg("Checking Stock..", "normal"))
 
-        in_stock = False
-
         self.browser.get(self.product)
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == self.product)
+
+        in_stock = False
 
         while not in_stock:
             try: 
@@ -91,7 +99,6 @@ class GameStop:
                     continue
                 in_stock = True
                 self.status_signal.emit(create_msg("Added to cart", "normal"))
-                time.sleep(3)
                 self.browser.get("https://www.gamestop.com/cart/")
             except:
                 self.status_signal.emit(create_msg("Waiting For Restock", "normal"))
@@ -120,7 +127,7 @@ class GameStop:
         wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "saved-payment-security-code")))
         cvv_input = self.browser.find_element_by_id("saved-payment-security-code")
         cvv_input.send_keys(self.profile["card_cvv"])
-        order_review_btn = self.browser.find_element_by_xpath('//*[@id="checkout-main"]/div[1]/div[1]/div[7]/div/div/div/div[11]/button[2]')
+        order_review_btn = self.browser.find_element_by_class_name("btn.btn-primary.btn-block.submit-payment")
         order_review_btn.click()
 
 
@@ -129,10 +136,10 @@ class GameStop:
 
         self.status_signal.emit(create_msg("Submitting Order..", "normal"))
 
-        wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="checkout-main"]/div[1]/div[2]/div[1]/div[2]/div[11]/button')))
+        wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.CLASS_NAME, 'btn.btn-primary.btn-block.place-order')))
 
         if not settings.dont_buy:
-            order_review_btn = self.browser.find_element_by_xpath('//*[@id="checkout-main"]/div[1]/div[1]/div[7]/div/div/div/div[11]/button[2]')
+            order_review_btn = self.browser.find_element_by_class_name("btn.btn-primary.btn-block.place-order")
             order_review_btn.click()
             self.status_signal.emit(create_msg("Order Placed", "success"))
             send_webhook("OP", "GameStop", self.profile["profile_name"], self.task_id, self.product_image)
