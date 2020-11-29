@@ -1,6 +1,7 @@
 import requests, time, datetime, json
 
-#modified from https://github.com/lovvskillz/python-discord-webhook 
+# modified from https://github.com/lovvskillz/python-discord-webhook
+
 
 class DiscordWebhook:
     def __init__(self, url, **kwargs):
@@ -38,7 +39,9 @@ class DiscordWebhook:
         for key, value in self.__dict__.items():
             if value and key not in ["url", "files", "filename"]:
                 data[key] = value
-        embeds_empty = all(not embed for embed in data["embeds"]) if "embeds" in data else True
+        embeds_empty = (
+            all(not embed for embed in data["embeds"]) if "embeds" in data else True
+        )
         return data
 
     def execute(self):
@@ -73,7 +76,9 @@ class DiscordEmbed:
     def set_url(self, url):
         self.url = url
 
-    def set_timestamp(self, timestamp=str(datetime.datetime.utcfromtimestamp(time.time()))):
+    def set_timestamp(
+        self, timestamp=str(datetime.datetime.utcfromtimestamp(time.time()))
+    ):
         self.timestamp = timestamp
 
     def set_color(self, color):
@@ -83,7 +88,7 @@ class DiscordEmbed:
         self.footer = {
             "text": kwargs.get("text"),
             "icon_url": kwargs.get("icon_url"),
-            "proxy_icon_url": kwargs.get("proxy_icon_url")
+            "proxy_icon_url": kwargs.get("proxy_icon_url"),
         }
 
     def set_image(self, **kwargs):
@@ -124,11 +129,13 @@ class DiscordEmbed:
         }
 
     def add_embed_field(self, **kwargs):
-        self.fields.append({
-            "name": kwargs.get("name"),
-            "value": kwargs.get("value"),
-            "inline": kwargs.get("inline", True)
-        })
+        self.fields.append(
+            {
+                "name": kwargs.get("name"),
+                "value": kwargs.get("value"),
+                "inline": kwargs.get("inline", True),
+            }
+        )
 
     def del_embed_field(self, index):
         self.fields.pop(index)

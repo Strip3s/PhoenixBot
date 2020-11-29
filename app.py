@@ -1,6 +1,6 @@
 from theming.styles import globalStyles
 from PyQt5 import QtCore, QtGui, QtWidgets
-from pages.homepage import HomePage,TaskTab
+from pages.homepage import HomePage, TaskTab
 from pages.createdialog import CreateDialog
 from pages.profilespage import ProfilesPage
 from pages.proxiespage import ProxiesPage
@@ -9,12 +9,15 @@ from pages.pollbrowser import PollBrowserDialog
 import sys, os, settings
 from theming.styles import globalStyles
 
+
 def no_abort(a, b, c):
     sys.__excepthook__(a, b, c)
+
+
 sys.excepthook = no_abort
 
+
 class MainWindow(QtWidgets.QMainWindow):
-  
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent=parent)
         self.setupUi(self)
@@ -23,23 +26,36 @@ class MainWindow(QtWidgets.QMainWindow):
     def setupUi(self, MainWindow):
         MainWindow.setFixedSize(1109, 600)
         # background color for main UI
-        MainWindow.setStyleSheet("background-color: {};".format(globalStyles["backgroundDark"]))
+        MainWindow.setStyleSheet(
+            "background-color: {};".format(globalStyles["backgroundDark"])
+        )
         MainWindow.setWindowTitle("Phoenix Bot")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setStyleSheet("QMessageBox QLabel { color: #FFFFFF; }QMessageBox QPushButton { background-color: %s;color: #FFFFFF;}" % (globalStyles["primary"]) )
+        self.centralwidget.setStyleSheet(
+            "QMessageBox QLabel { color: #FFFFFF; }QMessageBox QPushButton { background-color: %s;color: #FFFFFF;}"
+            % (globalStyles["primary"])
+        )
         self.sidebar = QtWidgets.QWidget(self.centralwidget)
         self.sidebar.setGeometry(QtCore.QRect(0, 0, 61, 601))
         # SIDE BAR COLOR
-        self.sidebar.setStyleSheet('background-color: {};border-right: 1px solid #2e2d2d;'.format(globalStyles['backgroundLight']))
+        self.sidebar.setStyleSheet(
+            "background-color: {};border-right: 1px solid #2e2d2d;".format(
+                globalStyles["backgroundLight"]
+            )
+        )
         self.home_tab = QtWidgets.QWidget(self.sidebar)
         self.home_tab.setGeometry(QtCore.QRect(0, 85, 60, 45))
         self.home_tab.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        #initial selected color background
-        self.home_tab.setStyleSheet("background-color: {};border: none;".format(globalStyles['primaryAscent']))
+        # initial selected color background
+        self.home_tab.setStyleSheet(
+            "background-color: {};border: none;".format(globalStyles["primaryAscent"])
+        )
         self.home_active_tab = QtWidgets.QWidget(self.home_tab)
         self.home_active_tab.setGeometry(QtCore.QRect(0, 0, 4, 45))
-        #initial selected color side bar
-        self.home_active_tab.setStyleSheet("background-color: {};border: none;".format(globalStyles["primary"]))
+        # initial selected color side bar
+        self.home_active_tab.setStyleSheet(
+            "background-color: {};border: none;".format(globalStyles["primary"])
+        )
         self.home_active_tab.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.home_icon = QtWidgets.QLabel(self.home_tab)
         self.home_icon.setGeometry(QtCore.QRect(21, 13, 20, 20))
@@ -54,7 +70,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.profiles_tab.setStyleSheet("background-color: transparent;border: none;")
         self.profiles_active_tab = QtWidgets.QWidget(self.profiles_tab)
         self.profiles_active_tab.setGeometry(QtCore.QRect(0, 0, 4, 45))
-        self.profiles_active_tab.setStyleSheet("background-color: transparent;border: none;")
+        self.profiles_active_tab.setStyleSheet(
+            "background-color: transparent;border: none;"
+        )
         self.profiles_active_tab.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.profiles_icon = QtWidgets.QLabel(self.profiles_tab)
         self.profiles_icon.setGeometry(QtCore.QRect(21, 13, 20, 20))
@@ -69,7 +87,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.proxies_tab.setStyleSheet("background-color: transparent;border: none;")
         self.proxies_active_tab = QtWidgets.QWidget(self.proxies_tab)
         self.proxies_active_tab.setGeometry(QtCore.QRect(0, 0, 4, 45))
-        self.proxies_active_tab.setStyleSheet("background-color: transparent;border: none;")
+        self.proxies_active_tab.setStyleSheet(
+            "background-color: transparent;border: none;"
+        )
         self.proxies_icon = QtWidgets.QLabel(self.proxies_tab)
         self.proxies_icon.setGeometry(QtCore.QRect(21, 13, 20, 20))
         self.proxies_icon.setStyleSheet("border: none;")
@@ -81,7 +101,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings_tab.setStyleSheet("background-color: transparent;border: none;")
         self.settings_active_tab = QtWidgets.QWidget(self.settings_tab)
         self.settings_active_tab.setGeometry(QtCore.QRect(0, 0, 4, 45))
-        self.settings_active_tab.setStyleSheet("background-color: transparent;border: none;")
+        self.settings_active_tab.setStyleSheet(
+            "background-color: transparent;border: none;"
+        )
         self.settings_icon = QtWidgets.QLabel(self.settings_tab)
         self.settings_icon.setGeometry(QtCore.QRect(21, 13, 20, 20))
         self.settings_icon.setStyleSheet("border: none;")
@@ -110,27 +132,57 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def set_functions(self):
         self.current_page = "home"
-        self.home_tab.mousePressEvent = lambda event: self.change_page(event,"home")
-        self.profiles_tab.mousePressEvent = lambda event: self.change_page(event,"profiles")
-        self.proxies_tab.mousePressEvent = lambda event: self.change_page(event,"proxies")
-        self.settings_tab.mousePressEvent = lambda event: self.change_page(event,"settings")
+        self.home_tab.mousePressEvent = lambda event: self.change_page(event, "home")
+        self.profiles_tab.mousePressEvent = lambda event: self.change_page(
+            event, "profiles"
+        )
+        self.proxies_tab.mousePressEvent = lambda event: self.change_page(
+            event, "proxies"
+        )
+        self.settings_tab.mousePressEvent = lambda event: self.change_page(
+            event, "settings"
+        )
         self.homepage.newtask_btn.clicked.connect(self.createdialog.show)
-    
-    def change_page(self,event,current_page):
-        eval('self.{}_active_tab.setStyleSheet("background-color: transparent;border: none;")'.format(self.current_page))
+
+    def change_page(self, event, current_page):
+        eval(
+            'self.{}_active_tab.setStyleSheet("background-color: transparent;border: none;")'.format(
+                self.current_page
+            )
+        )
         # reseting image after deselect
-        eval('self.{}_icon.setPixmap(QtGui.QPixmap("images/{}.png"))'.format(self.current_page,self.current_page))
-        eval('self.{}_tab.setStyleSheet("background-color: transparent;border: none;")'.format(self.current_page))
+        eval(
+            'self.{}_icon.setPixmap(QtGui.QPixmap("images/{}.png"))'.format(
+                self.current_page, self.current_page
+            )
+        )
+        eval(
+            'self.{}_tab.setStyleSheet("background-color: transparent;border: none;")'.format(
+                self.current_page
+            )
+        )
         eval("self.{}page.hide()".format(self.current_page))
         self.current_page = current_page
         # after initial tab side color
-        eval('self.{}_active_tab.setStyleSheet("background-color: {};border: none;")'.format(self.current_page,globalStyles["primary"]))
+        eval(
+            'self.{}_active_tab.setStyleSheet("background-color: {};border: none;")'.format(
+                self.current_page, globalStyles["primary"]
+            )
+        )
         # grabing same image for selected tab
-        eval('self.{}_icon.setPixmap(QtGui.QPixmap("images/{}_alt.png"))'.format(self.current_page,self.current_page))
+        eval(
+            'self.{}_icon.setPixmap(QtGui.QPixmap("images/{}_alt.png"))'.format(
+                self.current_page, self.current_page
+            )
+        )
         # after initial tab side background color
-        eval('self.{}_tab.setStyleSheet("background-color: {};border: none;")'.format(self.current_page,globalStyles["primaryAscent"]))
+        eval(
+            'self.{}_tab.setStyleSheet("background-color: {};border: none;")'.format(
+                self.current_page, globalStyles["primaryAscent"]
+            )
+        )
         eval("self.{}page.show()".format(self.current_page))
-    
+
     def create_task(self):
         site = self.createdialog.site_box.currentText()
         product = self.createdialog.input_edit.text()
@@ -138,10 +190,22 @@ class MainWindow(QtWidgets.QMainWindow):
         proxies = self.createdialog.proxies_box.currentText()
         monitor_delay = self.createdialog.monitor_edit.text()
         error_delay = self.createdialog.error_edit.text()
-        max_price = self.createdialog.price_edit.text() if self.createdialog.maxprice_checkbox.isChecked() else ""
-        if site != "Site" and product != "" and profile != "Profile" and monitor_delay != "" and error_delay != "":
+        max_price = (
+            self.createdialog.price_edit.text()
+            if self.createdialog.maxprice_checkbox.isChecked()
+            else ""
+        )
+        if (
+            site != "Site"
+            and product != ""
+            and profile != "Profile"
+            and monitor_delay != ""
+            and error_delay != ""
+        ):
             for i in range(self.createdialog.taskcount_spinbox.value()):
-                self.homepage.verticalLayout.takeAt(self.homepage.verticalLayout.count()-1)
+                self.homepage.verticalLayout.takeAt(
+                    self.homepage.verticalLayout.count() - 1
+                )
                 tab = TaskTab(
                     site,
                     product,
@@ -151,12 +215,19 @@ class MainWindow(QtWidgets.QMainWindow):
                     error_delay,
                     max_price,
                     self.homepage.stop_all_tasks,
-                    self.homepage.scrollAreaWidgetContents)
+                    self.homepage.scrollAreaWidgetContents,
+                )
                 self.homepage.verticalLayout.addWidget(tab)
-                spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-                self.homepage.verticalLayout.addItem(spacerItem) 
-        
-#(.*)
+                spacerItem = QtWidgets.QSpacerItem(
+                    20,
+                    40,
+                    QtWidgets.QSizePolicy.Minimum,
+                    QtWidgets.QSizePolicy.Expanding,
+                )
+                self.homepage.verticalLayout.addItem(spacerItem)
+
+
+# (.*)
 if __name__ == "__main__":
     ui_app = QtWidgets.QApplication(sys.argv)
     ui = MainWindow()
