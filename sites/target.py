@@ -29,9 +29,9 @@ class Target:
 
         if not settings.dont_buy:
             self.submit_order()
+            send_webhook("OP", "Target", self.profile["profile_name"], self.task_id, self.product_image)
         else:
             self.status_signal.emit(create_msg("Mock Order Placed", "success"))
-            send_webhook("OP", "Target", self.profile["profile_name"], self.task_id, self.product_image)
 
     def init_driver(self):
         driver_manager = ChromeDriverManager()
