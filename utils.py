@@ -195,5 +195,5 @@ def random_delay(delay, start, stop):
     return delay + (random.randint(int(start), int(stop)) / 1000)
 
 
-def create_log(msg, status):
+def create_msg(msg, status):
     return {"msg": msg, "status": status}
