@@ -4,7 +4,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait as wait
 from webdriver_manager.chrome import ChromeDriverManager
 from chromedriver_py import binary_path as driver_path
-from utils import random_delay, send_webhook, change_driver, create_msg
+from utils import random_delay, send_webhook, create_msg
+from utils.selenium_utils import change_driver
 import settings, time
 
 class Target:
