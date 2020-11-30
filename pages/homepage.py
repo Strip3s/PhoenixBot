@@ -6,7 +6,8 @@ from sites.target import Target
 from sites.gamestop import GameStop
 from pages.createdialog import CreateDialog
 from pages.pollbrowser import PollBrowserDialog
-from utils import get_profile, get_proxy, BirdLogger, return_data, write_data, open_browser
+from utils import get_profile, get_proxy, BirdLogger, return_data, write_data
+from utils.selenium_utils import open_browser
 import urllib.request,sys,platform
 import settings
 def no_abort(a, b, c):
@@ -497,19 +498,18 @@ class TaskThread(QtCore.QThread):
 
     def run(self):
         profile,proxy = get_profile(self.profile),get_proxy(self.proxies)
-        if profile == None:
-            self.status_signal.emit({"msg":"Invalid profile","status":"error"})
+        if profile is None:
+            self.status_signal.emit({"msg": "Invalid profile", "status": "error"})
             return
-        if proxy == None:
-            self.status_signal.emit({"msg":"Invalid proxy list","status":"error"})
+        if proxy is None:
+            self.status_signal.emit({"msg": "Invalid proxy list", "status": "error"})
             return
         if self.site == "Walmart":
-            Walmart(self.task_id,self.status_signal,self.image_signal,  self.wait_poll_signal, self.wait_condition, self.product,profile,proxy,self.monitor_delay,self.error_delay,self.max_price)
+            Walmart(self.task_id,self.status_signal, self.image_signal,  self.wait_poll_signal, self.wait_condition, self.product, profile, proxy, self.monitor_delay, self.error_delay, self.max_price)
         elif self.site == "Bestbuy":
-            BestBuy(self.task_id,self.status_signal,self.image_signal,self.product,profile,proxy,self.monitor_delay,self.error_delay)
-        # TODO: Add Target service here!
+            BestBuy(self.status_signal, self.image_signal, self.product, profile, proxy, self.monitor_delay, self.error_delay) #TODO: Readd Discord Webhook
         elif self.site == "Target":
-            Target(self.task_id,self.status_signal,self.image_signal,self.product,profile,proxy,self.monitor_delay,self.error_delay)
+            Target(self.task_id, self.status_signal, self.image_signal, self.product, profile, proxy, self.monitor_delay, self.error_delay)
         elif self.site == "GameStop":
             GameStop(self.task_id, self.status_signal, self.image_signal, self.product, profile, proxy, self.monitor_delay, self.error_delay, self.max_price)
 
