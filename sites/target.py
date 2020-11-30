@@ -30,9 +30,9 @@ class Target:
 
         if not settings.dont_buy:
             self.submit_order()
+            send_webhook("OP", "Target", self.profile["profile_name"], self.task_id, self.product_image)
         else:
             self.status_signal.emit(create_msg("Mock Order Placed", "success"))
-            send_webhook("OP", "Target", self.profile["profile_name"], self.task_id, self.product_image)
 
     def init_driver(self):
         driver_manager = ChromeDriverManager()
@@ -54,8 +54,8 @@ class Target:
     def login(self):
         self.browser.get("https://www.target.com")
         self.browser.find_element_by_id("account").click()
-        wait(self.browser, 3).until(EC.element_to_be_clickable((By.ID, "accountNav-signIn"))).click()
-        wait(self.browser, 3).until(EC.presence_of_element_located((By.ID, "username"))).send_keys(settings.target_user)
+        wait(self.browser, 10).until(EC.element_to_be_clickable((By.ID, "accountNav-signIn"))).click()
+        wait(self.browser, 10).until(EC.presence_of_element_located((By.ID, "username"))).send_keys(settings.target_user)
         password = self.browser.find_element_by_id("password")
         password.send_keys(settings.target_pass)
         self.browser.find_element_by_id("login").click()
@@ -138,19 +138,21 @@ class Target:
             try:
                 cc_input = self.browser.find_element_by_id("creditCardInput-cardNumber")
                 cc_input.send_keys(self.profile["card_number"])
-                self.browser.find_element_by_xpath('//button[@data-test= "verify-card-button"]').click()
+                if len(self.browser.find_elements_by_xpath('//button[@data-test= "verify-card-button"]')) > 0:
+                    self.browser.find_element_by_xpath('//button[@data-test= "verify-card-button"]').click()
                 added_cc = True
             except:
                 self.status_signal.emit(create_msg("CC Verification not needed", "normal"))
-                return
+                break
 
         while not added_cvv:
             try:
-                cvv_input = self.browser.find_element_by_xpath("input[@data-test= 'credit-card-cvv-input']")
+                cvv_input = self.browser.find_element_by_id("creditCardInput-cvv")
                 self.status_signal.emit(create_msg("Entering CC Last 3", "normal"))
+                cvv_input.send_keys(self.profile["card_cvv"])
 
-                cvv_input.send_keys(self.profile["card-cvv"])
-                self.browser.find_element_by_xpath('//button[@data-test= "save-and-continue-button"]').click()
+                if len(self.browser.find_elements_by_xpath('//button[@data-test= "save-and-continue-button"]')) > 0:
+                    self.browser.find_element_by_xpath('//button[@data-test= "save-and-continue-button"]').click()
                 added_cvv = True
             except:
                 self.status_signal.emit(create_msg("No need to enter last 3", "normal"))
