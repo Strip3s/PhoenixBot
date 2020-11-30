@@ -1,11 +1,21 @@
 # Phoenix Bot
 [Discord](https://discord.gg/mTp4awX9wB)<br/><br/>
-Phoenix Bot is inspired by Natewong1313's Bird Bot project yet due to lack of activity by their team. We have decided to revive this project to achieve a common goal. Due to the recent insurgence of botters/scalpers taking advantage, our goal is to enable everyone the ability to combat these botters/scalpers by implementing their own botting system. Currently, this auto-checkout bot will support Walmart and Best Buy. There are more plans for future implementations later on. 
+Phoenix Bot is inspired by Natewong1313's Bird Bot project yet due to lack of activity by their team. We have decided to revive this project to achieve a common goal. Due to the recent insurgence of botters/scalpers taking advantage, our goal is to enable everyone the ability to combat these botters/scalpers by implementing their own botting system. Currently, this auto-checkout bot will support Walmart, Best Buy, Gamestop, & Target. There are more plans for future implementations later on. 
 
 * Easy to use interface built on PyQt5
 * Waits for items to restock if they are out of stock
 * Optional price checker
 * Lighting fast auto-checkout
+
+## Current Functionality
+
+| **Website** | **Auto Checkout** | **Open Cart Link** | **Work In Progress** |
+|:---:|:---:|:---:|:---:|
+| amazon.com | | |`✔`|
+| bestbuy.com | |`✔`| |
+| gamestop.com |`✔`| | |
+| target.com |`✔`| | |
+| walmart.com |`✔`| | |
 
 <p align="center">
   <img src="https://imgur.com/pILriDO.png" alt="Phoenix Bot UI" width="738">
