@@ -60,7 +60,6 @@ class BestBuy:
         if settings.dont_buy:
             starting_msg = "Starting Best Buy Task in dev mode - Phoenix Bot will not actually checkout. Check Settings page to disable Dev Mode"
         self.status_signal.emit(create_msg(starting_msg, "normal"))
-        self.account = {"username": "username", "password": "password"}
 
         # TODO: Add Product Image To UI
 
@@ -143,12 +142,8 @@ class BestBuy:
 
     def login(self):
         self.browser.get("https://www.bestbuy.com/identity/global/signin")
-        self.browser.find_element_by_xpath('//*[@id="fld-e"]').send_keys(
-            self.account["username"]
-        )
-        self.browser.find_element_by_xpath('//*[@id="fld-p1"]').send_keys(
-            self.account["password"]
-        )
+        self.browser.find_element_by_xpath('//*[@id="fld-e"]').send_keys(settings.bestbuy_user)
+        self.browser.find_element_by_xpath('//*[@id="fld-p1"]').send_keys(settings.bestbuy_pass)
         self.browser.find_element_by_xpath(
             "/html/body/div[1]/div/section/main/div[1]/div/div/div/div/form/div[4]/button"
         ).click()
