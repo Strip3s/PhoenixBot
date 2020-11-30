@@ -56,8 +56,17 @@ class GameStop:
 
         self.browser.get("https://www.gamestop.com")
 
-        wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.LINK_TEXT, "MY ACCOUNT")))
-        self.browser.find_element_by_link_text('MY ACCOUNT').click()
+        # wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.LINK_TEXT, "MY ACCOUNT")))
+        # self.browser.find_element_by_link_text('MY ACCOUNT').click()
+
+        # Workaround for missing "MY ACCOUNT" link
+        # Click hamburger icon
+        wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.CLASS_NAME, "hamburger-icon-redesign")))
+        self.browser.find_element_by_class_name('hamburger-icon-redesign').click()
+        # Click "Sign In"
+        wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.LINK_TEXT, "Sign In")))
+        self.browser.find_element_by_link_text('Sign In').click()
+        # End of workaround
 
         wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "signIn"))).click()
 
