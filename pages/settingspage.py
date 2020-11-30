@@ -169,7 +169,7 @@ class SettingsPage(QtWidgets.QWidget):
         if settings_data.get("target_user", "") != "":
             settings.target_user = settings_data["target_user"]
         if settings_data.get("target_pass", "") != "":
-            settings.target_pass = settings_data["target_pass"]
+            settings.target_pass = (Encryption().decrypt(settings_data["target_pass"].encode("utf-8"))).decode("utf-8")
         if settings_data.get("gamestop_user", "") != "":
             settings.gamestop_user = settings_data["gamestop_user"]
         if settings_data.get("gamestop_pass", "") != "":
