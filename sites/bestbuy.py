@@ -62,6 +62,8 @@ class BestBuy:
         self.status_signal.emit(create_msg(starting_msg, "normal"))
         self.account = {"username": "username", "password": "password"}
 
+        # TODO: Add Product Image To UI
+
         if proxy:
             self.session.proxies.update(proxy)
 
@@ -158,7 +160,7 @@ class BestBuy:
         while not self.in_stock():
             sleep(5)
         self.status_signal.emit(create_msg(f"Item {self.sku_id} is in stock!", "normal"))
-        # TODO: Refactor Bird Bot Auto Checkout Functionality. For now, it will just open the cart link.
+        # TODO: Refactor Bird Bot Auto Checkout Functionality. For now, it will just open the cart link when in stock.
         if self.auto_buy:
             self.auto_checkout()
         else:
@@ -171,6 +173,7 @@ class BestBuy:
         url = "https://www.bestbuy.com/api/tcfb/model.json?paths=%5B%5B%22shop%22%2C%22scds%22%2C%22v2%22%2C%22page%22%2C%22tenants%22%2C%22bbypres%22%2C%22pages%22%2C%22globalnavigationv5sv%22%2C%22header%22%5D%2C%5B%22shop%22%2C%22buttonstate%22%2C%22v5%22%2C%22item%22%2C%22skus%22%2C{}%2C%22conditions%22%2C%22NONE%22%2C%22destinationZipCode%22%2C%22%2520%22%2C%22storeId%22%2C%22%2520%22%2C%22context%22%2C%22cyp%22%2C%22addAll%22%2C%22false%22%5D%5D&method=get".format(
             self.sku_id
         )
+        # TODO: Add random delay configuration
         response = self.session.get(url, headers=DEFAULT_HEADERS)
         self.status_signal.emit(create_msg(f"Stock check response code: {response.status_code}", "normal"))
         try:
