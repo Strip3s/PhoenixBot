@@ -84,10 +84,14 @@ class Target:
 
             try:
                 add_to_cart_btn = None
-                if len(self.browser.find_elements_by_xpath('//button[@data-test= "orderPickupButton"]')) > 0:
+                try:
                     add_to_cart_btn = self.browser.find_element_by_xpath('//button[@data-test= "orderPickupButton"]')
-                elif len(self.browser.find_elements_by_xpath('//button[@data-test= "shipItButton"]')) > 0:
+                except:
+                    pass
+                try:
                     add_to_cart_btn = self.browser.find_element_by_xpath('//button[@data-test= "shipItButton"]')
+                except:
+                    raise
                 self.browser.execute_script("return arguments[0].scrollIntoView(true);", add_to_cart_btn)
                 add_to_cart_btn.click()
                 in_stock = True
