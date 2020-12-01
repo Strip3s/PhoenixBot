@@ -82,24 +82,22 @@ class Target:
             except Exception as e:
                 continue
 
+            add_to_cart_btn = None
             try:
-                add_to_cart_btn = None
-                try:
-                    add_to_cart_btn = self.browser.find_element_by_xpath('//button[@data-test= "orderPickupButton"]')
-                except:
-                    pass
-                try:
-                    add_to_cart_btn = self.browser.find_element_by_xpath('//button[@data-test= "shipItButton"]')
-                except:
-                    raise
-                self.browser.execute_script("return arguments[0].scrollIntoView(true);", add_to_cart_btn)
-                add_to_cart_btn.click()
-                in_stock = True
-                self.status_signal.emit(create_msg("Added to cart", "normal"))
-            except Exception as e:
+                add_to_cart_btn = self.browser.find_element_by_xpath('//button[@data-test= "orderPickupButton"]')
+            except:
+                pass
+            try:
+                add_to_cart_btn = self.browser.find_element_by_xpath('//button[@data-test= "shipItButton"]')
+            except:
                 self.status_signal.emit(create_msg("Waiting on Restock", "normal"))
                 time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
                 self.browser.refresh()
+                continue
+            self.browser.execute_script("return arguments[0].scrollIntoView(true);", add_to_cart_btn)
+            add_to_cart_btn.click()
+            in_stock = True
+            self.status_signal.emit(create_msg("Added to cart", "normal"))
 
     def atc(self):
         declined_ins = False
