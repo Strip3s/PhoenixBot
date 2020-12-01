@@ -159,13 +159,16 @@ def change_driver(status_signal, loc):
     result = re.search(b"[$][a-z]{3}_[a-zA-Z0-9]{22}_", data)
 
     if result is not None:
-        status_signal.emit(create_msg("Changing value in Chromedriver", "normal"))
-        data = data.replace(result.group(0), val.encode())
-        fin.close()
-        fin = open(loc, 'wb')
-        fin.truncate()
-        fin.write(data)
-        fin.close()
+        try:
+            status_signal.emit(create_msg("Changing value in Chromedriver", "normal"))
+            data = data.replace(result.group(0), val.encode())
+            fin.close()
+            fin = open(loc, 'wb')
+            fin.truncate()
+            fin.write(data)
+            fin.close()
+        except:
+            print("Error modifying chromedriver")
     else:
         fin.close()
 
