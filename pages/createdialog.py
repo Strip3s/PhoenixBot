@@ -1,15 +1,18 @@
 from theming.styles import globalStyles
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys,platform
+
 def no_abort(a, b, c):
     sys.__excepthook__(a, b, c)
 sys.excepthook = no_abort
 
 class CreateDialog(QtWidgets.QDialog):
-    def __init__(self,parent=None):
+
+    def __init__(self, parent=None):
         super(CreateDialog, self).__init__(parent)
         self.setupUi(self)
         self.show()
+
     def setupUi(self, CreateDialog):
         self.CreateDialog = CreateDialog
         CreateDialog.setFixedSize(647, 164)
@@ -93,12 +96,14 @@ class CreateDialog(QtWidgets.QDialog):
         self.taskcount_spinbox.setMinimum(1)
         self.taskcount_spinbox.setAttribute(QtCore.Qt.WA_MacShowFocusRect, 0)
 
+        self.site_box.addItem("Amazon")
         self.site_box.addItem("Bestbuy")
+        self.site_box.addItem("GameStop")
         self.site_box.addItem("Walmart")
         self.site_box.addItem("Target")
-        self.site_box.addItem("GameStop")
 
         QtCore.QMetaObject.connectSlotsByName(CreateDialog)
+
     def autofill(self):
         if "bestbuy" in self.input_edit.text():
             self.site_box.setCurrentIndex(self.site_box.findText("Bestbuy"))
@@ -108,6 +113,8 @@ class CreateDialog(QtWidgets.QDialog):
             self.site_box.setCurrentIndex(self.site_box.findText("Target"))
         elif "gamestop" in self.input_edit.text():
             self.site_box.setCurrentIndex(self.site_box.findText("GameStop"))
+        elif "amazon" in self.input_edit.text():
+            self.site_box.setCurrentIndex(self.site_box.findText("Amazon"))
 
     def load_data(self, task_tab):
         self.site_box.setCurrentText(task_tab.site)
@@ -119,5 +126,3 @@ class CreateDialog(QtWidgets.QDialog):
         self.price_edit.setText(task_tab.max_price)
         self.maxprice_checkbox.setChecked(task_tab.max_price != '')
         self.addtask_btn.setText('Update Task')
-
-

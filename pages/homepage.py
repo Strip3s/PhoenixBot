@@ -9,11 +9,12 @@ from pages.pollbrowser import PollBrowserDialog
 from utils import get_profile, get_proxy, BirdLogger, return_data, write_data
 from utils.selenium_utils import open_browser
 import urllib.request,sys,platform
-import settings
+
 def no_abort(a, b, c):
     sys.__excepthook__(a, b, c)
 sys.excepthook = no_abort
 logger = BirdLogger()
+
 class HomePage(QtWidgets.QWidget):
     def __init__(self,parent=None):
         super(HomePage, self).__init__(parent)
@@ -486,6 +487,7 @@ class TaskTab(QtWidgets.QWidget):
             self.browser_cookies
         )
         self.browser_thread.start()
+
 class TaskThread(QtCore.QThread):
     status_signal = QtCore.pyqtSignal("PyQt_PyObject")
     image_signal = QtCore.pyqtSignal("PyQt_PyObject")
@@ -512,6 +514,8 @@ class TaskThread(QtCore.QThread):
             Target(self.task_id, self.status_signal, self.image_signal, self.product, profile, proxy, self.monitor_delay, self.error_delay)
         elif self.site == "GameStop":
             GameStop(self.task_id, self.status_signal, self.image_signal, self.product, profile, proxy, self.monitor_delay, self.error_delay, self.max_price)
+        # elif self.site == "Amazon": TODO: Reenable when functionality is working
+            # Amazon(self.task_id, self.status_signal, self.image_signal, self.product, profile, proxy, self.monitor_delay, self.error_delay, self.max_price)
 
     def stop(self):
         self.terminate()
@@ -536,4 +540,3 @@ class BrowserThread(QtCore.QThread):
         self.url,self.cookies = url,cookies
     def run(self):
         open_browser(self.url,self.cookies)
-

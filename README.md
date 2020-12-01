@@ -7,6 +7,11 @@ Phoenix Bot is inspired by Natewong1313's Bird Bot project yet due to lack of ac
 * Optional price checker
 * Lighting fast auto-checkout
 
+
+<p align="center">
+  <img src="https://imgur.com/pILriDO.png" alt="Phoenix Bot UI" width="738">
+</p>
+
 ## Current Functionality
 
 | **Website** | **Auto Checkout** | **Open Cart Link** | **Work In Progress** |
@@ -16,11 +21,6 @@ Phoenix Bot is inspired by Natewong1313's Bird Bot project yet due to lack of ac
 | gamestop.com |`✔`| | |
 | target.com |`✔`| | |
 | walmart.com |`✔`| | |
-
-<p align="center">
-  <img src="https://imgur.com/pILriDO.png" alt="Phoenix Bot UI" width="738">
-</p>
-
 
 ## Phoenix Bot Repository Link
 [View The Repo Here](https://github.com/Strip3s/PhoenixBot.git/)

@@ -44,4 +44,10 @@ gamestop_user = ""
 
 global gamestop_pass
 gamestop_pass = ""
+
+global amazon_user
+amazon_user = ""
+
+global amazon_pass
+amazon_pass = ""
 #################################################

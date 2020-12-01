@@ -97,6 +97,10 @@ class SettingsPage(QtWidgets.QWidget):
                                                  self.small_font, "Gamestop.com Username (Email)")
         self.gamestop_pass_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 390, 235, 20),
                                                  self.small_font, "Gamestop.com Password")
+        self.amazon_user_edit = self.create_edit(self.settings_card, QtCore.QRect(570, 310, 235, 20),
+                                                   self.small_font, "Amazon.com Username (Email)")
+        self.amazon_pass_edit = self.create_edit(self.settings_card, QtCore.QRect(570, 335, 235, 20),
+                                                   self.small_font, "Amazon.com Password")
         
         self.set_data()
         QtCore.QMetaObject.connectSlotsByName(settingspage)
@@ -151,6 +155,16 @@ class SettingsPage(QtWidgets.QWidget):
         except:
             self.gamestop_pass_edit.setText("")
 
+        try:
+            self.amazon_user_edit.setText(settings["amazon_user"])
+        except:
+            self.amazon_user_edit.setText("")
+
+        try:
+            self.amazon_pass_edit.setText((Encryption().decrypt(settings["amazon_pass"].encode("utf-8"))).decode("utf-8"))
+        except:
+            self.amazon_pass_edit.setText("")
+
         self.update_settings(settings)
 
     def save_settings(self):
@@ -168,7 +182,9 @@ class SettingsPage(QtWidgets.QWidget):
                     "target_user": self.target_user_edit.text(),
                     "target_pass": Encryption().encrypt(self.target_pass_edit.text()).decode("utf-8"),
                     "gamestop_user": self.gamestop_user_edit.text(),
-                    "gamestop_pass": Encryption().encrypt(self.gamestop_pass_edit.text()).decode("utf-8")}
+                    "gamestop_pass": Encryption().encrypt(self.gamestop_pass_edit.text()).decode("utf-8"),
+                    "amazon_user": self.amazon_user_edit.text(),
+                    "amazon_pass": Encryption().encrypt(self.amazon_pass_edit.text()).decode("utf-8")}
 
         write_data("./data/settings.json",settings)
         self.update_settings(settings)
@@ -194,3 +210,7 @@ class SettingsPage(QtWidgets.QWidget):
             settings.gamestop_user = settings_data["gamestop_user"]
         if settings_data.get("gamestop_pass", "") != "":
             settings.gamestop_pass = (Encryption().decrypt(settings_data["gamestop_pass"].encode("utf-8"))).decode("utf-8")
+        if settings_data.get("amazon_user", "") != "":
+            settings.amazon_user = settings_data["amazon_user"]
+        if settings_data.get("amazon_pass", "") != "":
+            settings.amazon_pass = (Encryption().decrypt(settings_data["amazon_pass"].encode("utf-8"))).decode("utf-8")

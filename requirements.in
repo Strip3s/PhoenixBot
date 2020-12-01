@@ -8,4 +8,6 @@ chromedriver-py==87.0.4280.20
 pycryptodome
 webdriver_manager==3.2.2
 pip-tools==5.4.0
-requests==2.25.0
+requests==2.24.0 # Keep at 2.24.0 unless amazoncaptcha pushes support for later versions
+amazoncaptcha==0.5.0 # Currently only supports requests 2.24.0
+price-parser==0.3.4

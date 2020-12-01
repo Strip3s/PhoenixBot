@@ -6,11 +6,8 @@ except:
     from Cryptodome.Cipher import AES
 from colorama import init, Fore
 from datetime import datetime
-from selenium.webdriver import Chrome, ChromeOptions
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from webhook import DiscordWebhook, DiscordEmbed
-from chromedriver_py import binary_path as driver_path
-import json, platform, random, settings, threading, hashlib, base64, string, re
+import json, platform, random, settings, hashlib, base64, string
 
 normal_color = Fore.CYAN
 
