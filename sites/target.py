@@ -71,7 +71,7 @@ class Target:
         self.browser.get(self.product)
         wait(self.browser, self.TIMEOUT_LONG).until(lambda _: self.browser.current_url == self.product)
 
-        while not in_stock:
+        while not img_found:
             try:
                 if not img_found:
                     product_img = self.browser.find_elements_by_class_name('slideDeckPicture')[0].find_element_by_tag_name(
@@ -82,14 +82,13 @@ class Target:
             except Exception as e:
                 continue
 
+        while not in_stock:
             add_to_cart_btn = None
-            try:
+            if len(self.browser.find_elements_by_xpath('//button[@data-test= "orderPickupButton"]')) > 0:
                 add_to_cart_btn = self.browser.find_element_by_xpath('//button[@data-test= "orderPickupButton"]')
-            except:
-                pass
-            try:
+            elif len(self.browser.find_elements_by_xpath('//button[@data-test= "shipItButton"]')) > 0:
                 add_to_cart_btn = self.browser.find_element_by_xpath('//button[@data-test= "shipItButton"]')
-            except:
+            else:
                 self.status_signal.emit(create_msg("Waiting on Restock", "normal"))
                 time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
                 self.browser.refresh()
