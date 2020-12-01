@@ -492,6 +492,7 @@ class TaskThread(QtCore.QThread):
     status_signal = QtCore.pyqtSignal("PyQt_PyObject")
     image_signal = QtCore.pyqtSignal("PyQt_PyObject")
     wait_poll_signal = QtCore.pyqtSignal()
+
     def __init__(self):
         QtCore.QThread.__init__(self)
 
@@ -499,7 +500,7 @@ class TaskThread(QtCore.QThread):
         self.task_id,self.site,self.product,self.profile,self.proxies,self.monitor_delay,self.error_delay,self.max_price = task_id,site,product,profile,proxies,monitor_delay,error_delay,max_price
 
     def run(self):
-        profile,proxy = get_profile(self.profile),get_proxy(self.proxies)
+        profile, proxy = get_profile(self.profile), get_proxy(self.proxies)
         if profile is None:
             self.status_signal.emit({"msg": "Invalid profile", "status": "error"})
             return

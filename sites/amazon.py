@@ -21,7 +21,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from utils import selenium_utils
 from utils.json_utils import InvalidAutoBuyConfigException
-from utils.logger import log
+from utils import create_msg
 from utils.selenium_utils import options, enable_headless, wait_for_element
 
 # https://github.com/Hari-Nagarajan/nvidia-bot/blob/master/stores/amazon.py
@@ -154,13 +154,15 @@ class Amazon:
                         self.reserve.append(float(config[f"reserve_{x + 1}"]))
                     # assert isinstance(self.asin_list, list)
                 except Exception:
-                    log.error(
-                        "amazon_config.json file not formatted properly: https://github.com/Hari-Nagarajan/nvidia-bot/wiki/Usage#json-configuration"
+                    self.status_signal.emit(create_msg(
+                        "amazon_config.json file not formatted properly: https://github.com/Hari-Nagarajan/nvidia-bot/wiki/Usage#json-configuration",
+                        "error")
                     )
                     exit(0)
         else:
-            log.error(
-                "No config file found, see here on how to fix this: https://github.com/Hari-Nagarajan/nvidia-bot/wiki/Usage#json-configuration"
+            self.status_signal.emit(create_msg(
+                "No config file found, see here on how to fix this: https://github.com/Hari-Nagarajan/nvidia-bot/wiki/Usage#json-configuration",
+                "error")
             )
             exit(0)
 
@@ -176,18 +178,18 @@ class Amazon:
             self.driver = webdriver.Chrome(executable_path=binary_path, options=options)
             self.wait = WebDriverWait(self.driver, 10)
         except Exception as e:
-            log.error(e)
+            self.status_signal.emit(create_msg(f"{e}","error"))
             exit(1)
 
         for key in AMAZON_URLS.keys():
             AMAZON_URLS[key] = AMAZON_URLS[key].format(domain=self.amazon_website)
         self.driver.get(AMAZON_URLS["BASE_URL"])
-        log.info("Waiting for home page.")
+        self.status_signal.emit(create_msg("Waiting for home page.", "normal"))
         self.check_if_captcha(self.wait_for_pages, HOME_PAGE_TITLES)
         if self.is_logged_in():
-            log.info("Already logged in")
+            self.status_signal.emit(create_msg("Already logged in", "normal"))
         else:
-            log.info("Lets log in.")
+            self.status_signal.emit(create_msg("Lets log in.", "normal"))
 
             is_smile = "smile" in AMAZON_URLS["BASE_URL"]
             xpath = (
@@ -196,10 +198,10 @@ class Amazon:
                 else '//*[@id="nav-link-accountList"]/div/span'
             )
             selenium_utils.button_click_using_xpath(self.driver, xpath)
-            log.info("Wait for Sign In page")
+            self.status_signal.emit(create_msg("Wait for Sign In page", "normal"))
             self.check_if_captcha(self.wait_for_pages, SIGN_IN_TITLES)
             self.login()
-            log.info("Waiting 15 seconds.")
+            self.status_signal.emit(create_msg("Waiting 15 seconds.", "normal"))
             time.sleep(
                 15
             )  # We can remove this once I get more info on the phone verification page.
@@ -214,32 +216,32 @@ class Amazon:
     def login(self):
 
         try:
-            log.info("Email")
+            self.status_signal.emit(create_msg("Email", "normal"))
             self.driver.find_element_by_xpath('//*[@id="ap_email"]').send_keys(
                 self.username + Keys.RETURN
             )
         except:
-            log.info("Email not needed.")
+            self.status_signal.emit(create_msg("Email not needed.", "normal"))
             pass
 
         if self.driver.find_elements_by_xpath('//*[@id="auth-error-message-box"]'):
-            log.error("Login failed, check your username in amazon_config.json")
+            self.status_signal.emit(create_msg("Login failed, check your username in amazon_config.json", "error"))
             time.sleep(240)
             exit(1)
 
-        log.info("Remember me checkbox")
+        self.status_signal.emit(create_msg("Remember me checkbox", "normal"))
         selenium_utils.button_click_using_xpath(self.driver, '//*[@name="rememberMe"]')
 
-        log.info("Password")
+        self.status_signal.emit(create_msg("Password", "normal"))
         self.driver.find_element_by_xpath('//*[@id="ap_password"]').send_keys(
             self.password + Keys.RETURN
         )
 
-        log.info(f"Logged in as {self.username}")
+        self.status_signal.emit(create_msg(f"Logged in as {self.username}", "normal"))
 
     def run_item(self, delay=3, test=False):
         self.save_screenshot("start-up")
-        log.info("Checking stock for items.")
+        self.status_signal.emit(create_msg("Checking stock for items.", "normal"))
         checkout_success = False
         while not checkout_success:
             pop_list = []
@@ -247,13 +249,13 @@ class Amazon:
                 for asin in self.asin_list[i]:
                     checkout_success = self.check_stock(asin, self.reserve[i])
                     if checkout_success:
-                        log.info(f"attempting to buy {asin}")
+                        self.status_signal.emit(create_msg(f"attempting to buy {asin}", "normal"))
                         if self.checkout(test=test):
-                            log.info(f"bought {asin}")
+                            self.status_signal.emit(create_msg(f"bought {asin}", "normal"))
                             pop_list.append(asin)
                             break
                         else:
-                            log.info(f"checkout for {asin} failed")
+                            self.status_signal.emit(create_msg(f"checkout for {asin} failed", "normal"))
                             checkout_success = False
                     time.sleep(delay)
             if pop_list:
@@ -293,7 +295,7 @@ class Amazon:
                 '//*[@class="a-color-secondary"]'
             )
         except Exception as e:
-            log.error(e)
+            self.status_signal.emit(create_msg(f"{e}", "error"))
             return False
 
         for i in range(len(elements)):
@@ -312,9 +314,9 @@ class Amazon:
             if (ship_float + price_float) <= reserve or math.isclose(
                 (price_float + ship_float), reserve, abs_tol=0.01
             ):
-                log.info("Item in stock and under reserve!")
+                self.status_signal.emit(create_msg("Item in stock and under reserve!", "normal"))
                 elements[i].click()
-                log.info("clicking add to cart")
+                self.status_signal.emit(create_msg("clicking add to cart", "normal"))
                 return True
         return False
 
@@ -325,13 +327,13 @@ class Amazon:
             try:
                 self.notification_handler.send_notification(page, file_name)
             except TimeoutException:
-                log.info("Timed out taking screenshot, trying to continue anyway")
+                self.status_signal.emit(create_msg("Timed out taking screenshot, trying to continue anyway", "normal"))
                 pass
             except Exception as e:
-                log.error(f"Trying to recover from error: {e}")
+                self.status_signal.emit(create_msg(f"Trying to recover from error: {e}", "error"))
                 pass
         else:
-            log.error("Error taking screenshot due to File I/O error")
+            self.status_signal.emit(create_msg("Error taking screenshot due to File I/O error", "error"))
 
     def save_page_source(self, page):
         """Saves DOM at the current state when called.  This includes state changes from DOM manipulation via JS"""
@@ -343,17 +345,15 @@ class Amazon:
 
     def get_captcha_help(self):
         if not self.on_captcha_page():
-            log.info("Not on captcha page.")
+            self.status_signal.emit(create_msg("Not on captcha page.", "normal"))
             return
         try:
-            log.info("Stuck on a captcha... Lets try to solve it.")
+            self.status_signal.emit(create_msg("Stuck on a captcha... Lets try to solve it.", "normal"))
             captcha = AmazonCaptcha.fromdriver(self.driver)
             solution = captcha.solve()
-            log.info(f"The solution is: {solution}")
+            self.status_signal.emit(create_msg(f"The solution is: {solution}", "normal"))
             if solution == "Not solved":
-                log.info(
-                    f"Failed to solve {captcha.image_link}, lets reload and get a new captcha."
-                )
+                self.status_signal.emit(create_msg(f"Failed to solve {captcha.image_link}, lets reload and get a new captcha.", "normal"))
                 self.driver.refresh()
                 time.sleep(5)
                 self.get_captcha_help()
@@ -363,8 +363,8 @@ class Amazon:
                     '//*[@id="captchacharacters"]'
                 ).send_keys(solution + Keys.RETURN)
         except Exception as e:
-            log.debug(e)
-            log.info("Error trying to solve captcha. Refresh and retry.")
+            self.status_signal.emit(create_msg(f"{e}", "normal"))
+            self.status_signal.emit(create_msg("Error trying to solve captcha. Refresh and retry.", "normal"))
             self.driver.refresh()
             time.sleep(5)
 
@@ -384,34 +384,35 @@ class Amazon:
         try:
             func(args)
         except Exception as e:
-            log.debug(str(e))
+            self.status_signal.emit(create_msg(f"{str(e)}", "normal"))
             if self.on_captcha_page():
                 self.get_captcha_help()
                 func(args, t=300)
             else:
-                log.debug(self.driver.title)
-                log.error(
-                    f"An error happened, please submit a bug report including a screenshot of the page the "
-                    f"selenium browser is on. There may be a file saved at: amazon-{func.__name__}.png"
+                self.status_signal.emit(create_msg(f"{self.driver.title}", "normal"))
+                self.status_signal.emit(create_msg(
+                    f"An error happened, please submit a bug report including a screenshot of the page the selenium "
+                    f"browser is on. There may be a file saved at: amazon-{func.__name__}.png",
+                    "error")
                 )
                 self.save_screenshot("title-fail")
                 time.sleep(60)
                 # self.driver.close()
-                log.debug(e)
+                self.status_signal.emit(create_msg(f"{e}", "normal"))
                 pass
 
     def wait_for_pages(self, page_titles, t=30):
         try:
             selenium_utils.wait_for_any_title(self.driver, page_titles, t)
         except Exception as e:
-            log.debug(f"wait_for_pages exception: {e}")
+            self.status_signal.emit(create_msg(f"wait_for_pages exception: {e}", "normal"))
             pass
 
     def wait_for_pyo_page(self):
         self.check_if_captcha(self.wait_for_pages, CHECKOUT_TITLES + SIGN_IN_TITLES)
 
         if self.driver.title in SIGN_IN_TITLES:
-            log.info("Need to sign in again")
+            self.status_signal.emit(create_msg("Need to sign in again", "normal"))
             self.login()
 
     def finalize_order_button(self, test, retry=0):
@@ -434,9 +435,9 @@ class Amazon:
                 ):
                     button = self.driver.find_element_by_xpath(button_xpath)
             except NoSuchElementException:
-                log.debug(f"{button_xpath}, lets try a different one.")
+                self.status_signal.emit(create_msg(f"{button_xpath}, lets try a different one.", "normal"))
         if button:
-            log.info(f"Clicking Button: {button.text}")
+            self.status_signal.emit(create_msg(f"Clicking Button: {button.text}", "normal"))
             if not test:
                 button.click()
             return True
@@ -446,9 +447,7 @@ class Amazon:
                 time.sleep(2)
                 returnVal = self.finalize_order_button(test, retry + 1)
             else:
-                log.info(
-                    "Couldn't find button after 3 retries. Open a GH issue for this."
-                )
+                self.status_signal.emit(create_msg("Couldn't find button after 3 retries. Open a GH issue for this.", "normal"))
                 self.save_page_source("finalize-order-button-fail")
                 self.save_screenshot("finalize-order-button-fail")
         return returnVal
@@ -458,24 +457,22 @@ class Amazon:
             try:
                 self.check_if_captcha(self.wait_for_pages, ORDER_COMPLETE_TITLES)
             except:
-                log.error("error during order completion")
+                self.status_signal.emit(create_msg("error during order completion", "error"))
                 self.save_screenshot("order-failed")
                 return False
         else:
-            log.info(
-                "This is a test, so we don't need to wait for the order completed page."
-            )
+            self.status_signal.emit(create_msg("This is a test, so we don't need to wait for the order completed page.", "normal"))
         return True
 
     def checkout(self, test):
-        log.info("Waiting for Cart Page")
+        self.status_signal.emit(create_msg("Waiting for Cart Page", "normal"))
         self.notification_handler.send_notification("Attempting to checkout")
         self.check_if_captcha(self.wait_for_pages, SHOPING_CART_TITLES)
         if self.detailed:
             self.save_screenshot("waiting-for-cart")
 
         try:  # This is fast.
-            log.info("Quick redirect to checkout page")
+            self.status_signal.emit(create_msg("Quick redirect to checkout page", "normal"))
             cart_initiate_id = self.driver.find_element_by_name("cartInitiateId")
             cart_initiate_id = cart_initiate_id.get_attribute("value")
             self.driver.get(
@@ -484,35 +481,35 @@ class Amazon:
                 )
             )
         except:
-            log.info("clicking checkout.")
+            self.status_signal.emit(create_msg("clicking checkout.", "normal"))
             try:
                 self.driver.find_element_by_xpath(
                     '//*[@id="hlb-ptc-btn-native"]'
                 ).click()
             except:
                 self.save_screenshot("start-checkout-fail")
-                log.info("Failed to checkout. Returning to stock check.")
+                self.status_signal.emit(create_msg("Failed to checkout. Returning to stock check.", "normal"))
                 return False
 
-        log.info("Waiting for Place Your Order Page")
+        self.status_signal.emit(create_msg("Waiting for Place Your Order Page", "normal"))
         self.wait_for_pyo_page()
 
-        log.info("Attempting to Finish checkout")
+        self.status_signal.emit(create_msg("Attempting to Finish checkout", "normal"))
         if self.detailed:
             self.save_screenshot("finish-checkout")
 
         if not self.finalize_order_button(test):
-            log.info("Failed to click finalize the order")
+            self.status_signal.emit(create_msg("Failed to click finalize the order", "normal"))
             if self.detailed:
                 self.save_screenshot("finalize-fail")
             return False
 
-        log.info("Waiting for Order completed page.")
+        self.status_signal.emit(create_msg("Waiting for Order completed page.", "normal"))
         if not self.wait_for_order_completed(test):
-            log.info("order not completed, going back to stock check")
+            self.status_signal.emit(create_msg("order not completed, going back to stock check", "normal"))
             return False
 
-        log.info("Order Placed.")
+        self.status_signal.emit(create_msg("Order Placed.", "normal"))
         self.save_screenshot("order-placed")
         return True
 
