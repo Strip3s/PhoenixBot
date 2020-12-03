@@ -168,7 +168,7 @@ def change_driver(status_signal, loc):
             fin.write(data)
             fin.close()
         except:
-            print("Error modifying chromedriver")
+            status_signal.emit(create_msg("Error modifying chromedriver", "error"))
     else:
         fin.close()
 
