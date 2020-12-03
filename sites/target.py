@@ -16,6 +16,7 @@ class Target:
         starting_msg = "Starting Target"
         self.browser = self.init_driver()
         self.product_image = None
+        self.TIMEOUT_LONG = 20
 
         if settings.dont_buy:
             starting_msg = "Starting Target in dev mode; will not actually checkout"
@@ -54,8 +55,8 @@ class Target:
     def login(self):
         self.browser.get("https://www.target.com")
         self.browser.find_element_by_id("account").click()
-        wait(self.browser, 10).until(EC.element_to_be_clickable((By.ID, "accountNav-signIn"))).click()
-        wait(self.browser, 10).until(EC.presence_of_element_located((By.ID, "username"))).send_keys(settings.target_user)
+        wait(self.browser, self.TIMEOUT_LONG).until(EC.element_to_be_clickable((By.ID, "accountNav-signIn"))).click()
+        wait(self.browser, self.TIMEOUT_LONG).until(EC.presence_of_element_located((By.ID, "username"))).send_keys(settings.target_user)
         password = self.browser.find_element_by_id("password")
         password.send_keys(settings.target_pass)
         self.browser.find_element_by_id("login").click()
@@ -68,8 +69,9 @@ class Target:
         in_stock = False
 
         self.browser.get(self.product)
+        wait(self.browser, self.TIMEOUT_LONG).until(lambda _: self.browser.current_url == self.product)
 
-        while not in_stock:
+        while not img_found:
             try:
                 if not img_found:
                     product_img = self.browser.find_elements_by_class_name('slideDeckPicture')[0].find_element_by_tag_name(
@@ -80,16 +82,21 @@ class Target:
             except Exception as e:
                 continue
 
-            try:
-                ship_btn = self.browser.find_element_by_xpath('//button[@data-test= "shipItButton"]')
-                self.browser.execute_script("return arguments[0].scrollIntoView(true);", ship_btn)
-                ship_btn.click()
-                in_stock = True
-                self.status_signal.emit(create_msg("Added to cart", "normal"))
-            except Exception as e:
+        while not in_stock:
+            add_to_cart_btn = None
+            if len(self.browser.find_elements_by_xpath('//button[@data-test= "orderPickupButton"]')) > 0:
+                add_to_cart_btn = self.browser.find_element_by_xpath('//button[@data-test= "orderPickupButton"]')
+            elif len(self.browser.find_elements_by_xpath('//button[@data-test= "shipItButton"]')) > 0:
+                add_to_cart_btn = self.browser.find_element_by_xpath('//button[@data-test= "shipItButton"]')
+            else:
                 self.status_signal.emit(create_msg("Waiting on Restock", "normal"))
                 time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
                 self.browser.refresh()
+                continue
+            self.browser.execute_script("return arguments[0].scrollIntoView(true);", add_to_cart_btn)
+            add_to_cart_btn.click()
+            in_stock = True
+            self.status_signal.emit(create_msg("Added to cart", "normal"))
 
     def atc(self):
         declined_ins = False
@@ -164,10 +171,11 @@ class Target:
         self.status_signal.emit(create_msg("Submitting Order", "normal"))
         while not did_submit:
             try:
+                if len(self.browser.find_elements_by_id('creditCardInput-cvv')) > 0:
+                    self.browser.find_element_by_id('creditCardInput-cvv').send_keys(self.profile["card_cvv"])
                 self.browser.find_element_by_xpath('//button[@data-test= "placeOrderButton"]').click()
                 self.status_signal.emit(create_msg("Order Placed", "success"))
                 send_webhook("OP", "Target", self.profile["profile_name"], self.task_id, self.product_image)
                 did_submit = True
             except:
                 continue
-
