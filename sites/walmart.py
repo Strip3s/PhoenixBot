@@ -3,7 +3,7 @@ from utils import send_webhook, random_delay
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from PyQt5 import QtCore
-import urllib, requests, time, lxml.html, json, sys, settings
+import requests, time, lxml.html, json, sys, settings
 
 
 class Walmart:
@@ -19,7 +19,7 @@ class Walmart:
         #################################################
 
         self.session = requests.Session()
-        if proxy != False:
+        if proxy:
             self.session.proxies.update(proxy)
         starting_msg = "Starting"
         if settings.dont_buy:
