@@ -12,9 +12,9 @@ chardet==3.0.4 \
     --hash=sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae \
     --hash=sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691 \
     # via requests
-chromedriver-py==86.0.4240.22 \
-    --hash=sha256:35abe377788f0e606e0cf98dedeafce66b8eed277f6756940661d4fb1787a233 \
-    --hash=sha256:4accb67268ba615eb0bbbc29634b31bb669730009b1d4680b8e7cdf13ee6de84 \
+chromedriver-py==87.0.4280.20 \
+    --hash=sha256:0b4c5bbbd51f1acaba9a166de27e7e799220c527a975d9eaaee648a690a412f0 \
+    --hash=sha256:e81c76f0847d8f8a3672f3ae165b2507b8866d86f37ff4bf069787ba84767ef2 \
     # via -r requirements.in
 click==7.1.2 \
     --hash=sha256:d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a \
@@ -162,9 +162,9 @@ pytz==2020.4 \
     --hash=sha256:3e6b7dd2d1e0a59084bcee14a17af60c5c562cdc16d828e8eba2e683d3a7e268 \
     --hash=sha256:5c55e189b682d420be27c6995ba6edce0c0a77dd67bfbe2ae6607134d5851ffd \
     # via tzlocal
-requests==2.23.0 \
-    --hash=sha256:43999036bfa82904b6af1d99e4882b560e5e2c68e5c4b0aa03b655f3d7d73fee \
-    --hash=sha256:b3f43d496c6daba4493e7c431722aeb7dbc6288f52a6e04e7b6023b0247817e6 \
+requests==2.25.0 \
+    --hash=sha256:7f1a0b932f4a60a1a65caa4263921bb7d9ee911957e0ae4a23a6dd08185ad5f8 \
+    --hash=sha256:e786fa28d8c9154e6a4de5d46a1d921b8749f8b74e28bde23768e5e16eece998 \
     # via -r requirements.in, webdriver-manager
 selenium==3.141.0 \
     --hash=sha256:2d7131d7bc5a5b99a2d9b04aaf2612c411b03b8ca1b1ee8d3de5845a9be2cb3c \

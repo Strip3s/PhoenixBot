@@ -1,6 +1,6 @@
 from theming.styles import globalStyles
 from PyQt5 import QtCore, QtGui, QtWidgets
-from pages.homepage import HomePage,TaskTab
+from pages.homepage import HomePage, TaskTab
 from pages.createdialog import CreateDialog
 from pages.profilespage import ProfilesPage
 from pages.proxiespage import ProxiesPage
@@ -9,12 +9,16 @@ from pages.pollbrowser import PollBrowserDialog
 import sys, os, settings
 from theming.styles import globalStyles
 
+
 def no_abort(a, b, c):
     sys.__excepthook__(a, b, c)
+
+
 sys.excepthook = no_abort
 
+
 class MainWindow(QtWidgets.QMainWindow):
-  
+
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent=parent)
         self.setupUi(self)
@@ -110,12 +114,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def set_functions(self):
         self.current_page = "home"
-        self.home_tab.mousePressEvent = lambda event: self.change_page(event,"home")
-        self.profiles_tab.mousePressEvent = lambda event: self.change_page(event,"profiles")
-        self.proxies_tab.mousePressEvent = lambda event: self.change_page(event,"proxies")
-        self.settings_tab.mousePressEvent = lambda event: self.change_page(event,"settings")
+        self.home_tab.mousePressEvent = lambda event: self.change_page(event, "home")
+        self.profiles_tab.mousePressEvent = lambda event: self.change_page(event, "profiles")
+        self.proxies_tab.mousePressEvent = lambda event: self.change_page(event, "proxies")
+        self.settings_tab.mousePressEvent = lambda event: self.change_page(event, "settings")
         self.homepage.newtask_btn.clicked.connect(self.createdialog.show)
-    
     def change_page(self,event,current_page):
         eval('self.{}_active_tab.setStyleSheet("background-color: transparent;border: none;")'.format(self.current_page))
         # reseting image after deselect
@@ -130,7 +133,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # after initial tab side background color
         eval('self.{}_tab.setStyleSheet("background-color: {};border: none;")'.format(self.current_page,globalStyles["primaryAscent"]))
         eval("self.{}page.show()".format(self.current_page))
-    
+
     def create_task(self):
         site = self.createdialog.site_box.currentText()
         product = self.createdialog.input_edit.text()
@@ -141,7 +144,7 @@ class MainWindow(QtWidgets.QMainWindow):
         max_price = self.createdialog.price_edit.text() if self.createdialog.maxprice_checkbox.isChecked() else ""
         if site != "Site" and product != "" and profile != "Profile" and monitor_delay != "" and error_delay != "":
             for i in range(self.createdialog.taskcount_spinbox.value()):
-                self.homepage.verticalLayout.takeAt(self.homepage.verticalLayout.count()-1)
+                self.homepage.verticalLayout.takeAt(self.homepage.verticalLayout.count() - 1)
                 tab = TaskTab(
                     site,
                     product,
@@ -153,10 +156,13 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.homepage.stop_all_tasks,
                     self.homepage.scrollAreaWidgetContents)
                 self.homepage.verticalLayout.addWidget(tab)
-                spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-                self.homepage.verticalLayout.addItem(spacerItem) 
-        
-#(.*)
+                spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum,
+                                                   QtWidgets.QSizePolicy.Expanding)
+                self.homepage.verticalLayout.addItem(spacerItem)
+
+            # (.*)
+
+
 if __name__ == "__main__":
     ui_app = QtWidgets.QApplication(sys.argv)
     ui = MainWindow()

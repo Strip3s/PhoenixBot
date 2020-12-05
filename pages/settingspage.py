@@ -85,14 +85,18 @@ class SettingsPage(QtWidgets.QWidget):
                                                   self.small_font, "Random Stop Delay (Default is 40ms)")
         self.proxies_header = self.create_header(self.settingspage, QtCore.QRect(30, 10, 81, 31),
                                                  self.create_font("Arial", 22), "Settings")
+        self.bestbuy_user_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 310, 235, 20),
+                                                 self.small_font, "Bestbuy.com Username (Email)")
+        self.bestbuy_pass_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 335, 235, 20),
+                                                 self.small_font, "Bestbuy.com Password")
         self.target_user_edit = self.create_edit(self.settings_card, QtCore.QRect(30, 365, 235, 20),
                                                  self.small_font, "Target.com Username (Email/Cell #)")
         self.target_pass_edit = self.create_edit(self.settings_card, QtCore.QRect(30, 390, 235, 20),
-                                                 self.small_font, "Target.com Password)")
+                                                 self.small_font, "Target.com Password")
         self.gamestop_user_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 365, 235, 20),
                                                  self.small_font, "Gamestop.com Username (Email)")
         self.gamestop_pass_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 390, 235, 20),
-                                                 self.small_font, "Gamestop.com Password)")
+                                                 self.small_font, "Gamestop.com Password")
         
         self.set_data()
         QtCore.QMetaObject.connectSlotsByName(settingspage)
@@ -116,6 +120,16 @@ class SettingsPage(QtWidgets.QWidget):
             self.random_delay_start.setText(settings["random_delay_start"])
         if settings['random_delay_stop']:
             self.random_delay_stop.setText(settings["random_delay_stop"])
+
+        try:
+            self.bestbuy_user_edit.setText(settings["bestbuy_user"])
+        except:
+            self.bestbuy_user_edit.setText("")
+
+        try:
+            self.bestbuy_pass_edit.setText((Encryption().decrypt(settings["bestbuy_pass"].encode("utf-8"))).decode("utf-8"))
+        except:
+            self.bestbuy_pass_edit.setText("")
 
         try:
             self.target_user_edit.setText(settings["target_user"])
@@ -149,10 +163,12 @@ class SettingsPage(QtWidgets.QWidget):
                     "dont_buy":           self.dont_buy_checkbox.isChecked(),
                     "random_delay_start": self.random_delay_start.text(),
                     "random_delay_stop":  self.random_delay_stop.text(),
+                    "bestbuy_user": self.bestbuy_user_edit.text(),
+                    "bestbuy_pass": Encryption().encrypt(self.bestbuy_pass_edit.text()).decode("utf-8"),
                     "target_user": self.target_user_edit.text(),
-                    'target_pass': Encryption().encrypt(self.target_pass_edit.text()).decode("utf-8"),
+                    "target_pass": Encryption().encrypt(self.target_pass_edit.text()).decode("utf-8"),
                     "gamestop_user": self.gamestop_user_edit.text(),
-                    'gamestop_pass': Encryption().encrypt(self.gamestop_pass_edit.text()).decode("utf-8")}
+                    "gamestop_pass": Encryption().encrypt(self.gamestop_pass_edit.text()).decode("utf-8")}
 
         write_data("./data/settings.json",settings)
         self.update_settings(settings)
@@ -166,10 +182,14 @@ class SettingsPage(QtWidgets.QWidget):
             settings.random_delay_start = settings_data["random_delay_start"]
         if settings_data.get("random_delay_stop", "") != "":
             settings.random_delay_stop = settings_data["random_delay_stop"]
-        if settings_data.get("target_user_edit", "") != "":
+        if settings_data.get("bestbuy_user", "") != "":
+            settings.bestbuy_user = settings_data["bestbuy_user"]
+        if settings_data.get("bestbuy_pass", "") != "":
+            settings.bestbuy_pass = (Encryption().decrypt(settings_data["bestbuy_pass"].encode("utf-8"))).decode("utf-8")
+        if settings_data.get("target_user", "") != "":
             settings.target_user = settings_data["target_user"]
-        if settings_data.get("target_pass_edit", "") != "":
-            settings.target_pass = settings_data["target_pass"]
+        if settings_data.get("target_pass", "") != "":
+            settings.target_pass = (Encryption().decrypt(settings_data["target_pass"].encode("utf-8"))).decode("utf-8")
         if settings_data.get("gamestop_user", "") != "":
             settings.gamestop_user = settings_data["gamestop_user"]
         if settings_data.get("gamestop_pass", "") != "":

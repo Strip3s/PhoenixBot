@@ -16,4 +16,5 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-data/settings.json
+# OSX
+.DS_Store

@@ -17,14 +17,21 @@ browser_on_failed = True
 global dont_buy
 dont_buy = False
 
+# TODO: Rename this to match proper format
 global userAgent
-userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36"
+userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.20 Safari/537.36"
 
 global random_delay_start
 random_delay_start = 10
 
 global random_delay_stop
 random_delay_stop = 40
+
+global bestbuy_user
+bestbuy_user = ""
+
+global bestbuy_pass
+bestbuy_pass = ""
 
 global target_user
 target_user = ""

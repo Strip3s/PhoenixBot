@@ -1,6 +1,7 @@
 import requests, time, datetime, json
 
-#modified from https://github.com/lovvskillz/python-discord-webhook 
+
+# modified from https://github.com/lovvskillz/python-discord-webhook
 
 class DiscordWebhook:
     def __init__(self, url, **kwargs):
