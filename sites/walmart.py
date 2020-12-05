@@ -71,8 +71,8 @@ class Walmart:
                             if float(self.max_price) < price:
                                 self.status_signal.emit({"msg": "Waiting For Price Restock", "status": "normal"})
                                 self.session.cookies.clear()
-                                time.sleep(random_delay(self.monitor_delay, settings.rand_delay_start,
-                                                        settings.rand_delay_stop))
+                                time.sleep(random_delay(self.monitor_delay, settings.random_delay_start,
+                                                        settings.random_delay_stop))
                                 continue
                         offer_id = json.loads(doc.xpath('//script[@id="item"]/text()')[0])["item"]["product"]["buyBox"][
                             "products"][0]["offerId"]
@@ -167,7 +167,7 @@ class Walmart:
                     if json.loads(r.text)["message"] == "Item is no longer in stock.":
                         self.status_signal.emit({"msg": "Waiting For Restock", "status": "normal"})
                         time.sleep(
-                            random_delay(self.monitor_delay, settings.rand_delay_start, settings.rand_delay_stop))
+                            random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
                     else:
                         if self.is_captcha(r.text):
                             self.handle_captcha("https://www.walmart.com/checkout")
