@@ -1,13 +1,12 @@
+# Avoid user data, include defaults
+data/*
+*.json
+!*_default.json
 __pycache__/
 debug.log
 
-#Data folder
-data/profiles.json
-data/settings.json
-data/proxies.json
-data/tasks.json
-data/vault.json
-
+# IDEs
+.idea/
 # Environments
 .env
 .venv
