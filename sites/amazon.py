@@ -272,6 +272,8 @@ class Amazon:
                 return True
         return False
 
+    # TODO: Refactor for our system. Maybe no longer necessary?
+
     # def save_screenshot(self, page):
     #     file_name = get_timestamp_filename("screenshot-" + page, ".png")
     #
@@ -287,13 +289,15 @@ class Amazon:
     #     else:
     #         self.status_signal.emit(create_msg("Error taking screenshot due to File I/O error", "error"))
 
-    def save_page_source(self, page):
-        """Saves DOM at the current state when called.  This includes state changes from DOM manipulation via JS"""
-        file_name = get_timestamp_filename(page + "_source", "html")
+    # TODO: Reenable if necessary
 
-        page_source = self.driver.page_source
-        with open(file_name, "w", encoding="utf-8") as f:
-            f.write(page_source)
+    # def save_page_source(self, page):
+    #     """Saves DOM at the current state when called.  This includes state changes from DOM manipulation via JS"""
+    #     file_name = get_timestamp_filename(page + "_source", "html")
+    #
+    #     page_source = self.driver.page_source
+    #     with open(file_name, "w", encoding="utf-8") as f:
+    #         f.write(page_source)
 
     def get_captcha_help(self):
         if not self.on_captcha_page():
@@ -400,7 +404,7 @@ class Amazon:
                 returnVal = self.finalize_order_button(test, retry + 1)
             else:
                 self.status_signal.emit(create_msg("Couldn't find button after 3 retries. Open a GH issue for this.", "normal"))
-                self.save_page_source("finalize-order-button-fail")
+                # self.save_page_source("finalize-order-button-fail")
                 # self.save_screenshot("finalize-order-button-fail")
         return returnVal
 
@@ -462,16 +466,16 @@ class Amazon:
             return False
 
         self.status_signal.emit(create_msg("Order Placed.", "normal"))
-        #self.save_screenshot("order-placed")
+        # self.save_screenshot("order-placed")
         return True
 
-
-def get_timestamp_filename(name, extension):
-    """Utility method to create a filename with a timestamp appended to the root and before
-    the provided file extension"""
-    now = datetime.now()
-    date = now.strftime("%m-%d-%Y_%H_%M_%S")
-    if extension.startswith("."):
-        return name + "_" + date + extension
-    else:
-        return name + "_" + date + "." + extension
+    # TODO: Reenable if necessary
+    # def get_timestamp_filename(name, extension):
+    #     """Utility method to create a filename with a timestamp appended to the root and before
+    #     the provided file extension"""
+    #     now = datetime.now()
+    #     date = now.strftime("%m-%d-%Y_%H_%M_%S")
+    #     if extension.startswith("."):
+    #         return name + "_" + date + extension
+    #     else:
+    #         return name + "_" + date + "." + extension
