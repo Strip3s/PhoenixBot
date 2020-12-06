@@ -20,6 +20,9 @@ from utils.selenium_utils import options, enable_headless
 
 # https://github.com/Hari-Nagarajan/nvidia-bot/blob/master/stores/amazon.py
 
+# TODO:  Add to settings page for domain selection. Maybe autoconfigure off of country selection?
+AMAZON_DOMAIN = "smile.amazon.com"
+
 AMAZON_URLS = {
     "BASE_URL": "https://{domain}/",
     "CART_URL": "https://{domain}/gp/aws/cart/add.html",
@@ -144,8 +147,10 @@ class Amazon:
             self.status_signal.emit(create_msg(f"{e}", "error"))
             # exit(1)
 
+        # TODO: Autoconfigure based on Country of the Shipping Address
         for key in AMAZON_URLS.keys():
-            AMAZON_URLS[key] = AMAZON_URLS[key].format(domain="smile.amazon.com") # TODO: Autoconfigure based on Country of the Shipping Address
+            AMAZON_URLS[key] = AMAZON_URLS[key].format(domain=AMAZON_DOMAIN)
+
         self.driver.get(AMAZON_URLS["BASE_URL"])
         self.status_signal.emit(create_msg("Waiting for home page.", "normal"))
         self.check_if_captcha(self.wait_for_pages, HOME_PAGE_TITLES)
@@ -424,7 +429,7 @@ class Amazon:
             cart_initiate_id = cart_initiate_id.get_attribute("value")
             self.driver.get(
                 AMAZON_CHECKOUT_URL.format(
-                    domain="smile.amazon.com", cart_id=cart_initiate_id
+                    domain=AMAZON_DOMAIN, cart_id=cart_initiate_id
                 )
             )
         except:
