@@ -154,6 +154,7 @@ class Amazon:
         self.driver.get(AMAZON_URLS["BASE_URL"])
         self.status_signal.emit(create_msg("Waiting for home page.", "normal"))
         self.check_if_captcha(self.wait_for_pages, HOME_PAGE_TITLES)
+
         if self.is_logged_in():
             self.status_signal.emit(create_msg("Already logged in", "normal"))
         else:
@@ -175,12 +176,13 @@ class Amazon:
             )  # We can remove this once I get more info on the phone verification page.
 
         self.status_signal.emit(create_msg("Checking stock for items.", "normal"))
+        # TODO:  Move to init
         checkout_success = False
         while not checkout_success:
             checkout_success = self.check_stock()
             if checkout_success:
                 self.status_signal.emit(create_msg(f"attempting to buy {self.asin}", "normal"))
-                if self.checkout(test=False):
+                if self.checkout(test=settings.dont_buy):
                     self.status_signal.emit(create_msg(f"bought {self.asin}", "normal"))
                     break
                 else:
@@ -268,7 +270,7 @@ class Amazon:
             ):
                 self.status_signal.emit(create_msg("Item in stock and under reserve!", "normal"))
                 elements[i].click()
-                self.status_signal.emit(create_msg("clicking add to cart", "normal"))
+                self.status_signal.emit(create_msg("clicking add to cart", "carted"))
                 return True
         return False
 
@@ -399,7 +401,7 @@ class Amazon:
             return True
         else:
             if retry < 3:
-                # log.info("Couldn't find button. Lets retry in a sec.")
+                self.status_signal.emit(create_msg("Couldn't find button. Lets retry in a sec.", "normal"))
                 time.sleep(2)
                 returnVal = self.finalize_order_button(test, retry + 1)
             else:
@@ -412,8 +414,9 @@ class Amazon:
         if not test:
             try:
                 self.check_if_captcha(self.wait_for_pages, ORDER_COMPLETE_TITLES)
-            except:
-                self.status_signal.emit(create_msg("error during order completion", "error"))
+            except Exception as e:
+                self.status_signal.emit(create_msg("Error during order completion", "error"))
+                self.status_signal.emit(create_msg(f"{e}", "error"))
                 # self.save_screenshot("order-failed")
                 return False
         else:
@@ -442,9 +445,10 @@ class Amazon:
                 self.driver.find_element_by_xpath(
                     '//*[@id="hlb-ptc-btn-native"]'
                 ).click()
-            except:
+            except Exception as e:
                 # self.save_screenshot("start-checkout-fail")
-                self.status_signal.emit(create_msg("Failed to checkout. Returning to stock check.", "normal"))
+                self.status_signal.emit(create_msg("Failed to checkout. Returning to stock check.", "error"))
+                self.status_signal.emit(create_msg(f"{e}", "error"))
                 return False
 
         self.status_signal.emit(create_msg("Waiting for Place Your Order Page", "normal"))
