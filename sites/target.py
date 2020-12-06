@@ -172,10 +172,10 @@ class Target:
         url = self.browser.current_url
         while not did_submit:
             try:
-                cvv_field = self.browser.find_element_by_id('creditCardInput-cvv')
+                cvv_field = self.browser.find_elements_by_id('creditCardInput-cvv')
                 if cvv_field:
-                    if len(cvv_field.get_attribute('value')) == 0:
-                        cvv_field.send_keys(self.profile["card_cvv"])
+                    if len(cvv_field[0].get_attribute('value')) == 0:
+                        cvv_field[0].send_keys(self.profile["card_cvv"])
                 self.browser.find_element_by_xpath('//button[@data-test="placeOrderButton"]').click()
                 time.sleep(5)
                 if url != self.browser.current_url:
