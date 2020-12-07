@@ -523,13 +523,10 @@ class ImageThread(QtCore.QThread):
         QtCore.QThread.__init__(self)
 
     def run(self):
-        try:
-            data = urllib.request.urlopen(self.image_url).read()
-            pixmap = QtGui.QPixmap()
-            pixmap.loadFromData(data)
-            self.finished_signal.emit(pixmap)
-        except urllib.error.URLError:
-            pass
+        data = urllib.request.urlopen(self.image_url).read()
+        pixmap = QtGui.QPixmap()
+        pixmap.loadFromData(data)
+        self.finished_signal.emit(pixmap)
 
 class BrowserThread(QtCore.QThread):
     def __init__(self):
