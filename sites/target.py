@@ -148,7 +148,10 @@ class Target:
                     self.browser.find_element_by_xpath('//button[@data-test="placeOrderButton"]').click()
                     time.sleep(5)
                 if (url != self.browser.current_url and not self.browser.find_elements_by_id('creditCardInput-cvv')) or settings.dont_buy: #TODO: make this more robust
-                    self.status_signal.emit(create_msg("Order Placed", "success"))
+                    if settings.dont_buy:
+                        self.status_signal.emit(create_msg("Mock Order Placed", "success"))
+                    else:
+                        self.status_signal.emit(create_msg("Order Placed", "success"))
                     send_webhook("OP", "Target", self.profile["profile_name"], self.task_id, self.product_image)
                     self.did_submit = True
             except:
