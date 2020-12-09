@@ -22,7 +22,7 @@ class Target:
         ]
         self.possible_interruptions = [
             {'type': 'input', 'path': '//input[@id="password"]', 'args': {'value': settings.target_pass, 'confirm_button': '//button[@id="login"]'}, 'message': 'Entering password', 'message_type': 'normal'}
-            , {'type': 'input', 'path': '//input[@id="creditCardInput-cardNumber"]', 'args': {'value': self.profile['card_number'], 'confirm_button': '//button[@data-test= "verify-card-button"]'}, 'message': 'Entering CC #', 'message_type': 'normal'}
+            , {'type': 'input', 'path': '//input[@id="creditCardInput-cardNumber"]', 'args': {'value': self.profile['card_number'], 'confirm_button': '//button[@data-test="verify-card-button"]'}, 'message': 'Entering CC #', 'message_type': 'normal'}
             , {'type': 'input', 'path': '//input[@id="creditCardInput-cvv"]', 'args': {'value': self.profile['card_cvv']}, 'message': 'Entering CC #', 'message_type': 'normal'}
         ]
         starting_msg = "Starting Target"
@@ -84,7 +84,7 @@ class Target:
             wait(self.browser, 10).until(EC.number_of_windows_to_be(2))
             new_window = [x for x in self.browser.window_handles if x not in windows_before][0]
             self.browser.switch_to_window(new_window)
-        if len(self.browser.find_elements_by_xpath('//button[@data-test= "orderPickupButton"]')) > 0 or len(self.browser.find_elements_by_xpath('//button[@data-test= "shipItButton"]')) > 0:
+        if len(self.browser.find_elements_by_xpath('//button[@data-test="orderPickupButton"]')) > 0 or len(self.browser.find_elements_by_xpath('//button[@data-test="shipItButton"]')) > 0:
             stock = True
         if new_tab:
             self.browser.close()
@@ -162,10 +162,10 @@ class Target:
         
     def find_and_click_atc(self):
         if self.browser.current_url == self.product and self.check_stock():
-            if self.browser.find_elements_by_xpath('//button[@data-test= "orderPickupButton"]'):
-                button = self.browser.find_element_by_xpath('//button[@data-test= "orderPickupButton"]')
-            elif self.browser.find_elements_by_xpath('//button[@data-test= "shipItButton"]'):
-                button = self.browser.find_element_by_xpath('//button[@data-test= "shipItButton"]')
+            if self.browser.find_elements_by_xpath('//button[@data-test="orderPickupButton"]'):
+                button = self.browser.find_element_by_xpath('//button[@data-test="orderPickupButton"]')
+            elif self.browser.find_elements_by_xpath('//button[@data-test="shipItButton"]'):
+                button = self.browser.find_element_by_xpath('//button[@data-test="shipItButton"]')
             else:
                 button = None
         if button:
