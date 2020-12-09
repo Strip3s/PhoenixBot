@@ -147,7 +147,7 @@ class Target:
                 if not settings.dont_buy:
                     self.browser.find_element_by_xpath('//button[@data-test="placeOrderButton"]').click()
                     time.sleep(5)
-                if (url != self.browser.current_url and not self.browser.find_elements_by_id('creditCardInput-cvv')) or settings.dont_buy: #TODO: make this more robust
+                if 'https://www.target.com/co-thankyou' in self.browser.current_url or settings.dont_buy:
                     if settings.dont_buy:
                         self.status_signal.emit(create_msg("Mock Order Placed", "success"))
                     else:
