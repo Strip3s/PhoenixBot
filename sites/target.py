@@ -7,8 +7,7 @@ from chromedriver_py import binary_path as driver_path
 from utils import random_delay, send_webhook, create_msg
 from utils.selenium_utils import change_driver
 import settings, time
-from platform import system
-from selenium.webdriver.common.keys import Keys
+
 
 class Target:
     def __init__(self, task_id, status_signal, image_signal, product, profile, proxy, monitor_delay, error_delay):
