@@ -6,11 +6,12 @@ from webdriver_manager.chrome import ChromeDriverManager
 from chromedriver_py import binary_path as driver_path
 from utils import random_delay, send_webhook, create_msg
 from utils.selenium_utils import change_driver
+from PyQt5.QtCore import pyqtBoundSignal
 import settings, time
 
 
 class SeleniumBaseClass:
-    def __init__(self, task_id, status_signal, image_signal, product, profile, proxy, monitor_delay, error_delay) -> None:
+    def __init__(self, task_id: str, status_signal: pyqtBoundSignal, image_signal: pyqtBoundSignal, product: str, profile: dict, proxy: bool, monitor_delay: str, error_delay: str) -> None:
         self.task_id, self.status_signal, self.image_signal, self.product, self.profile, self.monitor_delay, self.error_delay = task_id, status_signal, image_signal, product, profile, float(
             monitor_delay), float(error_delay)
         self.selector_sequence = list()

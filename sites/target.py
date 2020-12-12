@@ -68,7 +68,7 @@ class Target(SeleniumBaseClass):
             except:
                 self.status_signal.emit(create_msg('Retrying submit order until success', 'normal'))
 
-    def find_and_click_atc(self):
+    def find_and_click_atc(self) -> None:
         if self.browser.current_url == self.product and self.check_stock():
             if self.browser.find_elements_by_xpath('//button[@data-test="orderPickupButton"]'):
                 button = self.browser.find_element_by_xpath('//button[@data-test="orderPickupButton"]')
