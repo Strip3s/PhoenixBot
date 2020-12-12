@@ -21,7 +21,7 @@ class Target:
             , {'type': 'method', 'path': '//button[@data-test="placeOrderButton"]', 'method': self.submit_order, 'message': 'Submitting order', 'message_type': 'normal'}
         ]
         self.possible_interruptions = [
-            {'type': 'input', 'path': '//input[@id="password"]', 'args': {'value': settings.target_pass, 'confirm_button': '//button[@id="login"]'}, 'message': 'Entering password', 'message_type': 'normal'}
+            {'type': 'method', 'path': '//input[@id="password"]', 'method': self.fill_and_authenticate, 'message': 'Authenticating', 'message_type': 'normal'}
             , {'type': 'input', 'path': '//input[@id="creditCardInput-cardNumber"]', 'args': {'value': self.profile['card_number'], 'confirm_button': '//button[@data-test="verify-card-button"]'}, 'message': 'Entering CC #', 'message_type': 'normal'}
             , {'type': 'input', 'path': '//input[@id="creditCardInput-cvv"]', 'args': {'value': self.profile['card_cvv']}, 'message': 'Entering CC #', 'message_type': 'normal'}
         ]
@@ -63,13 +63,16 @@ class Target:
         self.browser.get("https://www.target.com")
         self.browser.find_element_by_id("account").click()
         wait(self.browser, self.TIMEOUT_LONG).until(EC.element_to_be_clickable((By.ID, "accountNav-signIn"))).click()
-        wait(self.browser, self.TIMEOUT_LONG).until(EC.presence_of_element_located((By.ID, "username"))).send_keys(settings.target_user)
-        password = self.browser.find_element_by_id("password")
-        password.send_keys(settings.target_pass)
-        self.browser.find_element_by_id("login").click()
+        wait(self.browser, self.TIMEOUT_LONG).until(EC.presence_of_element_located((By.ID, "username")))
+        self.fill_and_authenticate()
 
         # Gives it time for the login to complete
         time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
+
+    def fill_and_authenticate(self):
+        if self.browser.find_elements_by_id('username'):
+            self.fill_field_and_proceed('//input[@id="username"]', {'value': settings.target_user})
+        self.fill_field_and_proceed('//input[@id="password"]', {'value': settings.target_pass, 'confirm_button': '//button[@id="login"]'})
 
     def product_loop(self):
         while not self.did_submit and not self.failed:
