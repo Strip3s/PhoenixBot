@@ -9,3 +9,5 @@ pycryptodome
 webdriver_manager==3.2.2
 pip-tools==5.4.0
 requests==2.25.0
+fastapi==0.62.0
+uvicorn==0.13.1
