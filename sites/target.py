@@ -125,6 +125,9 @@ class Target:
     def atc_and_checkout(self):
         while not self.did_submit:
             for xpath_step in self.xpath_sequence:
+                if xpath_step['message'] == 'Declining Coverage':
+                    if len(self.browser.find_elements_by_xpath(xpath_step['path'])) == 0:
+                        continue
                 for attempt in range(self.retry_attempts + 1):
                     try:
                         wait(self.browser, 10).until(EC.presence_of_element_located((By.XPATH, xpath_step['path'])))
