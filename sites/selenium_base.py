@@ -7,6 +7,8 @@ from chromedriver_py import binary_path as driver_path
 from utils import random_delay, send_webhook, create_msg
 from utils.selenium_utils import change_driver
 from PyQt5.QtCore import pyqtBoundSignal
+import requests
+import json
 import settings, time
 
 
@@ -17,6 +19,8 @@ class SeleniumBaseClass:
         self.selector_sequence = list()
         self.possible_interruptions = list()
         self.site_label = ''
+        self.streetmerchant_store = 'test:name'
+        self.streetmerchant_series = 'test:series'
         self.product_image = None
         self.TIMEOUT_SHORT = 5
         self.TIMEOUT_LONG = 20
@@ -83,6 +87,9 @@ class SeleniumBaseClass:
 
     def monitor(self) -> None:
         self.in_stock = False
+        if settings.use_restful:
+            requests.post(f'http://{settings.restful_address}:{settings.restful_port}{settings.restful_endpoint}/reset', json={'store': self.streetmerchant_store, 'series': self.streetmerchant_series})
+            self.status_signal.emit(create_msg('Waiting on Restock', 'normal'))
         self.browser.get(self.product)
         wait(self.browser, self.TIMEOUT_LONG).until(lambda _: self.browser.current_url == self.product)
         while not self.product_image:
@@ -90,15 +97,25 @@ class SeleniumBaseClass:
                 self.populate_image()
             except:
                 continue
-
+        sleep_time = 1
         while not self.in_stock:
-            self.in_stock = self.check_stock()
+            if settings.use_restful:
+                r = requests.get(f'http://{settings.restful_address}:{settings.restful_port}{settings.restful_endpoint}')
+                results = json.loads(r.text)
+                if self.streetmerchant_store in results:
+                    if self.streetmerchant_series in results[self.streetmerchant_store]:
+                        self.in_stock = results[self.streetmerchant_store][self.streetmerchant_series]
+            else:
+                sleep_time = random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop)
+                self.in_stock = self.check_stock()
             if self.in_stock:
-                continue
+                if settings.use_restful:
+                    self.browser.refresh()
             else:
                 self.status_signal.emit(create_msg('Waiting on Restock', 'normal'))
-                time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
-                self.browser.refresh()
+                time.sleep(sleep_time)
+                if not settings.use_restful:
+                    self.browser.refresh()                
 
     def atc_and_checkout(self) -> None:
         while not self.did_submit:
