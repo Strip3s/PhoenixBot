@@ -44,4 +44,14 @@ gamestop_user = ""
 
 global gamestop_pass
 gamestop_pass = ""
+
+global use_restful
+use_restful = False
+
+global restful_address
+restful_address = '127.0.0.1'
+
+global restful_port
+restful_port = 8000
+
 #################################################

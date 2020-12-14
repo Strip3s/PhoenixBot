@@ -168,8 +168,9 @@ class MainWindow(QtWidgets.QMainWindow):
 if __name__ == "__main__":
     ui_app = QtWidgets.QApplication(sys.argv)
     ui = MainWindow()
-    api = Process(target=uvicorn.run, args=('utils.restful:fastapi_app',), kwargs={"host": "127.0.0.1", "port":8000, "log_level": "info"}, daemon=True)
-    api.start()
+    if settings.use_restful:
+        api = Process(target=uvicorn.run, args=('utils.restful:fastapi_app',), kwargs={"host": "127.0.0.1", "port":8000, "log_level": "info"}, daemon=True)
+        api.start()
     try:
         ui.setWindowIcon(QtGui.QIcon("images/birdbot.png"))
         ui_app.exec_()
@@ -177,5 +178,6 @@ if __name__ == "__main__":
         if api:
             api.terminate()
             api.join()
-    api.terminate()
-    api.join()
+    if settings.use_restful:
+        api.terminate()
+        api.join()
