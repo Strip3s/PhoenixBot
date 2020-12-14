@@ -54,4 +54,7 @@ restful_address = '127.0.0.1'
 global restful_port
 restful_port = 8000
 
+global restful_endpoint
+restful_endpoint = '/api/notification'
+
 #################################################
