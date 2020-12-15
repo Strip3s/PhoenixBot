@@ -6,7 +6,7 @@ class BestBuy(SeleniumBaseClass):
     def site_init(self) -> None:
         self.atc_button_path = '//div[@class="fulfillment-add-to-cart-button"]/div/div/button | //div[@class="fulfillment-combo-add-to-cart-button"]/div/div/button'
         self.selector_sequence = [
-            {'type': 'method', 'path': self.atc_button_path, 'method': self.find_and_click_atc, 'message': 'Added to cart', 'message_type': 'normal'}
+            {'type': 'method', 'path': self.atc_button_path, 'method': self.find_and_click_atc, 'message': 'Adding to cart', 'message_type': 'normal'}
         #     , {'type': 'button', 'path': '//button[@data-test="espModalContent-declineCoverageButton"]', 'message': 'Declining Coverage', 'message_type': 'normal'}
         #     , {'type': 'button', 'path': '//button[@data-test="addToCartModalViewCartCheckout"]', 'message': 'Viewing Cart before Checkout', 'message_type': 'normal'}
         #     , {'type': 'button', 'path': '//button[@data-test="checkout-button"]', 'message': 'Checking out', 'message_type': 'normal'}
@@ -55,10 +55,7 @@ class BestBuy(SeleniumBaseClass):
             self.atc_clicked = True
             button.click()
         time.sleep(3)
-        while self.browser.current_url == self.product:
-            if not self.browser.find_element_by_xpath(self.atc_button_path).is_enabled():
-                self.browser.refresh()
-                print('attempting to wait')
-                button = wait(self.browser, 1200).until(EC.element_to_be_clickable((By.XPATH, self.atc_button_path)))
-                button.click()
-        
+        if self.product != self.browser.current_url:
+            return
+        self.browser.refresh()
+        self.find_and_click_atc()
