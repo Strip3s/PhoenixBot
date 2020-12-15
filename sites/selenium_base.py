@@ -92,13 +92,17 @@ class SeleniumBaseClass:
                 continue
 
         while not self.in_stock:
-            self.in_stock = self.check_stock()
-            if self.in_stock:
-                continue
-            else:
-                self.status_signal.emit(create_msg('Waiting on Restock', 'normal'))
-                time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
+            try:
+                self.in_stock = self.check_stock()
+                if self.in_stock:
+                    continue
+                else:
+                    self.status_signal.emit(create_msg('Waiting on Restock', 'normal'))
+                    time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
+                    self.browser.refresh()
+            except:
                 self.browser.refresh()
+                continue
 
     def atc_and_checkout(self) -> None:
         while not self.did_submit:
