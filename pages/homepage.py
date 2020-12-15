@@ -507,7 +507,7 @@ class TaskThread(QtCore.QThread):
         if self.site == "Walmart":
             Walmart(self.task_id,self.status_signal, self.image_signal,  self.wait_poll_signal, self.wait_condition, self.product, profile, proxy, self.monitor_delay, self.error_delay, self.max_price)
         elif self.site == "Bestbuy":
-            BestBuy(self.status_signal, self.image_signal, self.product, profile, proxy, self.monitor_delay, self.error_delay) #TODO: Readd Discord Webhook
+            BestBuy(self.task_id, self.status_signal, self.image_signal, self.product, profile, proxy, self.monitor_delay, self.error_delay) #TODO: Readd Discord Webhook
         elif self.site == "Target":
             Target(self.task_id, self.status_signal, self.image_signal, self.product, profile, proxy, self.monitor_delay, self.error_delay)
         elif self.site == "GameStop":
