@@ -50,12 +50,13 @@ class BestBuy(SeleniumBaseClass):
         return stock
 
     def find_and_click_atc(self) -> None:
-        button = self.browser.find_element_by_xpath(self.atc_button_path)
-        if button:
-            self.atc_clicked = True
-            button.click()
-        time.sleep(3)
-        if self.product != self.browser.current_url:
-            return
-        self.browser.refresh()
-        self.find_and_click_atc()
+        while self.browser.current_url == self.product:
+            try:
+                button = wait(self.browser, 5).until(EC.presence_of_element_located((By.XPATH, self.atc_button_path)))
+                if button.is_enabled():
+                    button.click()
+                    time.sleep(5)
+                    button = wait(self.browser, 1800).until(EC.presence_of_element_located((By.XPATH, self.atc_button_path)))
+                    button.click()
+            except:
+                self.browser.refresh()
