@@ -113,7 +113,9 @@ class SeleniumBaseClass:
                         self.process_step(selector_step)
                         break
                     except:
-                        if attempt == self.retry_attempts:
+                        if selector_step['optional']:
+                            break
+                        elif attempt == self.retry_attempts:
                             if not self.check_stock(new_tab=True):
                                 self.status_signal.emit(create_msg('Product is out of stock. Resuming monitoring.', 'error'))
                                 return
@@ -150,5 +152,8 @@ class SeleniumBaseClass:
     def process_interruptions(self, attempt: int=0, silent: bool=False) -> None:
         if not silent:
             self.status_signal.emit(create_msg(f'Interrupted, attempting to resolve ({attempt+1}/{self.retry_attempts})', 'error'))
+        for selector_step in self.selector_sequence:
+            if selector_step['optional']:
+                self.process_step(selector_step, wait_after=True, silent=True)
         for selector_step in self.possible_interruptions:
             self.process_step(selector_step, wait_after=True, silent=True)

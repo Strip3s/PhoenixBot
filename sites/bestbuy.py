@@ -6,7 +6,7 @@ class BestBuy(SeleniumBaseClass):
     def site_init(self) -> None:
         self.atc_button_path = '//div[@class="fulfillment-add-to-cart-button"]/div/div/button | //div[@class="fulfillment-combo-add-to-cart-button"]/div/div/button'
         self.selector_sequence = [
-            {'type': 'method', 'path': self.atc_button_path, 'method': self.find_and_click_atc, 'message': 'Adding to cart', 'message_type': 'normal'}
+            {'type': 'method', 'path': self.atc_button_path, 'method': self.find_and_click_atc, 'message': 'Adding to cart', 'message_type': 'normal', 'optional': False}
         #     , {'type': 'button', 'path': '//button[@data-test="espModalContent-declineCoverageButton"]', 'message': 'Declining Coverage', 'message_type': 'normal'}
         #     , {'type': 'button', 'path': '//button[@data-test="addToCartModalViewCartCheckout"]', 'message': 'Viewing Cart before Checkout', 'message_type': 'normal'}
         #     , {'type': 'button', 'path': '//button[@data-test="checkout-button"]', 'message': 'Checking out', 'message_type': 'normal'}
