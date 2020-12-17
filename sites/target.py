@@ -14,11 +14,11 @@ class Target:
         self.task_id, self.status_signal, self.image_signal, self.product, self.profile, self.monitor_delay, self.error_delay = task_id, status_signal, image_signal, product, profile, float(
             monitor_delay), float(error_delay)
         self.xpath_sequence = [
-            {'type': 'method', 'path': '//button[@data-test="orderPickupButton"] | //button[@data-test="shipItButton"]', 'method': self.find_and_click_atc, 'message': 'Added to cart', 'message_type': 'normal'}
-            , {'type': 'button', 'path': '//button[@data-test="espModalContent-declineCoverageButton"]', 'message': 'Declining Coverage', 'message_type': 'normal'}
-            , {'type': 'button', 'path': '//button[@data-test="addToCartModalViewCartCheckout"]', 'message': 'Viewing Cart before Checkout', 'message_type': 'normal'}
-            , {'type': 'button', 'path': '//button[@data-test="checkout-button"]', 'message': 'Checking out', 'message_type': 'normal'}
-            , {'type': 'method', 'path': '//button[@data-test="placeOrderButton"]', 'method': self.submit_order, 'message': 'Submitting order', 'message_type': 'normal'}
+            {'type': 'method', 'path': '//button[@data-test="orderPickupButton"] | //button[@data-test="shipItButton"]', 'method': self.find_and_click_atc, 'message': 'Added to cart', 'message_type': 'normal', 'optional': False}
+            , {'type': 'button', 'path': '//button[@data-test="espModalContent-declineCoverageButton"]', 'message': 'Declining Coverage', 'message_type': 'normal', 'optional': True}
+            , {'type': 'button', 'path': '//button[@data-test="addToCartModalViewCartCheckout"]', 'message': 'Viewing Cart before Checkout', 'message_type': 'normal', 'optional': False}
+            , {'type': 'button', 'path': '//button[@data-test="checkout-button"]', 'message': 'Checking out', 'message_type': 'normal', 'optional': False}
+            , {'type': 'method', 'path': '//button[@data-test="placeOrderButton"]', 'method': self.submit_order, 'message': 'Submitting order', 'message_type': 'normal', 'optional': False}
         ]
         self.possible_interruptions = [
             {'type': 'method', 'path': '//input[@id="password"]', 'method': self.fill_and_authenticate, 'message': 'Authenticating', 'message_type': 'normal'}
@@ -125,16 +125,15 @@ class Target:
     def atc_and_checkout(self):
         while not self.did_submit:
             for xpath_step in self.xpath_sequence:
-                if xpath_step['message'] == 'Declining Coverage':
-                    if len(self.browser.find_elements_by_xpath(xpath_step['path'])) == 0:
-                        continue
                 for attempt in range(self.retry_attempts + 1):
                     try:
                         wait(self.browser, 10).until(EC.presence_of_element_located((By.XPATH, xpath_step['path'])))
                         self.process_step(xpath_step)
                         break
                     except:
-                        if attempt == self.retry_attempts:
+                        if xpath_step['optional']:
+                            break
+                        elif attempt == self.retry_attempts:
                             if not self.check_stock(new_tab=True):
                                 self.status_signal.emit(create_msg('Product is out of stock. Resuming monitoring.', 'error'))
                                 return
@@ -203,5 +202,8 @@ class Target:
     def process_interruptions(self, attempt=0, silent=False):
         if not silent:
             self.status_signal.emit(create_msg(f'Interrupted, attempting to resolve ({attempt+1}/{self.retry_attempts})', 'error'))
+        for xpath_step in self.xpath_sequence:
+            if xpath_step['optional']:
+                self.process_step(xpath_step, wait_after=True, silent=True)
         for xpath_step in self.possible_interruptions:
             self.process_step(xpath_step, wait_after=True, silent=True)
