@@ -67,6 +67,11 @@ class HomePage(QtWidgets.QWidget):
         self.status_table_header.setFont(font)
         self.status_table_header.setStyleSheet("color: rgb(234, 239, 239);border: none;")
         self.status_table_header.setText("Status")
+        self.name_table_header = QtWidgets.QLabel(self.tasks_card)
+        self.name_table_header.setGeometry(QtCore.QRect(720, 7, 61, 31))
+        self.name_table_header.setFont(font)
+        self.name_table_header.setStyleSheet("color: rgb(234, 239, 239);border: none;")
+        self.name_table_header.setText("Name")
         self.actions_table_header = QtWidgets.QLabel(self.tasks_card)
         self.actions_table_header.setGeometry(QtCore.QRect(890, 7, 61, 31))
         self.actions_table_header.setFont(font)
@@ -202,7 +207,7 @@ class HomePage(QtWidgets.QWidget):
         write_data("./data/tasks.json",[])
         try:
             for task in tasks_data:
-                tab = TaskTab(task["site"],task["product"],task["profile"],task["proxies"],task["monitor_delay"],task["error_delay"],task["max_price"],self.stop_all_tasks,self.scrollAreaWidgetContents)
+                tab = TaskTab(task["site"],task["product"],task["profile"],task["proxies"],task["monitor_delay"],task["error_delay"],task["max_price"],self.stop_all_tasks,self.scrollAreaWidgetContents,task["task_name"])
                 self.verticalLayout.takeAt(self.verticalLayout.count()-1)
                 self.verticalLayout.addWidget(tab)
                 spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
@@ -235,15 +240,15 @@ class HomePage(QtWidgets.QWidget):
                 pass
 
 class TaskTab(QtWidgets.QWidget):
-    def __init__(self,site,product,profile,proxies,monitor_delay,error_delay,max_price,stop_all,parent=None):
+    def __init__(self,site,product,profile,proxies,monitor_delay,error_delay,max_price,stop_all,parent=None,task_name=None):
         super(TaskTab, self).__init__(parent)
         self.task_id = str(int(tasks_total_count.text())+1)
         tasks_total_count.setText(self.task_id)
-        self.site,self.product,self.profile,self.proxies,self.monitor_delay,self.error_delay,self.max_price,self.stop_all = site,product,profile,proxies,monitor_delay,error_delay,max_price,stop_all
+        self.site,self.product,self.profile,self.proxies,self.monitor_delay,self.error_delay,self.max_price,self.stop_all,self.task_name = site,product,profile,proxies,monitor_delay,error_delay,max_price,stop_all,task_name
         self.setupUi(self)
         tasks.append(self)
         tasks_data = return_data("./data/tasks.json")
-        task_data = {"task_id": self.task_id,"site":self.site,"product": self.product,"profile": self.profile,"proxies": self.proxies,"monitor_delay": self.monitor_delay,"error_delay": self.error_delay,"max_price": self.max_price}
+        task_data = {"task_id": self.task_id,"site":self.site,"product": self.product,"profile": self.profile,"proxies": self.proxies,"monitor_delay": self.monitor_delay,"error_delay": self.error_delay,"max_price": self.max_price,"task_name": self.task_name}
         tasks_data.append(task_data)
         write_data("./data/tasks.json",tasks_data)
     def setupUi(self,TaskTab):
@@ -270,6 +275,10 @@ class TaskTab(QtWidgets.QWidget):
         self.status_label.setGeometry(QtCore.QRect(632, 10, 231, 31))
         self.status_label.setFont(font)
         self.status_label.setStyleSheet("color: rgb(234, 239, 239);")
+        self.name_label = QtWidgets.QLabel(self.TaskTab)
+        self.name_label.setGeometry(QtCore.QRect(692, 10, 231, 31))
+        self.name_label.setFont(font)
+        self.name_label.setStyleSheet("color: rgb(234, 239, 239);")
         self.browser_label = QtWidgets.QLabel(self.TaskTab)
         self.browser_label.setGeometry(QtCore.QRect(632, 10, 231, 31))
         self.browser_label.setFont(font)
@@ -343,6 +352,7 @@ class TaskTab(QtWidgets.QWidget):
         self.monitor_delay_label.setText(self.monitor_delay)
         self.error_delay_label.setText(self.error_delay)
         self.max_price_label.setText(self.max_price)
+        self.name_label.setText(self.task_name)
 
     def update_status(self,msg):
         self.status_label.setText(msg["msg"])
@@ -456,12 +466,13 @@ class TaskTab(QtWidgets.QWidget):
         self.monitor_delay=self.edit_dialog.monitor_edit.text()
         self.error_delay = self.edit_dialog.error_edit.text()
         self.max_price = self.edit_dialog.price_edit.text()
+        self.task_name = self.edit_dialog.name_edit.text()
         self.load_labels()
         self.delete_json()
         tasks_data = return_data("./data/tasks.json")
         task_data = {"task_id": self.task_id, "site": self.site, "product": self.product, "profile": self.profile,
                      "proxies": self.proxies, "monitor_delay": self.monitor_delay, "error_delay": self.error_delay,
-                     "max_price": self.max_price}
+                     "max_price": self.max_price, "task_name": self.task_name}
         tasks_data.append(task_data)
         write_data("./data/tasks.json",tasks_data)
         self.edit_dialog.deleteLater()

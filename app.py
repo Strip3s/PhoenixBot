@@ -141,6 +141,7 @@ class MainWindow(QtWidgets.QMainWindow):
         proxies = self.createdialog.proxies_box.currentText()
         monitor_delay = self.createdialog.monitor_edit.text()
         error_delay = self.createdialog.error_edit.text()
+        task_name = self.createdialog.name_edit.currentText()
         max_price = self.createdialog.price_edit.text() if self.createdialog.maxprice_checkbox.isChecked() else ""
         if site != "Site" and product != "" and profile != "Profile" and monitor_delay != "" and error_delay != "":
             for i in range(self.createdialog.taskcount_spinbox.value()):
@@ -154,7 +155,8 @@ class MainWindow(QtWidgets.QMainWindow):
                     error_delay,
                     max_price,
                     self.homepage.stop_all_tasks,
-                    self.homepage.scrollAreaWidgetContents)
+                    self.homepage.scrollAreaWidgetContents.
+                    task_name)
                 self.homepage.verticalLayout.addWidget(tab)
                 spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum,
                                                    QtWidgets.QSizePolicy.Expanding)

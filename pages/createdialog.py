@@ -12,7 +12,7 @@ class CreateDialog(QtWidgets.QDialog):
         self.show()
     def setupUi(self, CreateDialog):
         self.CreateDialog = CreateDialog
-        CreateDialog.setFixedSize(647, 164)
+        CreateDialog.setFixedSize(647, 214)
         CreateDialog.setStyleSheet("QComboBox::drop-down {    border: 0px;}QComboBox::down-arrow {    image: url(images/down_icon.png);    width: 14px;    height: 14px;}QComboBox{    padding: 1px 0px 1px 3px;}QLineEdit:focus {   border: none;   outline: none;} QSpinBox::up-button {subcontrol-origin: border;subcontrol-position: top right;width: 8px; border-image: url(images/uparrow_icon.png) 1;border-width: 1px;}QSpinBox::down-button {subcontrol-origin: border;subcontrol-position: bottom right;width: 8px;border-image: url(images/downarrow_icon.png) 1;border-width: 1px;border-top-width: 0;}")
         CreateDialog.setWindowTitle("Create Tasks")
         self.background = QtWidgets.QWidget(CreateDialog)
@@ -62,8 +62,15 @@ class CreateDialog(QtWidgets.QDialog):
         self.error_edit.setFont(font)
         self.error_edit.setText("5.0")
         self.error_edit.setValidator(self.only_float)
+        self.name_edit = QtWidgets.QLineEdit(self.background)
+        self.name_edit.setGeometry(QtCore.QRect(50, 120, 61, 21))
+        self.name_edit.setStyleSheet("outline: 0;border: 1px solid {};border-width: 0 0 2px;color: rgb(234, 239, 239);".format(globalStyles["primary"]))
+        self.name_edit.setAttribute(QtCore.Qt.WA_MacShowFocusRect, 0)
+        self.name_edit.setPlaceholderText("Name")
+        self.name_edit.setFont(font)
+        self.name_edit.textEdited.connect(self.autofill)
         self.addtask_btn = QtWidgets.QPushButton(self.background)
-        self.addtask_btn.setGeometry(QtCore.QRect(250, 110, 151, 32))
+        self.addtask_btn.setGeometry(QtCore.QRect(250, 160, 151, 32))
         self.addtask_btn.setText("Add Task")
         self.maxprice_checkbox = QtWidgets.QCheckBox(self.background)
         self.maxprice_checkbox.setGeometry(QtCore.QRect(250, 70, 87, 20))
@@ -88,7 +95,7 @@ class CreateDialog(QtWidgets.QDialog):
         self.addtask_btn.setStyleSheet("border-radius: 10px;background-color: {};color: #FFFFFF;".format(globalStyles["primary"]))
         self.addtask_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.taskcount_spinbox = QtWidgets.QSpinBox(self.background)
-        self.taskcount_spinbox.setGeometry(QtCore.QRect(420, 115, 41, 21))
+        self.taskcount_spinbox.setGeometry(QtCore.QRect(420, 165, 41, 21))
         self.taskcount_spinbox.setStyleSheet("border: 1px solid {};border-width: 0 0 2px;color: #FFFFFF;".format(globalStyles["primary"]))
         self.taskcount_spinbox.setMinimum(1)
         self.taskcount_spinbox.setAttribute(QtCore.Qt.WA_MacShowFocusRect, 0)
@@ -118,6 +125,7 @@ class CreateDialog(QtWidgets.QDialog):
         self.error_edit.setText(task_tab.error_delay)
         self.price_edit.setText(task_tab.max_price)
         self.maxprice_checkbox.setChecked(task_tab.max_price != '')
+        self.name_edit.setText(task_tab.task_name)
         self.addtask_btn.setText('Update Task')
 
 
