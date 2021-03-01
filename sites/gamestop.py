@@ -54,6 +54,8 @@ class GameStop:
     def login(self):
         self.status_signal.emit(create_msg("Logging In..", "normal"))
 
+        self.browser.maximize_window()
+        
         self.browser.get("https://www.gamestop.com")
 
         wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.LINK_TEXT, "MY ACCOUNT")))
@@ -82,6 +84,8 @@ class GameStop:
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/account/")
 
         self.status_signal.emit(create_msg("Checking Stock..", "normal"))
+        
+        self.browser.set_window_size(900, 900)
 
         self.browser.get(self.product)
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == self.product)
