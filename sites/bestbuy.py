@@ -145,7 +145,7 @@ class BestBuy:
         self.browser.find_element_by_xpath('//*[@id="fld-e"]').send_keys(settings.bestbuy_user)
         self.browser.find_element_by_xpath('//*[@id="fld-p1"]').send_keys(settings.bestbuy_pass)
         self.browser.find_element_by_xpath(
-            "/html/body/div[1]/div/section/main/div[1]/div/div/div/div/form/div[4]/button"
+            "//button[contains(@class,'cia-form__controls__submit')]"
         ).click()
         WebDriverWait(self.browser, 10).until(
             lambda x: "Official Online Store" in self.browser.title
