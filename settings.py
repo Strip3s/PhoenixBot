@@ -14,6 +14,9 @@ webhook_on_failed = True
 global browser_on_failed
 browser_on_failed = True
 
+global bb_ac_beta
+bb_ac_beta = False
+
 global dont_buy
 dont_buy = False
 
