@@ -1,5 +1,7 @@
-import json, settings, webbrowser, urllib3, requests
+import json, settings, webbrowser, urllib3, requests, time
 from time import sleep
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 from urllib import parse
 from chromedriver_py import binary_path  # this will get you the path variable
 from selenium import webdriver
@@ -54,7 +56,10 @@ class BestBuy:
         self.sku_id = parse.parse_qs(parse.urlparse(self.product).query)['skuId'][0]
         self.session = requests.Session()
         # TODO: Refactor Bird Bot Auto Checkout Functionality. For now, it will just open the cart link.
-        self.auto_buy = False
+        if settings.bb_ac_beta:
+            self.auto_buy = True
+        else:
+            self.auto_buy = False
         self.browser = self.init_driver()
         starting_msg = "Starting Best Buy Task"
         if settings.dont_buy:
@@ -88,7 +93,7 @@ class BestBuy:
         self.status_signal.emit(create_msg("Loading headless driver.", "normal"))
 
         # TODO - check if this still messes up the cookies for headless
-        headless = False
+        headless = True
         if headless:
             enable_headless()
         options.add_argument(f"User-Agent={settings.userAgent}")
@@ -141,6 +146,7 @@ class BestBuy:
         return browser
 
     def login(self):
+        self.status_signal.emit(create_msg("Logging in...", "normal"))
         self.browser.get("https://www.bestbuy.com/identity/global/signin")
         self.browser.find_element_by_xpath('//*[@id="fld-e"]').send_keys(settings.bestbuy_user)
         self.browser.find_element_by_xpath('//*[@id="fld-p1"]').send_keys(settings.bestbuy_pass)
@@ -197,170 +203,43 @@ class BestBuy:
                 return False
 
     def add_to_cart(self):
+        self.status_signal.emit(create_msg("Opening Cart", "normal"))
         webbrowser.open_new(BEST_BUY_CART_URL.format(sku=self.sku_id))
         return BEST_BUY_CART_URL.format(sku=self.sku_id)
 
     def auto_checkout(self):
         self.auto_add_to_cart()
-        self.start_checkout()
+        time.sleep(1)
         self.browser.get("https://www.bestbuy.com/checkout/c/r/fast-track")
+        self.start_checkout()
 
     def auto_add_to_cart(self):
         self.status_signal.emit(create_msg("Attempting to auto add to cart...", "normal"))
-
-        body = {"items": [{"skuId": self.sku_id}]}
-        headers = {
-            "Accept": "application/json",
-            "authority": "www.bestbuy.com",
-            "User-Agent": settings.userAgent,
-            "Content-Type": "application/json; charset=UTF-8",
-            "Sec-Fetch-Site": "same-origin",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Dest": "empty",
-            "origin": "https://www.bestbuy.com",
-            "referer": self.product,
-            "Content-Length": str(len(json.dumps(body))),
-        }
-        [
-            self.status_signal.emit(
-                create_msg(f"{{\"name\": {c.name}, \"value\": {c.value}, \"domain\": {c.domain}, \"path\": {c.path}}}",
-                           "normal"))
-            for c in self.session.cookies
-        ]
-        self.status_signal.emit(create_msg("Making request", "normal"))
-
-        response = self.session.post(
-            BEST_BUY_ADD_TO_CART_API_URL, json=body, headers=headers, timeout=5
-        )
-        self.status_signal.emit(create_msg(f"{response.status_code}", "normal"))
-        if (
-                response.status_code == 200
-                and response.json()["cartCount"] > 0
-                and self.sku_id in response.text
-        ):
-            self.status_signal.emit(create_msg(f"Added {self.sku_id} to cart!", "normal"))
-            self.status_signal.emit(create_msg(f"{response.json()}", "normal"))
+        self.browser.refresh()
+        time.sleep(2)
+        if self.browser.find_elements_by_xpath("//button[@class='btn btn-primary btn-lg btn-block btn-leading-ficon add-to-cart-button'][1]"):
+                button = self.browser.find_element_by_xpath("//button[@class='btn btn-primary btn-lg btn-block btn-leading-ficon add-to-cart-button'][1]")
         else:
-            self.status_signal.emit(create_msg(f"{response.status_code}", "normal"))
-            self.status_signal.emit(create_msg(f"{response.json()}", "normal"))
-
+                button = None
+        if button:
+            self.browser.execute_script("return arguments[0].scrollIntoView(true);", button)
+            button.click()
+        
     def start_checkout(self):
-        headers = {
-            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
-            "upgrade-insecure-requests": "1",
-            "user-agent": settings.userAgent
-        }
-        while True:
-            self.status_signal.emit(create_msg("Starting Checkout", "normal"))
-            response = self.session.post(
-                "https://www.bestbuy.com/cart/d/checkout", headers=headers, timeout=5
-            )
-            if response.status_code == 200:
-                response_json = response.json()
-                self.status_signal.emit(create_msg(f"{response.json()}", "normal"))
-                self.order_id = response_json["updateData"]["order"]["id"]
-                self.item_id = response_json["updateData"]["order"]["lineItems"][0][
-                    "id"
-                ]
-                self.status_signal.emit(create_msg(f"Started Checkout for order id: {self.order_id}", "normal"))
-                self.status_signal.emit(create_msg(f"{response.json()}", "normal"))
-                if response_json["updateData"]["redirectUrl"]:
-                    self.session.get(
-                        response_json["updateData"]["redirectUrl"], headers=headers
-                    )
-                return
-            self.status_signal.emit(create_msg("Error Starting Checkout", "error"))
-            sleep(5)
-
-    # TODO: Refactor Bird Bot Auto Checkout Functionality. For now, it will just open the cart link.
-    def get_tas_data(self):
-        headers = {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
-            "content-type": "application/json",
-            "referer": "https://www.bestbuy.com/checkout/r/payment",
-            "user-agent": settings.userAgent,
-        }
-        while True:
+        self.status_signal.emit(create_msg("Attempting Checkout", "normal"))
+        self.did_submit = False
+        time.sleep(2)
+        self.browser.find_element_by_xpath('//input[@id="credit-card-cvv"]').send_keys(self.profile['card_cvv'])
+        while not self.did_submit:
             try:
-                self.status_signal.emit(create_msg("Getting TAS Data", "normal"))
-                r = requests.get(
-                    "https://www.bestbuy.com/api/csiservice/v2/key/tas", headers=headers
-                )
-                self.status_signal.emit(create_msg("Got TAS Data", "normal"))
-                return json.loads(r.text)
-
-            except Exception as e:
-                sleep(5)
-
-    def submit_shipping(self):
-        self.status_signal.emit(create_msg("Starting Checkout", "normal"))
-        headers = {
-            "accept": "application/json, text/javascript, */*; q=0.01",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
-            "content-type": "application/json",
-            "origin": "https://www.bestbuy.com",
-            "referer": "https://www.bestbuy.com/cart",
-            "user-agent": settings.userAgent,
-            "x-user-interface": "DotCom-Optimized",
-            "x-order-id": self.order_id,
-        }
-        while True:
-            self.status_signal.emit(create_msg("Submitting Shipping", "normal"))
-            body = {"selected": "SHIPPING"}
-            response = self.session.put(
-                "https://www.bestbuy.com/cart/item/{item_id}/fulfillment".format(
-                    item_id=self.item_id
-                ),
-                headers=headers,
-                json=body,
-            )
-            response_json = response.json()
-            self.status_signal.emit(create_msg(f"{response.status_code}", "normal"))
-            self.status_signal.emit(create_msg(f"{response_json}", "normal"))
-            if (
-                    response.status_code == 200
-                    and response_json["order"]["id"] == self.order_id
-            ):
-                self.status_signal.emit(create_msg("Submitted Shipping", "normal"))
-                return True
-            else:
-                self.status_signal.emit(create_msg("Error Submitting Shipping", "error"))
-
-    def submit_payment(self, tas_data):
-        body = {
-            "items": [
-                {
-                    "id": self.item_id,
-                    "type": "DEFAULT",
-                    "selectedFulfillment": {"shipping": {"address": {}}},
-                    "giftMessageSelected": False,
-                }
-            ]
-        }
-        headers = {
-            "accept": "application/com.bestbuy.order+json",
-            "accept-encoding": "gzip, deflate, br",
-            "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
-            "content-type": "application/json",
-            "origin": "https://www.bestbuy.com",
-            "referer": "https://www.bestbuy.com/checkout/r/fulfillment",
-            "user-agent": settings.userAgent,
-            "x-user-interface": "DotCom-Optimized",
-        }
-        r = self.session.patch(
-            "https://www.bestbuy.com/checkout/d/orders/{}/".format(self.order_id),
-            json=body,
-            headers=headers,
-        )
-        [
-            self.status_signal.emit(create_msg(f"{{\"name\": {c.name}, \"value\": {c.value}, \"domain\": {c.domain}, \"path\": {c.path}}}", "normal"))
-            for c in self.session.cookies
-        ]
-
-        self.status_signal.emit(create_msg(f"{r.status_code}", "normal"))
-        self.status_signal.emit(create_msg(f"{r.text}", "normal"))
+                if not settings.dont_buy:
+                    self.browser.find_elements_by_xpath("//button[@data-track='Place your Order - Contact Card']").click()
+                    time.sleep(5)
+                if 'https://www.bestbuy.com/co-thankyou' in self.browser.current_url or settings.dont_buy:
+                    if settings.dont_buy:
+                        self.status_signal.emit(create_msg("Mock Order Placed", "success"))
+                    else:
+                        self.status_signal.emit(create_msg("Order Placed", "success"))
+                    self.did_submit = True
+            except:
+                self.status_signal.emit(create_msg('Retrying submit order until success', 'normal'))
