@@ -12,7 +12,7 @@ Phoenix Bot is inspired by Natewong1313's Bird Bot project yet due to lack of ac
 | **Website** | **Auto Checkout** | **Open Cart Link** | **Work In Progress** |
 |:---:|:---:|:---:|:---:|
 | amazon.com | | |`✔`|
-| bestbuy.com | |`✔`| |
+| bestbuy.com |`✔`|`✔`| |
 | gamestop.com |`✔`| | |
 | target.com |`✔`| | |
 | walmart.com |`✔`| | |
