@@ -215,7 +215,8 @@ class BestBuy:
 
     def auto_add_to_cart(self):
         self.status_signal.emit(create_msg("Attempting to auto add to cart...", "normal"))
-
+        self.browser.refresh()
+        time.sleep(2)
         if self.browser.find_elements_by_xpath("//button[@class='btn btn-primary btn-lg btn-block btn-leading-ficon add-to-cart-button'][1]"):
                 button = self.browser.find_element_by_xpath("//button[@class='btn btn-primary btn-lg btn-block btn-leading-ficon add-to-cart-button'][1]")
         else:
