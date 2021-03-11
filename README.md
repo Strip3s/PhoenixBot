@@ -50,7 +50,7 @@ Phoenix Bot is inspired by Natewong1313's Bird Bot project yet due to lack of ac
 4. If you encounter any errors during installation, please consider the following:
     * If you get a red text error remove and you previously installed pyqt5 or lxml on your python, remove the versions from the **requirements.in** for both lxml and pyqt5, then run the following commands:
     ```
-    pip install pip-tools==5.4.0
+    pip install pip-tools==5.5.0
     ```
     ```
     pip-compile --generate-hashes --no-index --output-file=requirements.txt requirements.in
