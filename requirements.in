@@ -4,7 +4,7 @@ lxml==4.6.2
 darkdetect==0.1.1
 colorama==0.4.3
 selenium==3.141.0
-chromedriver-py==87.0.4280.20
+chromedriver-py==89.0.4389.23
 pycryptodome
 webdriver_manager==3.2.2
 pip-tools==5.4.0
