@@ -27,8 +27,9 @@ Phoenix Bot is inspired by Natewong1313's Bird Bot project yet due to lack of ac
 
 ## Quick Install for Windows
 1. Make sure your Chrome browser is updated to the latest
-2. Open Powershell as Administrator within your desired directory for the application to live.
-3. Run the following commands: 
+2. Install the latest version of [Git](https://git-scm.com/downloads) & [Python](https://www.python.org/downloads/)
+3. Open Powershell as Administrator within your desired directory for the application to live.
+4. Run the following commands: 
       ```
       git clone https://github.com/Strip3s/PhoenixBot/
       ```
