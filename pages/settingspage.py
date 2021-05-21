@@ -1,18 +1,27 @@
-from theming.styles import globalStyles
+import platform
+import settings
+import sys
+
 from PyQt5 import QtCore, QtGui, QtWidgets
-from utils import return_data,write_data,Encryption
-import sys,platform,settings
+
+from theming.styles import globalStyles
+from utils import return_data, write_data, Encryption, data_exists, BirdLogger, validate_data
+
 
 def no_abort(a, b, c):
     sys.__excepthook__(a, b, c)
+
+
 sys.excepthook = no_abort
+logger = BirdLogger()
+
 
 class SettingsPage(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(SettingsPage, self).__init__(parent)
         self.header_font = self.create_font("Arial", 18)
         self.small_font = self.create_font("Arial", 13)
-        self.setupUi(self)
+        self.setup_ui(self)
 
     def create_font(self, family, pt_size) -> QtGui.QFont:
         font = QtGui.QFont()
@@ -46,26 +55,29 @@ class SettingsPage(QtWidgets.QWidget):
         edit.setAttribute(QtCore.Qt.WA_MacShowFocusRect, 0)
         return edit
 
-    def setupUi(self, settingspage):
+    def setup_ui(self, settingspage):
         self.settingspage = settingspage
         self.settingspage.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.settingspage.setGeometry(QtCore.QRect(60, 0, 1041, 601))
-        self.settingspage.setStyleSheet("QComboBox::drop-down {    border: 0px;}QComboBox::down-arrow {    image: url(images/down_icon.png);    width: 14px;    height: 14px;}QComboBox{    padding: 1px 0px 1px 3px;}QLineEdit:focus {   border: none;   outline: none;}")
+        self.settingspage.setStyleSheet(
+            "QComboBox::drop-down {    border: 0px;}QComboBox::down-arrow {    image: url(images/down_icon.png);    width: 14px;    height: 14px;}QComboBox{    padding: 1px 0px 1px 3px;}QLineEdit:focus {   border: none;   outline: none;}")
         self.settings_card = QtWidgets.QWidget(self.settingspage)
         self.settings_card.setGeometry(QtCore.QRect(30, 70, 941, 501))
         self.settings_card.setFont(self.small_font)
         self.settings_card.setStyleSheet("background-color: #232323;border-radius: 20px;border: 1px solid #2e2d2d;")
 
         self.webhook_edit = self.create_edit(self.settings_card, QtCore.QRect(30, 50, 411, 21), self.small_font,
-                                                  "Webhook Link")
+                                             "Webhook Link")
         self.webhook_header = self.create_header(self.settings_card, QtCore.QRect(20, 10, 101, 31), self.header_font,
                                                  "Webhook")
-        
+
         self.savesettings_btn = QtWidgets.QPushButton(self.settings_card)
         self.savesettings_btn.setGeometry(QtCore.QRect(190, 450, 86, 32))
         self.savesettings_btn.setFont(self.small_font)
         self.savesettings_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.savesettings_btn.setStyleSheet("color: #FFFFFF;background-color: {};border-radius: 10px;border: 1px solid #2e2d2d;".format(globalStyles["primary"]))
+        self.savesettings_btn.setStyleSheet(
+            "color: #FFFFFF;background-color: {};border-radius: 10px;border: 1px solid #2e2d2d;".format(
+                globalStyles["primary"]))
         self.savesettings_btn.setText("Save")
         self.savesettings_btn.clicked.connect(self.save_settings)
 
@@ -87,23 +99,36 @@ class SettingsPage(QtWidgets.QWidget):
         self.proxies_header = self.create_header(self.settingspage, QtCore.QRect(30, 10, 81, 31),
                                                  self.create_font("Arial", 22), "Settings")
         self.bestbuy_user_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 310, 235, 20),
-                                                 self.small_font, "Bestbuy.com Username (Email)")
+                                                  self.small_font, "Bestbuy.com Username (Email)")
         self.bestbuy_pass_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 335, 235, 20),
-                                                 self.small_font, "Bestbuy.com Password")
+                                                  self.small_font, "Bestbuy.com Password")
         self.target_user_edit = self.create_edit(self.settings_card, QtCore.QRect(30, 365, 235, 20),
                                                  self.small_font, "Target.com Username (Email/Cell #)")
         self.target_pass_edit = self.create_edit(self.settings_card, QtCore.QRect(30, 390, 235, 20),
                                                  self.small_font, "Target.com Password")
         self.gamestop_user_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 365, 235, 20),
-                                                 self.small_font, "Gamestop.com Username (Email)")
+                                                   self.small_font, "Gamestop.com Username (Email)")
         self.gamestop_pass_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 390, 235, 20),
-                                                 self.small_font, "Gamestop.com Password")
-        
+                                                   self.small_font, "Gamestop.com Password")
+
         self.set_data()
         QtCore.QMetaObject.connectSlotsByName(settingspage)
 
     def set_data(self):
-        settings = return_data("./data/settings.json")
+
+        settings_default = return_data("./data/settings_default.json")
+        if data_exists("./data/settings.json"):
+            settings = return_data("./data/settings.json")
+        else:
+            logger.alt("Set-Settings-Data", "No existing settings found to be parsed, creating new from default.")
+            write_data("./data/settings.json", settings_default)
+            settings = return_data("./data/settings.json")
+
+        if not validate_data(settings, settings_default):
+            logger.error("Set-Settings-Data", "Parsed settings data is malformed! "
+                                              "This will most likely cause a fatal exception. "
+                                              "Try removing existing settings.json")
+
         self.webhook_edit.setText(settings["webhook"])
         if settings["webhookonbrowser"]:
             self.browser_checkbox.setChecked(True)
@@ -130,7 +155,8 @@ class SettingsPage(QtWidgets.QWidget):
             self.bestbuy_user_edit.setText("")
 
         try:
-            self.bestbuy_pass_edit.setText((Encryption().decrypt(settings["bestbuy_pass"].encode("utf-8"))).decode("utf-8"))
+            self.bestbuy_pass_edit.setText(
+                (Encryption().decrypt(settings["bestbuy_pass"].encode("utf-8"))).decode("utf-8"))
         except:
             self.bestbuy_pass_edit.setText("")
 
@@ -140,23 +166,26 @@ class SettingsPage(QtWidgets.QWidget):
             self.target_user_edit.setText("")
 
         try:
-            self.target_pass_edit.setText((Encryption().decrypt(settings["target_pass"].encode("utf-8"))).decode("utf-8"))
+            self.target_pass_edit.setText(
+                (Encryption().decrypt(settings["target_pass"].encode("utf-8"))).decode("utf-8"))
         except:
             self.target_pass_edit.setText("")
-        
+
         try:
             self.gamestop_user_edit.setText(settings["gamestop_user"])
         except:
             self.gamestop_user_edit.setText("")
 
         try:
-            self.gamestop_pass_edit.setText((Encryption().decrypt(settings["gamestop_pass"].encode("utf-8"))).decode("utf-8"))
+            self.gamestop_pass_edit.setText(
+                (Encryption().decrypt(settings["gamestop_pass"].encode("utf-8"))).decode("utf-8"))
         except:
             self.gamestop_pass_edit.setText("")
 
         self.update_settings(settings)
 
     def save_settings(self):
+<<<<<<< HEAD
         settings = {"webhook":            self.webhook_edit.text(),
                     "webhookonbrowser":   self.browser_checkbox.isChecked(),
                     "webhookonorder":     self.order_checkbox.isChecked(),
@@ -165,8 +194,17 @@ class SettingsPage(QtWidgets.QWidget):
                     "bb_ac_beta":         self.bb_ac_beta_checkbox.isChecked(),
                     "onlybuyone":         self.buy_one_checkbox.isChecked(),
                     "dont_buy":           self.dont_buy_checkbox.isChecked(),
+=======
+        settings = {"webhook": self.webhook_edit.text(),
+                    "webhookonbrowser": self.browser_checkbox.isChecked(),
+                    "webhookonorder": self.order_checkbox.isChecked(),
+                    "webhookonfailed": self.paymentfailed_checkbox.isChecked(),
+                    "browseronfailed": self.onfailed_checkbox.isChecked(),
+                    "onlybuyone": self.buy_one_checkbox.isChecked(),
+                    "dont_buy": self.dont_buy_checkbox.isChecked(),
+>>>>>>> 7f87a4da4cb453e65c654cea8becdc0e8f8a56e6
                     "random_delay_start": self.random_delay_start.text(),
-                    "random_delay_stop":  self.random_delay_stop.text(),
+                    "random_delay_stop": self.random_delay_stop.text(),
                     "bestbuy_user": self.bestbuy_user_edit.text(),
                     "bestbuy_pass": Encryption().encrypt(self.bestbuy_pass_edit.text()).decode("utf-8"),
                     "target_user": self.target_user_edit.text(),
@@ -174,13 +212,20 @@ class SettingsPage(QtWidgets.QWidget):
                     "gamestop_user": self.gamestop_user_edit.text(),
                     "gamestop_pass": Encryption().encrypt(self.gamestop_pass_edit.text()).decode("utf-8")}
 
-        write_data("./data/settings.json",settings)
+        write_data("./data/settings.json", settings)
         self.update_settings(settings)
         QtWidgets.QMessageBox.information(self, "Phoenix Bot", "Saved Settings")
 
     def update_settings(self, settings_data):
+<<<<<<< HEAD
         global webhook, webhook_on_browser, webhook_on_order, webhook_on_failed, browser_on_failed, bb_ac_beta, dont_buy, random_delay_start, random_delay_stop, target_user, target_pass, gamestop_user, gamestop_pass
         settings.webhook, settings.webhook_on_browser, settings.webhook_on_order, settings.webhook_on_failed, settings.browser_on_failed, settings.bb_ac_beta, settings.buy_one, settings.dont_buy = settings_data["webhook"], settings_data["webhookonbrowser"], settings_data["webhookonorder"], settings_data["webhookonfailed"], settings_data["browseronfailed"], settings_data["bb_ac_beta"], settings_data['onlybuyone'], settings_data['dont_buy']
+=======
+        global webhook, webhook_on_browser, webhook_on_order, webhook_on_failed, browser_on_failed, dont_buy, random_delay_start, random_delay_stop, target_user, target_pass, gamestop_user, gamestop_pass
+        settings.webhook, settings.webhook_on_browser, settings.webhook_on_order, settings.webhook_on_failed, settings.browser_on_failed, settings.buy_one, settings.dont_buy = \
+        settings_data["webhook"], settings_data["webhookonbrowser"], settings_data["webhookonorder"], settings_data[
+            "webhookonfailed"], settings_data["browseronfailed"], settings_data['onlybuyone'], settings_data['dont_buy']
+>>>>>>> 7f87a4da4cb453e65c654cea8becdc0e8f8a56e6
 
         if settings_data.get("random_delay_start", "") != "":
             settings.random_delay_start = settings_data["random_delay_start"]
@@ -189,7 +234,8 @@ class SettingsPage(QtWidgets.QWidget):
         if settings_data.get("bestbuy_user", "") != "":
             settings.bestbuy_user = settings_data["bestbuy_user"]
         if settings_data.get("bestbuy_pass", "") != "":
-            settings.bestbuy_pass = (Encryption().decrypt(settings_data["bestbuy_pass"].encode("utf-8"))).decode("utf-8")
+            settings.bestbuy_pass = (Encryption().decrypt(settings_data["bestbuy_pass"].encode("utf-8"))).decode(
+                "utf-8")
         if settings_data.get("target_user", "") != "":
             settings.target_user = settings_data["target_user"]
         if settings_data.get("target_pass", "") != "":
@@ -197,4 +243,5 @@ class SettingsPage(QtWidgets.QWidget):
         if settings_data.get("gamestop_user", "") != "":
             settings.gamestop_user = settings_data["gamestop_user"]
         if settings_data.get("gamestop_pass", "") != "":
-            settings.gamestop_pass = (Encryption().decrypt(settings_data["gamestop_pass"].encode("utf-8"))).decode("utf-8")
+            settings.gamestop_pass = (Encryption().decrypt(settings_data["gamestop_pass"].encode("utf-8"))).decode(
+                "utf-8")
