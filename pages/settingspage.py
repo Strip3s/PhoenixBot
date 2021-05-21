@@ -185,7 +185,6 @@ class SettingsPage(QtWidgets.QWidget):
         self.update_settings(settings)
 
     def save_settings(self):
-<<<<<<< HEAD
         settings = {"webhook":            self.webhook_edit.text(),
                     "webhookonbrowser":   self.browser_checkbox.isChecked(),
                     "webhookonorder":     self.order_checkbox.isChecked(),
@@ -194,15 +193,6 @@ class SettingsPage(QtWidgets.QWidget):
                     "bb_ac_beta":         self.bb_ac_beta_checkbox.isChecked(),
                     "onlybuyone":         self.buy_one_checkbox.isChecked(),
                     "dont_buy":           self.dont_buy_checkbox.isChecked(),
-=======
-        settings = {"webhook": self.webhook_edit.text(),
-                    "webhookonbrowser": self.browser_checkbox.isChecked(),
-                    "webhookonorder": self.order_checkbox.isChecked(),
-                    "webhookonfailed": self.paymentfailed_checkbox.isChecked(),
-                    "browseronfailed": self.onfailed_checkbox.isChecked(),
-                    "onlybuyone": self.buy_one_checkbox.isChecked(),
-                    "dont_buy": self.dont_buy_checkbox.isChecked(),
->>>>>>> 7f87a4da4cb453e65c654cea8becdc0e8f8a56e6
                     "random_delay_start": self.random_delay_start.text(),
                     "random_delay_stop": self.random_delay_stop.text(),
                     "bestbuy_user": self.bestbuy_user_edit.text(),
@@ -217,15 +207,8 @@ class SettingsPage(QtWidgets.QWidget):
         QtWidgets.QMessageBox.information(self, "Phoenix Bot", "Saved Settings")
 
     def update_settings(self, settings_data):
-<<<<<<< HEAD
         global webhook, webhook_on_browser, webhook_on_order, webhook_on_failed, browser_on_failed, bb_ac_beta, dont_buy, random_delay_start, random_delay_stop, target_user, target_pass, gamestop_user, gamestop_pass
         settings.webhook, settings.webhook_on_browser, settings.webhook_on_order, settings.webhook_on_failed, settings.browser_on_failed, settings.bb_ac_beta, settings.buy_one, settings.dont_buy = settings_data["webhook"], settings_data["webhookonbrowser"], settings_data["webhookonorder"], settings_data["webhookonfailed"], settings_data["browseronfailed"], settings_data["bb_ac_beta"], settings_data['onlybuyone'], settings_data['dont_buy']
-=======
-        global webhook, webhook_on_browser, webhook_on_order, webhook_on_failed, browser_on_failed, dont_buy, random_delay_start, random_delay_stop, target_user, target_pass, gamestop_user, gamestop_pass
-        settings.webhook, settings.webhook_on_browser, settings.webhook_on_order, settings.webhook_on_failed, settings.browser_on_failed, settings.buy_one, settings.dont_buy = \
-        settings_data["webhook"], settings_data["webhookonbrowser"], settings_data["webhookonorder"], settings_data[
-            "webhookonfailed"], settings_data["browseronfailed"], settings_data['onlybuyone'], settings_data['dont_buy']
->>>>>>> 7f87a4da4cb453e65c654cea8becdc0e8f8a56e6
 
         if settings_data.get("random_delay_start", "") != "":
             settings.random_delay_start = settings_data["random_delay_start"]
