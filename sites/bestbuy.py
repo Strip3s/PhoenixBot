@@ -200,6 +200,7 @@ class BestBuy:
                 return True
             else:
                 self.status_signal.emit(create_msg("Item is out of stock", "normal"))
+                webdriver.refresh()
                 return False
 
     def add_to_cart(self):
@@ -210,7 +211,7 @@ class BestBuy:
     def auto_checkout(self):
         self.auto_add_to_cart()
         time.sleep(1)
-        self.browser.get("https://www.bestbuy.com/checkout/c/r/fast-track")
+        self.browser.get("https://www.bestbuy.com/checkout/r/fast-track")
         self.start_checkout()
 
     def auto_add_to_cart(self):
@@ -233,13 +234,14 @@ class BestBuy:
         while not self.did_submit:
             try:
                 if not settings.dont_buy:
-                    self.browser.find_elements_by_xpath("//button[@data-track='Place your Order - Contact Card']").click()
+                    self.browser.find_element_by_xpath('//button[@class="btn btn-lg btn-block btn-primary button__fast-track"]').click()
                     time.sleep(5)
-                if 'https://www.bestbuy.com/co-thankyou' in self.browser.current_url or settings.dont_buy:
+                if 'https://www.bestbuy.com/checkout/r/thank-you' in self.browser.current_url or settings.dont_buy:
                     if settings.dont_buy:
                         self.status_signal.emit(create_msg("Mock Order Placed", "success"))
+                        self.did_submit = True
                     else:
                         self.status_signal.emit(create_msg("Order Placed", "success"))
-                    self.did_submit = True
+                        self.did_submit = True
             except:
                 self.status_signal.emit(create_msg('Retrying submit order until success', 'normal'))
