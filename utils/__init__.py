@@ -1,16 +1,17 @@
-try:
-    from Crypto import Random
-    from Crypto.Cipher import AES
-except:
-    from Cryptodome import Random
-    from Cryptodome.Cipher import AES
-from colorama import init, Fore
+import base64
 from datetime import datetime
-from selenium.webdriver import Chrome, ChromeOptions
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from webhook import DiscordWebhook, DiscordEmbed
-from chromedriver_py import binary_path as driver_path
-import json, platform, random, settings, threading, hashlib, base64, string, re
+import hashlib
+import json
+import platform
+import random
+import string
+
+from Crypto import Random
+from Crypto.Cipher import AES
+from colorama import Fore, init
+
+import settings
+from webhook import DiscordEmbed, DiscordWebhook
 
 normal_color = Fore.CYAN
 
@@ -37,12 +38,13 @@ if platform.system() == "Windows":
 else:
     init()
 
-print(
-    normal_color + "Welcome To Phoenix Bot - In times of crisis, the wise build bridges while the foolish build barriers.")
+print(normal_color + "Welcome To Phoenix Bot - In times of crisis, "
+                     "the wise build bridges while the foolish build barriers.")
 
 
 class BirdLogger:
-    def ts(self):
+    @staticmethod
+    def ts():
         return str(datetime.now())[:-7]
 
     def normal(self, task_id, msg):
@@ -70,7 +72,8 @@ class Encryption:
         aes = AES.new(self.trans(e_key), AES.MODE_CFB, IV)
         return aes.decrypt(msg[BLOCK_SIZE:])
 
-    def trans(self, key):
+    @staticmethod
+    def trans(key):
         return hashlib.md5(key).digest()
 
 
@@ -84,6 +87,18 @@ def return_data(path):
         with open(path, "r") as file:
             data = json.load(file)
         return data
+
+
+def validate_data(test_data, control_data):
+    return test_data.keys() == control_data.keys()
+
+
+def data_exists(path):
+    try:
+        open(path, "r")
+        return True
+    except FileNotFoundError:
+        return False
 
 
 def get_profile(profile_name):
@@ -147,10 +162,11 @@ def send_webhook(webhook_type, site, profile, task_id, image_url):
         except:
             pass
 
+
 def random_delay(delay, start, stop):
     """
     Returns the delay argument combined with a random number between start
-    and stop dividied by 1000.
+    and stop divided by 1000.
     """
     return delay + (random.randint(int(start), int(stop)) / 1000)
 
