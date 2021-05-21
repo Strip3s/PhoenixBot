@@ -30,9 +30,6 @@ class GameStop:
         self.submit_billing()
         self.submit_order()
 
-
-
-
     def init_driver(self):
         driver_manager = ChromeDriverManager()
         driver_manager.install()
@@ -50,18 +47,19 @@ class GameStop:
 
         return browser
 
-
     def login(self):
         self.status_signal.emit(create_msg("Logging In..", "normal"))
 
         self.browser.maximize_window()
         
-        self.browser.get("https://www.gamestop.com")
+        self.browser.get("https://www.gamestop.com/?openLoginModal=accountModal")
 
-        wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.LINK_TEXT, "MY ACCOUNT")))
-        self.browser.find_element_by_link_text('MY ACCOUNT').click()
+        #wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.LINK_TEXT, "MY ACCOUNT")))
+        time.sleep(5)
+        #self.browser.find_element_by_link_text('MY ACCOUNT').click()
+        self.browser.find_element_by_xpath('//a[@id="signIn"]').click()
 
-        wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "signIn"))).click()
+        #wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "signIn"))).click()
 
         wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "login-form-email")))
 
@@ -78,7 +76,6 @@ class GameStop:
         wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="signinCheck"]/button')))
         sign_in_btn = self.browser.find_element_by_xpath('//*[@id="signinCheck"]/button')
         sign_in_btn.click()
-
 
     def monitor(self):
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/account/")
@@ -109,7 +106,6 @@ class GameStop:
                 self.status_signal.emit(create_msg("Waiting For Restock", "normal"))
                 self.browser.refresh()
 
-
     def add_to_cart(self):
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/cart/")
         
@@ -122,7 +118,6 @@ class GameStop:
             self.browser.get("https://www.gamestop.com/checkout/?stage=payment#payment")
         except:
             self.browser.get("https://www.gamestop.com/checkout/?stage=payment#payment")
-        
 
     def submit_billing(self):
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/checkout/?stage=payment#payment")
@@ -134,7 +129,6 @@ class GameStop:
         cvv_input.send_keys(self.profile["card_cvv"])
         order_review_btn = self.browser.find_element_by_class_name("btn.btn-primary.btn-block.submit-payment")
         order_review_btn.click()
-
 
     def submit_order(self):
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/checkout/?stage=placeOrder#placeOrder")
