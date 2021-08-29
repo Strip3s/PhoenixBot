@@ -1,12 +1,23 @@
+from requests.sessions import default_headers
 from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait as wait
+from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from chromedriver_py import binary_path as driver_path
 from utils import random_delay, send_webhook, create_msg
 from utils.selenium_utils import change_driver
 import settings, time
+
+
+DEFAULT_HEADERS = {
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+    "accept-encoding": "gzip, deflate, br",
+    "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
+    "user-agent": settings.userAgent,
+    "origin": "https://www.gamestop.com",
+}
 
 class GameStop:
     def __init__(self, task_id, status_signal, image_signal, product, profile, proxy, monitor_delay, error_delay, max_price):
@@ -32,12 +43,19 @@ class GameStop:
 
     def init_driver(self):
         driver_manager = ChromeDriverManager()
+        
+        # chrome_options = Options()
+        # chrome_options.add_argument("--headless")
         driver_manager.install()
+        
+        # driver_manager = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_options)
+
         # change_driver(self.status_signal, driver_path)
         var = driver_path
         browser = webdriver.Chrome(driver_path)
-
         browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+
+        # driver_manager.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
             "source": """
                   Object.defineProperty(navigator, 'webdriver', {
                    get: () => undefined
@@ -54,12 +72,12 @@ class GameStop:
         
         self.browser.get("https://www.gamestop.com/?openLoginModal=accountModal")
 
-        #wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.LINK_TEXT, "MY ACCOUNT")))
+        # wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.LINK_TEXT, "MY ACCOUNT")))
         time.sleep(5)
         #self.browser.find_element_by_link_text('MY ACCOUNT').click()
-        self.browser.find_element_by_xpath('//a[@id="signIn"]').click()
+        self.browser.find_element_by_xpath('//a[@id="account-modal-link-nocache"]').click()
 
-        #wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "signIn"))).click()
+        # wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "signIn"))).click()
 
         wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "login-form-email")))
 
@@ -78,7 +96,7 @@ class GameStop:
         sign_in_btn.click()
 
     def monitor(self):
-        wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/account/")
+        wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/?openLoginModal=accountModal")
 
         self.status_signal.emit(create_msg("Checking Stock..", "normal"))
         

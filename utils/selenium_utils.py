@@ -13,7 +13,7 @@ import random, re, requests, string, threading
 
 options = Options()
 options.add_experimental_option(
-    "excludeSwitches", ["enable-automation", "enable-logging"]
+    "excludeSwitches", ["enable-automation", "enable-logging"],
 )
 options.add_experimental_option("useAutomationExtension", False)
 
