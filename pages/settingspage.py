@@ -87,28 +87,30 @@ class SettingsPage(QtWidgets.QWidget):
 
         self.general_header = self.create_header(self.settings_card, QtCore.QRect(20, 180, 101, 31), self.header_font,
                                                  "General")
-        self.onfailed_checkbox = self.create_checkbox(QtCore.QRect(30, 220, 221, 20), "Open browser on payment failed")
-        self.bb_ac_beta_checkbox = self.create_checkbox(QtCore.QRect(30, 240, 221, 20), "Enable Best Buy Auto Checkout (BETA)")
-        self.buy_one_checkbox = self.create_checkbox(QtCore.QRect(30, 260, 221, 20), "Stop All after success")
-        self.dont_buy_checkbox = self.create_checkbox(QtCore.QRect(30, 280, 400, 20),
+                                                 
+        self.headless_checkbox = self.create_checkbox(QtCore.QRect(30, 220, 221, 20), "Run Headless (hidden browser windows)")
+        self.onfailed_checkbox = self.create_checkbox(QtCore.QRect(30, 240, 221, 20), "Open browser on payment failed")
+        self.bb_ac_beta_checkbox = self.create_checkbox(QtCore.QRect(30, 260, 221, 20), "Enable Best Buy Auto Checkout (BETA)")
+        self.buy_one_checkbox = self.create_checkbox(QtCore.QRect(30, 280, 221, 20), "Stop All after success")
+        self.dont_buy_checkbox = self.create_checkbox(QtCore.QRect(30, 300, 400, 20),
                                                       "Don't actually buy items. (Used for dev and testing)")
-        self.random_delay_start = self.create_edit(self.settings_card, QtCore.QRect(30, 310, 235, 20),
+        self.random_delay_start = self.create_edit(self.settings_card, QtCore.QRect(30, 330, 235, 20),
                                                    self.small_font, "Random Start Delay (Default is 10ms)")
-        self.random_delay_stop = self.create_edit(self.settings_card, QtCore.QRect(30, 335, 235, 20),
+        self.random_delay_stop = self.create_edit(self.settings_card, QtCore.QRect(30, 360, 235, 20),
                                                   self.small_font, "Random Stop Delay (Default is 40ms)")
         self.proxies_header = self.create_header(self.settingspage, QtCore.QRect(30, 10, 81, 31),
                                                  self.create_font("Arial", 22), "Settings")
-        self.bestbuy_user_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 310, 235, 20),
+        self.bestbuy_user_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 330, 235, 20),
                                                   self.small_font, "Bestbuy.com Username (Email)")
-        self.bestbuy_pass_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 335, 235, 20),
+        self.bestbuy_pass_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 360, 235, 20),
                                                   self.small_font, "Bestbuy.com Password")
-        self.target_user_edit = self.create_edit(self.settings_card, QtCore.QRect(30, 365, 235, 20),
+        self.target_user_edit = self.create_edit(self.settings_card, QtCore.QRect(30, 390, 235, 20),
                                                  self.small_font, "Target.com Username (Email/Cell #)")
-        self.target_pass_edit = self.create_edit(self.settings_card, QtCore.QRect(30, 390, 235, 20),
+        self.target_pass_edit = self.create_edit(self.settings_card, QtCore.QRect(30, 415, 235, 20),
                                                  self.small_font, "Target.com Password")
-        self.gamestop_user_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 365, 235, 20),
+        self.gamestop_user_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 390, 235, 20),
                                                    self.small_font, "Gamestop.com Username (Email)")
-        self.gamestop_pass_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 390, 235, 20),
+        self.gamestop_pass_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 415, 235, 20),
                                                    self.small_font, "Gamestop.com Password")
 
         self.set_data()
@@ -136,6 +138,8 @@ class SettingsPage(QtWidgets.QWidget):
             self.order_checkbox.setChecked(True)
         if settings["webhookonfailed"]:
             self.paymentfailed_checkbox.setChecked(True)
+        if settings["runheadless"]:
+            self.headless_checkbox.setChecked(True)
         if settings["browseronfailed"]:
             self.onfailed_checkbox.setChecked(True)
         if settings["bb_ac_beta"]:
@@ -189,6 +193,7 @@ class SettingsPage(QtWidgets.QWidget):
                     "webhookonbrowser":   self.browser_checkbox.isChecked(),
                     "webhookonorder":     self.order_checkbox.isChecked(),
                     "webhookonfailed":    self.paymentfailed_checkbox.isChecked(),
+                    "runheadless":        self.headless_checkbox.isChecked(),
                     "browseronfailed":    self.onfailed_checkbox.isChecked(),
                     "bb_ac_beta":         self.bb_ac_beta_checkbox.isChecked(),
                     "onlybuyone":         self.buy_one_checkbox.isChecked(),
@@ -207,8 +212,8 @@ class SettingsPage(QtWidgets.QWidget):
         QtWidgets.QMessageBox.information(self, "Phoenix Bot", "Saved Settings")
 
     def update_settings(self, settings_data):
-        global webhook, webhook_on_browser, webhook_on_order, webhook_on_failed, browser_on_failed, bb_ac_beta, dont_buy, random_delay_start, random_delay_stop, target_user, target_pass, gamestop_user, gamestop_pass
-        settings.webhook, settings.webhook_on_browser, settings.webhook_on_order, settings.webhook_on_failed, settings.browser_on_failed, settings.bb_ac_beta, settings.buy_one, settings.dont_buy = settings_data["webhook"], settings_data["webhookonbrowser"], settings_data["webhookonorder"], settings_data["webhookonfailed"], settings_data["browseronfailed"], settings_data["bb_ac_beta"], settings_data['onlybuyone'], settings_data['dont_buy']
+        global webhook, webhook_on_browser, webhook_on_order, webhook_on_failed, run_headless, browser_on_failed, bb_ac_beta, dont_buy, random_delay_start, random_delay_stop, target_user, target_pass, gamestop_user, gamestop_pass
+        settings.webhook, settings.webhook_on_browser, settings.webhook_on_order, settings.webhook_on_failed, settings.run_headless, settings.browser_on_failed, settings.bb_ac_beta, settings.buy_one, settings.dont_buy = settings_data["webhook"], settings_data["webhookonbrowser"], settings_data["webhookonorder"], settings_data["webhookonfailed"], settings_data["browseronfailed"], settings_data["runheadless"], settings_data["bb_ac_beta"], settings_data['onlybuyone'], settings_data['dont_buy']
 
         if settings_data.get("random_delay_start", "") != "":
             settings.random_delay_start = settings_data["random_delay_start"]

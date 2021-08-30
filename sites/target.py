@@ -61,7 +61,8 @@ class Target:
         # return browser
 
         chrome_options = Options()
-        # chrome_options.add_argument("--headless")
+        # if settings.run_headless:
+            # chrome_options.add_argument("--headless")
         chrome_options.add_argument(f"User-Agent={settings.userAgent}")
 
         driver = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_options)
@@ -79,14 +80,19 @@ class Target:
         self.browser.get("https://www.target.com")
         self.browser.find_element_by_id("account").click()
         wait(self.browser, self.TIMEOUT_LONG).until(EC.element_to_be_clickable((By.ID, "accountNav-signIn"))).click()
+        
         wait(self.browser, self.TIMEOUT_LONG).until(EC.presence_of_element_located((By.ID, "username")))
+        self.browser.get(f"https://login.target.com/gsp/static/v1/login/?client_id=ecom-web-1.0.0&ui_namespace=ui-default&back_button_action=browser&keep_me_signed_in=true&kmsi_default=false&actions=create_session_signin&username={settings.target_user}")
         self.fill_and_authenticate()
 
         # Gives it time for the login to complete
         time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
 
+        # verify we logged in here
+
     def fill_and_authenticate(self):
         time.sleep(3)
+        
         if self.browser.find_elements_by_id('username'):
             self.browser.find_element_by_xpath('//input[@id="username"]').send_keys(settings.target_user)
             # self.fill_field_and_proceed('//input[@id="username"]', {'value': settings.target_user})
@@ -96,10 +102,10 @@ class Target:
         time.sleep(2)
         self.browser.find_element_by_xpath('//button[@id="login"]').click()
         time.sleep(2)
-        if "login.target" in self.browser.current_url:
-            self.browser.refresh()
-            time.sleep(2)
-            self.fill_and_authenticate()
+        # if "login.target" in self.browser.current_url:
+            # self.browser.refresh()
+            # time.sleep(2)
+            # self.fill_and_authenticate()
         
 
     def product_loop(self):

@@ -66,7 +66,8 @@ class GameStop:
         # return browser
 
         chrome_options = Options()
-        # chrome_options.add_argument("--headless")
+        if settings.run_headless:
+            chrome_options.add_argument("--headless")
         chrome_options.add_argument(f"User-Agent={settings.userAgent}")
 
         driver = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_options)

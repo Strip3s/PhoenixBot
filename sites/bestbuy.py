@@ -131,7 +131,8 @@ class BestBuy:
         # headless = True
         # if headless:
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
+        if settings.run_headless:
+            chrome_options.add_argument("--headless")
         chrome_options.add_argument(f"User-Agent={settings.userAgent}")
 
         # driver_manager co= ChromeDriverManager()
