@@ -493,3 +493,6 @@ class Walmart:
 
     def is_captcha(self, text):
         return '<div class="re-captcha">' in text
+
+    def stop(self):
+        self.browser.quit()

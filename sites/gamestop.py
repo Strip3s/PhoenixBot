@@ -42,20 +42,35 @@ class GameStop:
         self.submit_order()
 
     def init_driver(self):
-        driver_manager = ChromeDriverManager()
+        # driver_manager = ChromeDriverManager()
         
-        # chrome_options = Options()
+        # # chrome_options = Options()
+        # # chrome_options.add_argument("--headless")
+        # driver_manager.install()
+        
+        # # driver_manager = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_options)
+
+        # # change_driver(self.status_signal, driver_path)
+        # var = driver_path
+        # browser = webdriver.Chrome(driver_path)
+        # browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+
+        # # driver_manager.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        #     "source": """
+        #           Object.defineProperty(navigator, 'webdriver', {
+        #            get: () => undefined
+        #           })
+        #         """
+        # })
+
+        # return browser
+
+        chrome_options = Options()
         # chrome_options.add_argument("--headless")
-        driver_manager.install()
-        
-        # driver_manager = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_options)
+        chrome_options.add_argument(f"User-Agent={settings.userAgent}")
 
-        # change_driver(self.status_signal, driver_path)
-        var = driver_path
-        browser = webdriver.Chrome(driver_path)
-        browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-
-        # driver_manager.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        driver = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_options)
+        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
             "source": """
                   Object.defineProperty(navigator, 'webdriver', {
                    get: () => undefined
@@ -63,7 +78,7 @@ class GameStop:
                 """
         })
 
-        return browser
+        return driver
 
     def login(self):
         self.status_signal.emit(create_msg("Logging In..", "normal"))
@@ -97,6 +112,11 @@ class GameStop:
 
     def monitor(self):
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/?openLoginModal=accountModal")
+
+        if "user-message-initial" in self.browser.page_source:
+            self.status_signal.emit(create_msg("Successfully logged in...", "normal"))
+        else:
+            self.status_signal.emit(create_msg("Error logging in... please restart task","normal"))
 
         self.status_signal.emit(create_msg("Checking Stock..", "normal"))
         
@@ -163,3 +183,6 @@ class GameStop:
         else:
             self.status_signal.emit(create_msg("Mock Order Placed", "success"))
             send_webhook("OP", "GameStop", self.profile["profile_name"], self.task_id, self.product_image)
+
+    def stop(self):
+        self.browser.quit()

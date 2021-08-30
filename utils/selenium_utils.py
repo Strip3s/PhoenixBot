@@ -7,7 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
 from utils import create_msg
-import random, re, requests, string, threading
+import random, re, requests, string, threading, settings
 
 # https://github.com/Hari-Nagarajan/nvidia-bot/blob/master/utils/selenium_utils.py
 
@@ -142,9 +142,9 @@ def add_cookies_to_session_from_driver(driver, session):
 
 
 def enable_headless():
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
 
 
 # https://stackoverflow.com/questions/33225947/can-a-website-detect-when-you-are-using-selenium-with-chromedriver

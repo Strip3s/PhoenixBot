@@ -92,11 +92,6 @@ class BestBuy:
         self.status_signal.emit(create_msg(f"Product URL Request: {response.status_code}", "normal"))
         self.status_signal.emit(create_msg("Loading headless driver.", "normal"))
 
-        # TODO - check if this still messes up the cookies for headless
-        headless = True
-        if headless:
-            enable_headless()
-        options.add_argument(f"User-Agent={settings.userAgent}")
 
         self.status_signal.emit(create_msg("Loading https://www.bestbuy.com/", "normal"))
         self.login()
@@ -131,11 +126,30 @@ class BestBuy:
         self.check_stock()
 
     def init_driver(self):
-        driver_manager = ChromeDriverManager()
-        driver_manager.install()
-        browser = webdriver.Chrome(binary_path)
 
-        browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        # TODO - check if this still messes up the cookies for headless
+        # headless = True
+        # if headless:
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument(f"User-Agent={settings.userAgent}")
+
+        # driver_manager co= ChromeDriverManager()
+        # driver_manager.install()
+        # browser = webdriver.Chrome(binary_path)
+
+        # browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        #     "source": """
+        #           Object.defineProperty(navigator, 'webdriver', {
+        #            get: () => undefined
+        #           })
+        #         """
+        # })
+
+        # return browser
+
+        driver = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_options)
+        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
             "source": """
                   Object.defineProperty(navigator, 'webdriver', {
                    get: () => undefined
@@ -143,7 +157,7 @@ class BestBuy:
                 """
         })
 
-        return browser
+        return driver
 
     def login(self):
         self.status_signal.emit(create_msg("Logging in...", "normal"))
@@ -245,3 +259,6 @@ class BestBuy:
                         self.did_submit = True
             except:
                 self.status_signal.emit(create_msg('Retrying submit order until success', 'normal'))
+
+    def stop(self):
+        self.browser.quit()

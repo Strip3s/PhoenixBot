@@ -514,6 +514,17 @@ class TaskThread(QtCore.QThread):
             GameStop(self.task_id, self.status_signal, self.image_signal, self.product, profile, proxy, self.monitor_delay, self.error_delay, self.max_price)
 
     def stop(self):
+        # print(self.site,flush=True)
+        # if self.site == "Walmart":
+        #     Walmart.stop(self)
+        # elif self.site == "Bestbuy":
+        #     BestBuy.stop(self)
+        # elif self.site == "Target":
+        #     Target.stop(self.Target)
+        # elif self.site == "GameStop":
+        #     GameStop.stop(self.GameStop)
+
+        # self.stop()
         self.terminate()
 
 class ImageThread(QtCore.QThread):

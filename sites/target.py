@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait as wait
+from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from chromedriver_py import binary_path as driver_path
 from utils import random_delay, send_webhook, create_msg
@@ -43,13 +44,28 @@ class Target:
         send_webhook("OP", "Target", self.profile["profile_name"], self.task_id, self.product_image)
 
     def init_driver(self):
-        driver_manager = ChromeDriverManager()
-        driver_manager.install()
-        change_driver(self.status_signal, driver_path)
-        var = driver_path
-        browser = webdriver.Chrome(driver_path)
+        # driver_manager = ChromeDriverManager()
+        # driver_manager.install()
+        # change_driver(self.status_signal, driver_path)
+        # var = driver_path
+        # browser = webdriver.Chrome(driver_path)
 
-        browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        # browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        #     "source": """
+        #           Object.defineProperty(navigator, 'webdriver', {
+        #            get: () => undefined
+        #           })
+        #         """
+        # })
+
+        # return browser
+
+        chrome_options = Options()
+        # chrome_options.add_argument("--headless")
+        chrome_options.add_argument(f"User-Agent={settings.userAgent}")
+
+        driver = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_options)
+        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
             "source": """
                   Object.defineProperty(navigator, 'webdriver', {
                    get: () => undefined
@@ -57,7 +73,7 @@ class Target:
                 """
         })
 
-        return browser
+        return driver
 
     def login(self):
         self.browser.get("https://www.target.com")
@@ -70,9 +86,21 @@ class Target:
         time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
 
     def fill_and_authenticate(self):
+        time.sleep(3)
         if self.browser.find_elements_by_id('username'):
-            self.fill_field_and_proceed('//input[@id="username"]', {'value': settings.target_user})
-        self.fill_field_and_proceed('//input[@id="password"]', {'value': settings.target_pass, 'confirm_button': '//button[@id="login"]'})
+            self.browser.find_element_by_xpath('//input[@id="username"]').send_keys(settings.target_user)
+            # self.fill_field_and_proceed('//input[@id="username"]', {'value': settings.target_user})
+            time.sleep(2)
+        # self.fill_field_and_proceed('//input[@id="password"]', {'value': settings.target_pass, 'confirm_button': '//button[@id="login"]'})
+        self.browser.find_element_by_xpath('//input[@id="password"]').send_keys(settings.target_pass)
+        time.sleep(2)
+        self.browser.find_element_by_xpath('//button[@id="login"]').click()
+        time.sleep(2)
+        if "login.target" in self.browser.current_url:
+            self.browser.refresh()
+            time.sleep(2)
+            self.fill_and_authenticate()
+        
 
     def product_loop(self):
         while not self.did_submit and not self.failed:
@@ -207,3 +235,7 @@ class Target:
                 self.process_step(xpath_step, wait_after=True, silent=True)
         for xpath_step in self.possible_interruptions:
             self.process_step(xpath_step, wait_after=True, silent=True)
+        
+    
+    def stop(self):
+        self.browser.quit()
