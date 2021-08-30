@@ -44,6 +44,7 @@ class Target:
         send_webhook("OP", "Target", self.profile["profile_name"], self.task_id, self.product_image)
 
     def init_driver(self):
+        ##### old code below
         # driver_manager = ChromeDriverManager()
         # driver_manager.install()
         # change_driver(self.status_signal, driver_path)
@@ -60,7 +61,10 @@ class Target:
 
         # return browser
 
+        ##### new code below
+
         chrome_options = Options()
+        # TODO: Headless mode is off until sign-in bug with target can be recitified 
         # if settings.run_headless:
             # chrome_options.add_argument("--headless")
         chrome_options.add_argument(f"User-Agent={settings.userAgent}")
@@ -88,11 +92,12 @@ class Target:
         # Gives it time for the login to complete
         time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
 
-        # verify we logged in here
+        #TODO verify we logged in here
 
     def fill_and_authenticate(self):
         time.sleep(3)
         
+        #TODO - refactor for target login issue in both headless and non-headless
         if self.browser.find_elements_by_id('username'):
             self.browser.find_element_by_xpath('//input[@id="username"]').send_keys(settings.target_user)
             # self.fill_field_and_proceed('//input[@id="username"]', {'value': settings.target_user})
@@ -243,5 +248,6 @@ class Target:
             self.process_step(xpath_step, wait_after=True, silent=True)
         
     
-    def stop(self):
-        self.browser.quit()
+    # TODO: when running with headless == False it would be good to quit browsers when task is stopped (might be good to keep it open if it errors out however for diagnostics)
+    # def stop(self):
+    #     self.browser.quit()

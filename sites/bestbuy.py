@@ -261,5 +261,6 @@ class BestBuy:
             except:
                 self.status_signal.emit(create_msg('Retrying submit order until success', 'normal'))
 
-    def stop(self):
-        self.browser.quit()
+    # TODO: when running with headless == False it would be good to quit browsers when task is stopped (might be good to keep it open if it errors out however for diagnostics)
+    # def stop(self):
+    #     self.browser.quit()

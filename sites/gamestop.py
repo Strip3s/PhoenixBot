@@ -10,15 +10,6 @@ from utils import random_delay, send_webhook, create_msg
 from utils.selenium_utils import change_driver
 import settings, time
 
-
-DEFAULT_HEADERS = {
-    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-    "accept-encoding": "gzip, deflate, br",
-    "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
-    "user-agent": settings.userAgent,
-    "origin": "https://www.gamestop.com",
-}
-
 class GameStop:
     def __init__(self, task_id, status_signal, image_signal, product, profile, proxy, monitor_delay, error_delay, max_price):
         self.task_id, self.status_signal, self.image_signal, self.product, self.profile, self.monitor_delay, self.error_delay, self.max_price = task_id, status_signal, image_signal, product, profile, float(
@@ -67,7 +58,10 @@ class GameStop:
 
         chrome_options = Options()
         if settings.run_headless:
+            print(f"Running headless {settings.run_headless}",flush=True)
             chrome_options.add_argument("--headless")
+
+        ## Gamestop does not like it when we do not have a user-agent
         chrome_options.add_argument(f"User-Agent={settings.userAgent}")
 
         driver = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_options)
@@ -114,11 +108,14 @@ class GameStop:
     def monitor(self):
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/?openLoginModal=accountModal")
 
+        ## verify we have signed successfully else we should abort the task or attempt sign-in again
+        # (TODO: add max attempts to sign-in before exiting task)
         if "user-message-initial" in self.browser.page_source:
             self.status_signal.emit(create_msg("Successfully logged in...", "normal"))
         else:
             self.status_signal.emit(create_msg("Error logging in... please restart task","normal"))
 
+        # TODO: Exit task if we are not signed in
         self.status_signal.emit(create_msg("Checking Stock..", "normal"))
         
         self.browser.set_window_size(900, 900)
@@ -185,5 +182,6 @@ class GameStop:
             self.status_signal.emit(create_msg("Mock Order Placed", "success"))
             send_webhook("OP", "GameStop", self.profile["profile_name"], self.task_id, self.product_image)
 
-    def stop(self):
-        self.browser.quit()
+    # TODO: when running with headless == False it would be good to quit browsers when task is stopped (might be good to keep it open if it errors out however for diagnostics)
+    # def stop(self):
+    #     self.browser.quit()
