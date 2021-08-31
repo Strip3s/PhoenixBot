@@ -2,12 +2,35 @@ from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait as wait
+from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from chromedriver_py import binary_path as driver_path
 from utils import random_delay, send_webhook, create_msg
 from utils.selenium_utils import change_driver
 import settings, time
 
+options = Options()
+
+### Need to experiment with options below to optimize page load but not piss off target
+
+# options.page_load_strategy = "eager"
+# options.add_experimental_option("excludeSwitches", ["enable-automation"])
+# options.add_experimental_option("useAutomationExtension", False)
+
+# prefs = {
+#         "profile.managed_default_content_settings.images":2,
+#         # "profile.default_content_setting_values.notifications":2,
+#         # "profile.managed_default_content_settings.stylesheets":2,
+#         # "profile.managed_default_content_settings.cookies":1,
+#         # "profile.managed_default_content_settings.javascript":1,
+#         # "profile.managed_default_content_settings.plugins":1,
+#         # "profile.managed_default_content_settings.popups":2,
+#         # "profile.managed_default_content_settings.geolocation":1,
+#         # "profile.managed_default_content_settings.media_stream":2,
+# }
+
+# options.add_experimental_option("prefs", prefs)
+options.add_argument(f"User-Agent={settings.userAgent}")
 
 class Target:
     def __init__(self, task_id, status_signal, image_signal, product, profile, proxy, monitor_delay, error_delay):
@@ -43,13 +66,12 @@ class Target:
         send_webhook("OP", "Target", self.profile["profile_name"], self.task_id, self.product_image)
 
     def init_driver(self):
-        driver_manager = ChromeDriverManager()
-        driver_manager.install()
-        change_driver(self.status_signal, driver_path)
-        var = driver_path
-        browser = webdriver.Chrome(driver_path)
+        # TODO: Headless mode is off until sign-in bug with target can be recitified 
+        # if settings.run_headless:
+        #     options.add_argument("--headless")
 
-        browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        driver = webdriver.Chrome(ChromeDriverManager().install(),options=options)
+        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
             "source": """
                   Object.defineProperty(navigator, 'webdriver', {
                    get: () => undefined
@@ -57,22 +79,35 @@ class Target:
                 """
         })
 
-        return browser
+        return driver
 
     def login(self):
         self.browser.get("https://www.target.com")
         self.browser.find_element_by_id("account").click()
         wait(self.browser, self.TIMEOUT_LONG).until(EC.element_to_be_clickable((By.ID, "accountNav-signIn"))).click()
+        
         wait(self.browser, self.TIMEOUT_LONG).until(EC.presence_of_element_located((By.ID, "username")))
+        self.browser.get(f"https://login.target.com/gsp/static/v1/login/?client_id=ecom-web-1.0.0&ui_namespace=ui-default&back_button_action=browser&keep_me_signed_in=true&kmsi_default=false&actions=create_session_signin&username={settings.target_user}")
         self.fill_and_authenticate()
 
         # Gives it time for the login to complete
         time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
 
+        #TODO verify we logged in here
+
     def fill_and_authenticate(self):
+        time.sleep(3)
+        
+        #TODO - refactor for target login issue in both headless and non-headless
         if self.browser.find_elements_by_id('username'):
-            self.fill_field_and_proceed('//input[@id="username"]', {'value': settings.target_user})
-        self.fill_field_and_proceed('//input[@id="password"]', {'value': settings.target_pass, 'confirm_button': '//button[@id="login"]'})
+            self.browser.find_element_by_xpath('//input[@id="username"]').send_keys(settings.target_user)
+            time.sleep(2)
+        self.browser.find_element_by_xpath('//input[@id="password"]').send_keys(settings.target_pass)
+        time.sleep(2)
+        self.browser.find_element_by_xpath('//button[@id="login"]').click()
+        time.sleep(2)
+
+        
 
     def product_loop(self):
         while not self.did_submit and not self.failed:
@@ -207,3 +242,8 @@ class Target:
                 self.process_step(xpath_step, wait_after=True, silent=True)
         for xpath_step in self.possible_interruptions:
             self.process_step(xpath_step, wait_after=True, silent=True)
+        
+    
+    # TODO: when running with headless == False it would be good to quit browsers when task is stopped (might be good to keep it open if it errors out however for diagnostics)
+    # def stop(self):
+    #     self.browser.quit()

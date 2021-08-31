@@ -14,6 +14,9 @@ webhook_on_failed = True
 global browser_on_failed
 browser_on_failed = True
 
+global run_headless
+run_headless = True
+
 global bb_ac_beta
 bb_ac_beta = False
 
@@ -22,7 +25,7 @@ dont_buy = False
 
 # TODO: Rename this to match proper format
 global userAgent
-userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.20 Safari/537.36"
+userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36"
 
 global random_delay_start
 random_delay_start = 10

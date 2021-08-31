@@ -376,11 +376,19 @@ class TaskTab(QtWidgets.QWidget):
             self.start_btn.raise_()
             if settings.buy_one:
                 self.stop_all()
+            else:
+                self.stop(msg["msg"])
             checkouts_count.setText(str(int(checkouts_count.text())+1))
         elif msg["status"] == "carted":
             self.status_label.setStyleSheet("color: rgb(163, 149, 255);")
             logger.alt(self.task_id,msg["msg"])
             carted_count.setText(str(int(carted_count.text())+1))
+        elif msg["status"] == "stopnow":
+            self.status_label.setStyleSheet("color: rgb(252, 81, 81);")
+            logger.error(self.task_id,msg["msg"])
+            self.stop(msg["msg"])
+
+
     
     def wait_browser_poll(self):
         # Initiate dialog and block until dismissed
@@ -514,6 +522,17 @@ class TaskThread(QtCore.QThread):
             GameStop(self.task_id, self.status_signal, self.image_signal, self.product, profile, proxy, self.monitor_delay, self.error_delay, self.max_price)
 
     def stop(self):
+        # print(self.site,flush=True)
+        # if self.site == "Walmart":
+        #     Walmart.stop(self)
+        # elif self.site == "Bestbuy":
+        #     BestBuy.stop(self)
+        # elif self.site == "Target":
+        #     Target.stop(self.Target)
+        # elif self.site == "GameStop":
+        #     GameStop.stop(self.GameStop)
+
+        # self.stop()
         self.terminate()
 
 class ImageThread(QtCore.QThread):

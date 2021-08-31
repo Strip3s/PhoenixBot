@@ -7,13 +7,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
 from utils import create_msg
-import random, re, requests, string, threading
+import random, re, requests, string, threading, settings
 
 # https://github.com/Hari-Nagarajan/nvidia-bot/blob/master/utils/selenium_utils.py
 
 options = Options()
 options.add_experimental_option(
-    "excludeSwitches", ["enable-automation", "enable-logging"]
+    "excludeSwitches", ["enable-automation", "enable-logging"],
 )
 options.add_experimental_option("useAutomationExtension", False)
 
@@ -145,6 +145,8 @@ def enable_headless():
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+
+    return options
 
 
 # https://stackoverflow.com/questions/33225947/can-a-website-detect-when-you-are-using-selenium-with-chromedriver

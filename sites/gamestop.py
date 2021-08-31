@@ -1,12 +1,36 @@
+from requests.sessions import default_headers
 from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait as wait
+from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from chromedriver_py import binary_path as driver_path
 from utils import random_delay, send_webhook, create_msg
 from utils.selenium_utils import change_driver
 import settings, time
+
+options = Options()
+options.page_load_strategy = "eager"
+options.add_experimental_option("excludeSwitches", ["enable-automation"])
+options.add_experimental_option("useAutomationExtension", False)
+
+### Need to optimize options below for pageload but not piss off gamestop
+
+prefs = {
+        "profile.managed_default_content_settings.images":2,
+        # "profile.default_content_setting_values.notifications":2,
+        # "profile.managed_default_content_settings.stylesheets":2,
+        # "profile.managed_default_content_settings.cookies":1,
+        # "profile.managed_default_content_settings.javascript":1,
+        # "profile.managed_default_content_settings.plugins":1,
+        # "profile.managed_default_content_settings.popups":2,
+        # "profile.managed_default_content_settings.geolocation":1,
+        # "profile.managed_default_content_settings.media_stream":2,
+}
+
+options.add_experimental_option("prefs", prefs)
+options.add_argument(f"User-Agent={settings.userAgent}")
 
 class GameStop:
     def __init__(self, task_id, status_signal, image_signal, product, profile, proxy, monitor_delay, error_delay, max_price):
@@ -27,62 +51,83 @@ class GameStop:
         self.login()
         self.monitor()
         self.add_to_cart()
-        self.submit_billing()
-        self.submit_order()
+        # self.submit_billing()
+        # self.submit_order()
 
     def init_driver(self):
-        driver_manager = ChromeDriverManager()
-        driver_manager.install()
-        # change_driver(self.status_signal, driver_path)
-        var = driver_path
-        browser = webdriver.Chrome(driver_path)
+        # if settings.run_headless:
+            # options.add_argument("--headless")
 
-        browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        ## Gamestop does not like it when we do not have a user-agent
+
+        driver = webdriver.Chrome(ChromeDriverManager().install(),options=options)
+        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
             "source": """
                   Object.defineProperty(navigator, 'webdriver', {
                    get: () => undefined
                   })
                 """
         })
-
-        return browser
+        driver.minimize_window()
+        return driver
 
     def login(self):
         self.status_signal.emit(create_msg("Logging In..", "normal"))
 
-        self.browser.maximize_window()
-        
-        self.browser.get("https://www.gamestop.com/?openLoginModal=accountModal")
+        #load home page so we get the cookies and referrer crap
+        self.browser.get('https://www.gamestop.com/')
 
-        #wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.LINK_TEXT, "MY ACCOUNT")))
         time.sleep(5)
-        #self.browser.find_element_by_link_text('MY ACCOUNT').click()
-        self.browser.find_element_by_xpath('//a[@id="signIn"]').click()
 
-        #wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "signIn"))).click()
+        if not settings.run_headless:
+            # self.browser.maximize_window()
+            self.browser.get("https://www.gamestop.com/?openLoginModal=accountModal")
 
+            time.sleep(5)
+        
+
+            # wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.LINK_TEXT, "MY ACCOUNT")))
+            # time.sleep(5)
+            #self.browser.find_element_by_link_text('MY ACCOUNT').click()
+            self.browser.find_element_by_xpath('//a[@id="account-modal-link-nocache"]').click()
+            # wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "signIn"))).click()
+        else:
+            self.browser.get("https://www.gamestop.com/login/")
+        
         wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "login-form-email")))
 
         email = self.browser.find_element_by_id("login-form-email")
         email.send_keys(settings.gamestop_user)
 
         wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "login-form-password")))
-
+        time.sleep(5)
         password = self.browser.find_element_by_id("login-form-password")
         password.send_keys(settings.gamestop_pass)
 
-        time.sleep(1) # slight delay for in-between filling out login info and clicking Sign In
+        time.sleep(2) # slight delay for in-between filling out login info and clicking Sign In
 
-        wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="signinCheck"]/button')))
-        sign_in_btn = self.browser.find_element_by_xpath('//*[@id="signinCheck"]/button')
+        # wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="signinCheck"]/button')))
+        # sign_in_btn = self.browser.find_element_by_xpath('//button[@class="sign-in-submit"]')
+        sign_in_btn = wait(self.browser, self.LONG_TIMEOUT).until(
+             EC.presence_of_element_located((By.XPATH, "//button[@class='btn btn-block mb-2 sign-in-submit']"))
+        )
         sign_in_btn.click()
+        time.sleep(10)
 
     def monitor(self):
-        wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/account/")
+        # wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/?openLoginModal=accountModal")
 
+        ## verify we have signed successfully else we should abort the task or attempt sign-in again
+        # (TODO: add max attempts to sign-in before exiting task)
+        if "user-message-initial" in self.browser.page_source:
+            self.status_signal.emit(create_msg("Gamestop Successfully logged in...", "normal"))
+        else:
+            self.status_signal.emit(create_msg("Error logging in... please restart task","stopnow"))
+
+        # TODO: Exit task if we are not signed in
         self.status_signal.emit(create_msg("Checking Stock..", "normal"))
         
-        self.browser.set_window_size(900, 900)
+        # self.browser.set_window_size(900, 900)
 
         self.browser.get(self.product)
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == self.product)
@@ -101,13 +146,17 @@ class GameStop:
                     continue
                 in_stock = True
                 self.status_signal.emit(create_msg("Added to cart", "normal"))
-                self.browser.get("https://www.gamestop.com/cart/")
+                self.browser.maximize_window()
+                self.status_signal.emit(create_msg("Added to cart, check for captcha","stopnow"))
+                # self.browser.get("https://www.gamestop.com/cart/")
             except:
                 self.status_signal.emit(create_msg("Waiting For Restock", "normal"))
                 self.browser.refresh()
 
     def add_to_cart(self):
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/cart/")
+
+        ##### THERE IS NOW A CAPTCHA HERE (POPUP)
         
         self.status_signal.emit(create_msg("Checking Age Verification", "normal"))
 
@@ -134,6 +183,8 @@ class GameStop:
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/checkout/?stage=placeOrder#placeOrder")
 
         self.status_signal.emit(create_msg("Submitting Order..", "normal"))
+        
+        ##### THERE IS NOW A CAPTCHA HERE (POPULATED - NEED TO CLICK)
 
         wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.CLASS_NAME, 'btn.btn-primary.btn-block.place-order')))
 
@@ -145,3 +196,7 @@ class GameStop:
         else:
             self.status_signal.emit(create_msg("Mock Order Placed", "success"))
             send_webhook("OP", "GameStop", self.profile["profile_name"], self.task_id, self.product_image)
+
+    # TODO: when running with headless == False it would be good to quit browsers when task is stopped (might be good to keep it open if it errors out however for diagnostics)
+    # def stop(self):
+    #     self.browser.quit()

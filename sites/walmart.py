@@ -493,3 +493,7 @@ class Walmart:
 
     def is_captcha(self, text):
         return '<div class="re-captcha">' in text
+
+    # TODO: when running with headless == False it would be good to quit browsers when task is stopped (might be good to keep it open if it errors out however for diagnostics)
+    # def stop(self):
+    #     self.browser.quit()
