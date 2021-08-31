@@ -376,6 +376,8 @@ class TaskTab(QtWidgets.QWidget):
             self.start_btn.raise_()
             if settings.buy_one:
                 self.stop_all()
+            else:
+                self.stop(msg["msg"])
             checkouts_count.setText(str(int(checkouts_count.text())+1))
         elif msg["status"] == "carted":
             self.status_label.setStyleSheet("color: rgb(163, 149, 255);")

@@ -33,29 +33,6 @@ class GameStop:
         self.submit_order()
 
     def init_driver(self):
-        # driver_manager = ChromeDriverManager()
-        
-        # # chrome_options = Options()
-        # # chrome_options.add_argument("--headless")
-        # driver_manager.install()
-        
-        # # driver_manager = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_options)
-
-        # # change_driver(self.status_signal, driver_path)
-        # var = driver_path
-        # browser = webdriver.Chrome(driver_path)
-        # browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-
-        # # driver_manager.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-        #     "source": """
-        #           Object.defineProperty(navigator, 'webdriver', {
-        #            get: () => undefined
-        #           })
-        #         """
-        # })
-
-        # return browser
-
         chrome_options = Options()
         if settings.run_headless:
             print(f"Running headless {settings.run_headless}",flush=True)
@@ -88,7 +65,7 @@ class GameStop:
         self.browser.find_element_by_xpath('//a[@id="account-modal-link-nocache"]').click()
 
         # wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "signIn"))).click()
-
+        
         wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "login-form-email")))
 
         email = self.browser.find_element_by_id("login-form-email")

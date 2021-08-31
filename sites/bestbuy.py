@@ -50,6 +50,27 @@ prefs = {"profile.managed_default_content_settings.images": 2}
 options.add_experimental_option("prefs", prefs)
 options.add_argument("user-data-dir=.profile-bb")
 
+def driver_click(driver, find_type, selector):
+    """Driver Wait and Click Settings."""
+    while True:
+        if find_type == 'css':
+            try:
+                driver.find_element_by_css_selector(selector).click()
+                break
+            except NoSuchElementException:
+                driver.implicitly_wait(1)
+        elif find_type == 'name':
+            try:
+                driver.find_element_by_name(selector).click()
+                break
+            except NoSuchElementException:
+                driver.implicitly_wait(1)
+        elif find_type == 'xpath':
+            try:
+                driver.find_element_by_xpath(f"//*[@class='{selector}']").click()
+                break
+            except NoSuchElementException:
+                driver.implicitly_wait(1)
 
 class BestBuy:
 
@@ -92,7 +113,7 @@ class BestBuy:
         self.status_signal.emit(create_msg(f"Product URL: {self.product}", "normal"))
         self.session.get(self.product)
         self.status_signal.emit(create_msg(f"Product URL Request: {response.status_code}", "normal"))
-        self.status_signal.emit(create_msg("Loading headless driver.", "normal"))
+        # self.status_signal.emit(create_msg("Loading headless driver.", "normal"))
 
 
         self.status_signal.emit(create_msg("Loading https://www.bestbuy.com/", "normal"))
@@ -137,20 +158,6 @@ class BestBuy:
             chrome_options.add_argument("--headless")
         chrome_options.add_argument(f"User-Agent={settings.userAgent}")
 
-        # driver_manager co= ChromeDriverManager()
-        # driver_manager.install()
-        # browser = webdriver.Chrome(binary_path)
-
-        # browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-        #     "source": """
-        #           Object.defineProperty(navigator, 'webdriver', {
-        #            get: () => undefined
-        #           })
-        #         """
-        # })
-
-        # return browser
-
         driver = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_options)
         driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
             "source": """
@@ -166,6 +173,10 @@ class BestBuy:
         self.status_signal.emit(create_msg("Logging in...", "normal"))
         self.browser.get("https://www.bestbuy.com/identity/global/signin")
 
+        # WebDriverWait(self.browser, 10).until(
+        #     EC.presence_of_element_located((By.("Sign In to Best Buy")
+        # )
+        time.sleep(5)
         # set remember me to true, probably don't need this TBH
         WebDriverWait(self.browser, 10).until(
             EC.presence_of_element_located((By.ID, "ca-remember-me"))
@@ -183,15 +194,19 @@ class BestBuy:
         ).send_keys(settings.bestbuy_pass)
         # self.browser.find_element_by_xpath('//*[@id="fld-p1"]').send_keys(settings.bestbuy_pass)
         
-        WebDriverWait(self.browser, 10).until(
+        time.sleep(2)
+        signInButton = WebDriverWait(self.browser, 10).until(
             EC.presence_of_element_located((By.XPATH,"//button[contains(@class,'cia-form__controls__submit')]"))
-        ).click
-        # self.browser.find_element_by_xpath(
-        #     "//button[contains(@class,'cia-form__controls__submit')]"
-        # ).click()
-        # WebDriverWait(self.browser, 10).until(
-        #     lambda x: "Official Online Store" in self.browser.title
-        # )
+        )
+        signInButton.click()
+                
+        WebDriverWait(self.browser, 10).until(
+            lambda x: "Official Online Store" in self.browser.title or "Sign In - Add Recovery Phone" in self.browser.title
+        )
+
+        if "Sign In - Add Recovery Phone" in self.browser.title:
+            print("Sign In - Add Recovery phone page hit, probably can ignore...",flush=True)
+        
         if not settings.run_headless:
             closeModal = WebDriverWait(self.browser, 10).until(
                 EC.presence_of_element_located((By.XPATH, "//button[@class='c-close-icon c-modal-close-icon']"))
@@ -225,8 +240,8 @@ class BestBuy:
         else:
             # refresh to update add to cart button
             self.browser.refresh()
-            cart_url = self.add_to_cart()
-            self.status_signal.emit(create_msg(f"SKU: {self.sku_id} in stock: {cart_url}", "normal"))
+            self.status_signal.emit(create_msg(f"SKU: {self.sku_id} in stock: {BEST_BUY_CART_URL.format(sku=self.sku_id)}", "normal"))
+            self.add_to_cart()
             sleep(5)
 
     def in_stock(self):
@@ -280,9 +295,10 @@ class BestBuy:
 
             # Queue system logic - courtesy RTX-3070-BEST-BUY-BOT
             WebDriverWait(self.browser, 15).until(
-                EC.element_to_be_clickable((By.CSS_Selector),".add-to-cart-button")
+                EC.element_to_be_clickable((By.CSS_SELECTOR,".add-to-cart-button"))
             )
-            self.driver_click(self.browser, 'css', '.add-to-cart-button')
+
+            driver_click(self.browser, 'css', '.add-to-cart-button')
 
             self.status_signal.emit(create_msg("In Queue, refreshing page until our turn", "normal"))
             # send text message here
@@ -295,6 +311,7 @@ class BestBuy:
                     please_wait_enabled = add_to_cart.get_attribute('aria-describedby')
 
                     if please_wait_enabled:
+                        print("Please wait enabled",flush=True)
                         self.browser.refresh()
                         time.sleep(15)
                     else:  # When Add to Cart appears. This will click button.
@@ -302,7 +319,7 @@ class BestBuy:
                             EC.presence_of_element_located((By.CSS_SELECTOR, ".add-to-cart-button"))
                         )
                         time.sleep(2)
-                        self.driver_click(self.browser, 'css', '.add-to-cart-button')
+                        driver_click(self.browser, 'css', '.add-to-cart-button')
                         time.sleep(2)
                         break
                 except(NoSuchElementException, TimeoutException) as error:
@@ -315,12 +332,12 @@ class BestBuy:
                     EC.presence_of_element_located((By.XPATH, "//*[@class='btn btn-lg btn-block btn-primary']"))
                 )
                 time.sleep(1)
-                self.driver_click(self.browser, 'xpath', 'btn btn-lg btn-block btn-primary')
+                driver_click(self.browser, 'xpath', 'btn btn-lg btn-block btn-primary')
                 self.status_signal.emit(create_msg("Product still in cart", "normal"))
                 self.start_checkout()
             except (NoSuchElementException, TimeoutException):
                 self.status_signal.emit(create_msg("Item is not in cart anymore, Retrying...","normal"))
-                time.sleep(3, self.driver)
+                time.sleep(3)
                 self.add_to_cart(True)
 
         # return BEST_BUY_CART_URL.format(sku=self.sku_id)
@@ -348,49 +365,49 @@ class BestBuy:
 
         self.status_signal.emit(create_msg("Attempting Checkout", "normal"))
 
-        # click shipping option if available
+        # # click shipping option if available, currently sets it to ISPU (in store pick up)
+        # try:
+
+        #     self.status_signal.emit(create_msg("Selecting Shipping Checkout", "normal"))
+        #     WebDriverWait(self.browser, 5).until(
+        #         EC.presence_of_element_located((By.XPATH, "//*[@class='btn btn-lg btn-block btn-primary button__fast-track']"))
+        #     )
+        #     time.sleep(2)
+        #     shipping_class = self.browser.find_element_by_xpath("//*[@class='ispu-card__switch']")
+        #     shipping_class.click()
+        # except (NoSuchElementException, TimeoutException, ElementNotInteractableException, ElementClickInterceptedException) as error:
+        #     print(f'shipping error: {error}',flush=True)
+
+
         try:
-
-            self.status_signal.emit(create_msg("Selecting Shipping Checkout", "normal"))
-            WebDriverWait(self.browser, 5).until(
-                EC.presence_of_element_located((By.XPATH, "//*[@class='btn btn-lg btn-block btn-primary button__fast-track']"))
+            self.status_signal.emit(create_msg("Trying CVV Number.","normal"))
+            security_code = WebDriverWait(self.browser, 5).until(
+                EC.presence_of_element_located((By.ID, "cvv"))
             )
-            time.sleep(2)
-            shipping_class = self.driver.find_element_by_xpath("//*[@class='ispu-card__switch']")
-            shipping_class.click()
-        except (NoSuchElementException, TimeoutException, ElementNotInteractableException, ElementClickInterceptedException) as error:
-            print(f'shipping error: {error}',flush=True)
-
-
-        try:
-            self.start_checkout.emit(create_msg("Trying CVV Number.","normal"))
-            WebDriverWait(self.browser, 5).until(
-                EC.presence_of_element_located((By.ID, "credit-card-cvv"))
-            )
-            time.sleep(1)
-            security_code = self.browser.find_element_by_id("credit-card-cvv")
+            # time.sleep(1)
+            # security_code = self.browser.find_element_by_id("cvv")
             time.sleep(1)
             security_code.send_keys(self.profile['card_cvv'])
         except (NoSuchElementException, TimeoutException):
             pass
 
-        
+        self.did_submit = False
         while not self.did_submit:
             try:
                 WebDriverWait(self.browser, 5).until(
                     EC.presence_of_element_located((By.XPATH, "//*[@class='btn btn-lg btn-block btn-primary button__fast-track']"))
                 )
                 # comment the one down below. vv
-                if not settings.dont_buy:
-                    self.driver_click(self.browser, 'xpath', 'btn btn-lg btn-block btn-primary button__fast-track')
+                # if not settings.dont_buy:
+                    # driver_click(self.browser, 'xpath', 'btn btn-lg btn-block btn-primary button__fast-track')
                 
                 if 'https://www.bestbuy.com/checkout/r/thank-you' in self.browser.current_url or settings.dont_buy:
-                        if settings.dont_buy:
-                            self.status_signal.emit(create_msg("Mock Order Placed", "success"))
-                            self.did_submit = True
-                        else:
-                            self.status_signal.emit(create_msg("Order Placed", "success"))
-                            self.did_submit = True
+                    if settings.dont_buy:
+                        self.status_signal.emit(create_msg("Mock Order Placed", "success"))
+                        self.did_submit = True
+                    else:
+                        self.status_signal.emit(create_msg("Order Placed", "success"))
+                        self.did_submit = True
             except (NoSuchElementException, TimeoutException, ElementNotInteractableException):
                 print("Could Not Complete Checkout.",flush=True)
                 pass
@@ -422,24 +439,3 @@ class BestBuy:
     # TODO: when running with headless == False it would be good to quit browsers when task is stopped (might be good to keep it open if it errors out however for diagnostics)
     # def stop(self):
     #     self.browser.quit()
-    def driver_click(driver, find_type, selector):
-        """Driver Wait and Click Settings."""
-        while True:
-            if find_type == 'css':
-                try:
-                    driver.find_element_by_css_selector(selector).click()
-                    break
-                except NoSuchElementException:
-                    driver.implicitly_wait(1)
-            elif find_type == 'name':
-                try:
-                    driver.find_element_by_name(selector).click()
-                    break
-                except NoSuchElementException:
-                    driver.implicitly_wait(1)
-            elif find_type == 'xpath':
-                try:
-                    driver.find_element_by_xpath(f"//*[@class='{selector}']").click()
-                    break
-                except NoSuchElementException:
-                    driver.implicitly_wait(1)
