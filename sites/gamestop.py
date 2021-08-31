@@ -15,6 +15,8 @@ options.page_load_strategy = "eager"
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
 options.add_experimental_option("useAutomationExtension", False)
 
+### Need to optimize options below for pageload but not piss off gamestop
+
 prefs = {
         "profile.managed_default_content_settings.images":2,
         # "profile.default_content_setting_values.notifications":2,

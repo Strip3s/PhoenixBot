@@ -185,9 +185,6 @@ class BestBuy:
         self.status_signal.emit(create_msg("Logging in...", "normal"))
         self.browser.get("https://www.bestbuy.com/identity/global/signin")
 
-        # WebDriverWait(self.browser, 10).until(
-        #     EC.presence_of_element_located((By.("Sign In to Best Buy")
-        # )
         time.sleep(5)
         # set remember me to true, probably don't need this TBH
         WebDriverWait(self.browser, 10).until(
@@ -198,13 +195,11 @@ class BestBuy:
         WebDriverWait(self.browser, 10).until(
             EC.presence_of_element_located((By.ID, "fld-e"))
         ).send_keys(settings.bestbuy_user)
-        # self.browser.find_element_by_xpath('//*[@id="fld-e"]').send_keys(settings.bestbuy_user)
         
         # Fill password field
         WebDriverWait(self.browser, 10).until(
             EC.presence_of_element_located((By.ID, "fld-p1"))
         ).send_keys(settings.bestbuy_pass)
-        # self.browser.find_element_by_xpath('//*[@id="fld-p1"]').send_keys(settings.bestbuy_pass)
         
         time.sleep(2)
         signInButton = WebDriverWait(self.browser, 10).until(
@@ -354,32 +349,12 @@ class BestBuy:
                 self.status_signal.emit(create_msg("Item is not in cart anymore, Retrying...","normal"))
                 time.sleep(3)
                 self.add_to_cart(True)
-
-        # return BEST_BUY_CART_URL.format(sku=self.sku_id)
-
-    # def auto_checkout(self):
-    #     self.auto_add_to_cart()
-    #     time.sleep(1)
-    #     self.browser.get("https://www.bestbuy.com/checkout/r/fast-track")
-    #     self.start_checkout()
-
-    # def auto_add_to_cart(self):
-    #     self.status_signal.emit(create_msg("Attempting to auto add to cart...", "normal"))
-
-    #     self.browser.refresh()
-    #     time.sleep(2)
-    #     if self.browser.find_elements_by_xpath("//button[@class='btn btn-primary btn-lg btn-block btn-leading-ficon add-to-cart-button'][1]"):
-    #             button = self.browser.find_element_by_xpath("//button[@class='btn btn-primary btn-lg btn-block btn-leading-ficon add-to-cart-button'][1]")
-    #     else:
-    #             button = None
-    #     if button:
-    #         self.browser.execute_script("return arguments[0].scrollIntoView(true);", button)
-    #         button.click()
         
     def start_checkout(self):
 
         self.status_signal.emit(create_msg("Attempting Checkout", "normal"))
 
+        #### keep this for now, not sure if we still need it
         # # click shipping option if available, currently sets it to ISPU (in store pick up)
         # try:
 
@@ -413,8 +388,8 @@ class BestBuy:
                     EC.presence_of_element_located((By.XPATH, "//*[@class='btn btn-lg btn-block btn-primary button__fast-track']"))
                 )
                 # comment the one down below. vv
-                # if not settings.dont_buy:
-                    # driver_click(self.browser, 'xpath', 'btn btn-lg btn-block btn-primary button__fast-track')
+                if not settings.dont_buy:
+                    driver_click(self.browser, 'xpath', 'btn btn-lg btn-block btn-primary button__fast-track')
                 
                 if 'https://www.bestbuy.com/checkout/r/thank-you' in self.browser.current_url or settings.dont_buy:
                     if settings.dont_buy:
@@ -428,29 +403,3 @@ class BestBuy:
                 pass
             except:
                 self.status_signal.emit(create_msg('Retrying submit order until success', 'normal'))
-
-
-
-        ### old below
-        # self.status_signal.emit(create_msg("Attempting Checkout", "normal"))
-        # self.did_submit = False
-        # time.sleep(2)
-        # self.browser.find_element_by_xpath('//input[@id="credit-card-cvv"]').send_keys(self.profile['card_cvv'])
-        # while not self.did_submit:
-        #     try:
-        #         if not settings.dont_buy:
-        #             self.browser.find_element_by_xpath('//button[@class="btn btn-lg btn-block btn-primary button__fast-track"]').click()
-        #             time.sleep(5)
-        #         if 'https://www.bestbuy.com/checkout/r/thank-you' in self.browser.current_url or settings.dont_buy:
-        #             if settings.dont_buy:
-        #                 self.status_signal.emit(create_msg("Mock Order Placed", "success"))
-        #                 self.did_submit = True
-        #             else:
-        #                 self.status_signal.emit(create_msg("Order Placed", "success"))
-        #                 self.did_submit = True
-        #     except:
-        #         self.status_signal.emit(create_msg('Retrying submit order until success', 'normal'))
-
-    # TODO: when running with headless == False it would be good to quit browsers when task is stopped (might be good to keep it open if it errors out however for diagnostics)
-    # def stop(self):
-    #     self.browser.quit()

@@ -10,6 +10,9 @@ from utils.selenium_utils import change_driver
 import settings, time
 
 options = Options()
+
+### Need to experiment with options below to optimize page load but not piss off target
+
 # options.page_load_strategy = "eager"
 # options.add_experimental_option("excludeSwitches", ["enable-automation"])
 # options.add_experimental_option("useAutomationExtension", False)
@@ -63,25 +66,6 @@ class Target:
         send_webhook("OP", "Target", self.profile["profile_name"], self.task_id, self.product_image)
 
     def init_driver(self):
-        ##### old code below
-        # driver_manager = ChromeDriverManager()
-        # driver_manager.install()
-        # change_driver(self.status_signal, driver_path)
-        # var = driver_path
-        # browser = webdriver.Chrome(driver_path)
-
-        # browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-        #     "source": """
-        #           Object.defineProperty(navigator, 'webdriver', {
-        #            get: () => undefined
-        #           })
-        #         """
-        # })
-
-        # return browser
-
-        ##### new code below
-
         # TODO: Headless mode is off until sign-in bug with target can be recitified 
         # if settings.run_headless:
         #     options.add_argument("--headless")
@@ -117,17 +101,12 @@ class Target:
         #TODO - refactor for target login issue in both headless and non-headless
         if self.browser.find_elements_by_id('username'):
             self.browser.find_element_by_xpath('//input[@id="username"]').send_keys(settings.target_user)
-            # self.fill_field_and_proceed('//input[@id="username"]', {'value': settings.target_user})
             time.sleep(2)
-        # self.fill_field_and_proceed('//input[@id="password"]', {'value': settings.target_pass, 'confirm_button': '//button[@id="login"]'})
         self.browser.find_element_by_xpath('//input[@id="password"]').send_keys(settings.target_pass)
         time.sleep(2)
         self.browser.find_element_by_xpath('//button[@id="login"]').click()
         time.sleep(2)
-        # if "login.target" in self.browser.current_url:
-            # self.browser.refresh()
-            # time.sleep(2)
-            # self.fill_and_authenticate()
+
         
 
     def product_loop(self):
