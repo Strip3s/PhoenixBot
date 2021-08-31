@@ -89,6 +89,7 @@ class GameStop:
         # (TODO: add max attempts to sign-in before exiting task)
         if "user-message-initial" in self.browser.page_source:
             self.status_signal.emit(create_msg("Successfully logged in...", "normal"))
+            print("Gamestop successfully logged in.",flush=True)
         else:
             self.status_signal.emit(create_msg("Error logging in... please restart task","normal"))
 

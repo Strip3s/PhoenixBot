@@ -226,6 +226,9 @@ class BestBuy:
 
 
     def check_stock(self):
+        if self.verify_signed_in():
+            self.status_signal.emit(create_msg("Bestbuy successfully logged in.","normal"))
+            print("Bestbuy successfully logged in.",flush=True)
         time.sleep(2)
         # verify we are on the product page here and prep to add to cart
         self.browser.get(self.product)
