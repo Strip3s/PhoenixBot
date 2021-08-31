@@ -9,6 +9,25 @@ from utils import random_delay, send_webhook, create_msg
 from utils.selenium_utils import change_driver
 import settings, time
 
+options = Options()
+options.page_load_strategy = "eager"
+options.add_experimental_option("excludeSwitches", ["enable-automation"])
+options.add_experimental_option("useAutomationExtension", False)
+
+prefs = {
+        "profile.managed_default_content_settings.images":2,
+        "profile.default_content_setting_values.notifications":2,
+        "profile.managed_default_content_settings.stylesheets":2,
+        "profile.managed_default_content_settings.cookies":1,
+        "profile.managed_default_content_settings.javascript":1,
+        "profile.managed_default_content_settings.plugins":1,
+        "profile.managed_default_content_settings.popups":2,
+        "profile.managed_default_content_settings.geolocation":1,
+        "profile.managed_default_content_settings.media_stream":2,
+}
+
+options.add_experimental_option("prefs", prefs)
+options.add_argument(f"User-Agent={settings.userAgent}")
 
 class Target:
     def __init__(self, task_id, status_signal, image_signal, product, profile, proxy, monitor_delay, error_delay):
@@ -63,13 +82,11 @@ class Target:
 
         ##### new code below
 
-        chrome_options = Options()
         # TODO: Headless mode is off until sign-in bug with target can be recitified 
-        # if settings.run_headless:
-            # chrome_options.add_argument("--headless")
-        chrome_options.add_argument(f"User-Agent={settings.userAgent}")
+        if settings.run_headless:
+            options.add_argument("--headless")
 
-        driver = webdriver.Chrome(ChromeDriverManager().install(),options=chrome_options)
+        driver = webdriver.Chrome(ChromeDriverManager().install(),options=options)
         driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
             "source": """
                   Object.defineProperty(navigator, 'webdriver', {
