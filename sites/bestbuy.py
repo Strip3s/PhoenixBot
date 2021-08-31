@@ -13,7 +13,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, ElementNotInteractableException, ElementClickInterceptedException
 
 from utils.json_utils import find_values
-from utils.selenium_utils import enable_headless
+from utils.selenium_utils import enable_headless # not sure this actually works since we call options() below
 from utils import create_msg
 
 try:
@@ -58,9 +58,9 @@ prefs = {
         "profile.managed_default_content_settings.geolocation":1,
         "profile.managed_default_content_settings.media_stream":2,
 }
-
 options.add_experimental_option("prefs", prefs)
 options.add_argument("user-data-dir=.profile-bb")
+# print(options.to_capabilities(),flush=True)
 
 def driver_click(driver, find_type, selector):
     """Driver Wait and Click Settings."""
@@ -217,7 +217,7 @@ class BestBuy:
         )
 
         if "Sign In - Add Recovery Phone" in self.browser.title:
-            print("Sign In - Add Recovery phone page hit, probably can ignore...",flush=True)
+            self.status_signal.emit(create_msg("Sign In - Add Recovery phone page hit, probably can ignore...","normal"))
         
         if not settings.run_headless:
             closeModal = WebDriverWait(self.browser, 10).until(
@@ -240,7 +240,6 @@ class BestBuy:
     def check_stock(self):
         if self.verify_signed_in():
             self.status_signal.emit(create_msg("Bestbuy successfully logged in.","normal"))
-            print("Bestbuy successfully logged in.",flush=True)
         time.sleep(2)
         # verify we are on the product page here and prep to add to cart
         self.browser.get(self.product)
