@@ -383,6 +383,12 @@ class TaskTab(QtWidgets.QWidget):
             self.status_label.setStyleSheet("color: rgb(163, 149, 255);")
             logger.alt(self.task_id,msg["msg"])
             carted_count.setText(str(int(carted_count.text())+1))
+        elif msg["status"] == "stopnow":
+            self.status_label.setStyleSheet("color: rgb(252, 81, 81);")
+            logger.error(self.task_id,msg["msg"])
+            self.stop(msg["msg"])
+
+
     
     def wait_browser_poll(self):
         # Initiate dialog and block until dismissed

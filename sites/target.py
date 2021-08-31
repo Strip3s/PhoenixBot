@@ -10,23 +10,23 @@ from utils.selenium_utils import change_driver
 import settings, time
 
 options = Options()
-options.page_load_strategy = "eager"
-options.add_experimental_option("excludeSwitches", ["enable-automation"])
-options.add_experimental_option("useAutomationExtension", False)
+# options.page_load_strategy = "eager"
+# options.add_experimental_option("excludeSwitches", ["enable-automation"])
+# options.add_experimental_option("useAutomationExtension", False)
 
-prefs = {
-        "profile.managed_default_content_settings.images":2,
-        # "profile.default_content_setting_values.notifications":2,
-        # "profile.managed_default_content_settings.stylesheets":2,
-        # "profile.managed_default_content_settings.cookies":1,
-        # "profile.managed_default_content_settings.javascript":1,
-        # "profile.managed_default_content_settings.plugins":1,
-        # "profile.managed_default_content_settings.popups":2,
-        # "profile.managed_default_content_settings.geolocation":1,
-        # "profile.managed_default_content_settings.media_stream":2,
-}
+# prefs = {
+#         "profile.managed_default_content_settings.images":2,
+#         # "profile.default_content_setting_values.notifications":2,
+#         # "profile.managed_default_content_settings.stylesheets":2,
+#         # "profile.managed_default_content_settings.cookies":1,
+#         # "profile.managed_default_content_settings.javascript":1,
+#         # "profile.managed_default_content_settings.plugins":1,
+#         # "profile.managed_default_content_settings.popups":2,
+#         # "profile.managed_default_content_settings.geolocation":1,
+#         # "profile.managed_default_content_settings.media_stream":2,
+# }
 
-options.add_experimental_option("prefs", prefs)
+# options.add_experimental_option("prefs", prefs)
 options.add_argument(f"User-Agent={settings.userAgent}")
 
 class Target:

@@ -49,13 +49,12 @@ class GameStop:
         self.login()
         self.monitor()
         self.add_to_cart()
-        self.submit_billing()
-        self.submit_order()
+        # self.submit_billing()
+        # self.submit_order()
 
     def init_driver(self):
-        if settings.run_headless:
-            print(f"Running headless {settings.run_headless}",flush=True)
-            options.add_argument("--headless")
+        # if settings.run_headless:
+            # options.add_argument("--headless")
 
         ## Gamestop does not like it when we do not have a user-agent
 
@@ -67,22 +66,31 @@ class GameStop:
                   })
                 """
         })
-
+        driver.minimize_window()
         return driver
 
     def login(self):
         self.status_signal.emit(create_msg("Logging In..", "normal"))
 
-        self.browser.maximize_window()
-        
-        self.browser.get("https://www.gamestop.com/?openLoginModal=accountModal")
+        #load home page so we get the cookies and referrer crap
+        self.browser.get('https://www.gamestop.com/')
 
-        # wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.LINK_TEXT, "MY ACCOUNT")))
         time.sleep(5)
-        #self.browser.find_element_by_link_text('MY ACCOUNT').click()
-        self.browser.find_element_by_xpath('//a[@id="account-modal-link-nocache"]').click()
 
-        # wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "signIn"))).click()
+        if not settings.run_headless:
+            # self.browser.maximize_window()
+            self.browser.get("https://www.gamestop.com/?openLoginModal=accountModal")
+
+            time.sleep(5)
+        
+
+            # wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.LINK_TEXT, "MY ACCOUNT")))
+            # time.sleep(5)
+            #self.browser.find_element_by_link_text('MY ACCOUNT').click()
+            self.browser.find_element_by_xpath('//a[@id="account-modal-link-nocache"]').click()
+            # wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "signIn"))).click()
+        else:
+            self.browser.get("https://www.gamestop.com/login/")
         
         wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "login-form-email")))
 
@@ -90,18 +98,22 @@ class GameStop:
         email.send_keys(settings.gamestop_user)
 
         wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "login-form-password")))
-
+        time.sleep(5)
         password = self.browser.find_element_by_id("login-form-password")
         password.send_keys(settings.gamestop_pass)
 
-        time.sleep(1) # slight delay for in-between filling out login info and clicking Sign In
+        time.sleep(2) # slight delay for in-between filling out login info and clicking Sign In
 
-        wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="signinCheck"]/button')))
-        sign_in_btn = self.browser.find_element_by_xpath('//*[@id="signinCheck"]/button')
+        # wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="signinCheck"]/button')))
+        # sign_in_btn = self.browser.find_element_by_xpath('//button[@class="sign-in-submit"]')
+        sign_in_btn = wait(self.browser, self.LONG_TIMEOUT).until(
+             EC.presence_of_element_located((By.XPATH, "//button[@class='btn btn-block mb-2 sign-in-submit']"))
+        )
         sign_in_btn.click()
+        time.sleep(10)
 
     def monitor(self):
-        wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/?openLoginModal=accountModal")
+        # wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/?openLoginModal=accountModal")
 
         ## verify we have signed successfully else we should abort the task or attempt sign-in again
         # (TODO: add max attempts to sign-in before exiting task)
@@ -109,12 +121,12 @@ class GameStop:
             self.status_signal.emit(create_msg("Successfully logged in...", "normal"))
             print("Gamestop successfully logged in.",flush=True)
         else:
-            self.status_signal.emit(create_msg("Error logging in... please restart task","normal"))
+            self.status_signal.emit(create_msg("Error logging in... please restart task","stopnow"))
 
         # TODO: Exit task if we are not signed in
         self.status_signal.emit(create_msg("Checking Stock..", "normal"))
         
-        self.browser.set_window_size(900, 900)
+        # self.browser.set_window_size(900, 900)
 
         self.browser.get(self.product)
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == self.product)
@@ -133,13 +145,17 @@ class GameStop:
                     continue
                 in_stock = True
                 self.status_signal.emit(create_msg("Added to cart", "normal"))
-                self.browser.get("https://www.gamestop.com/cart/")
+                self.browser.maximize_window()
+                self.status_signal.emit(create_msg("Added to cart, check for captcha","stopnow"))
+                # self.browser.get("https://www.gamestop.com/cart/")
             except:
                 self.status_signal.emit(create_msg("Waiting For Restock", "normal"))
                 self.browser.refresh()
 
     def add_to_cart(self):
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/cart/")
+
+        ##### THERE IS NOW A CAPTCHA HERE (POPUP)
         
         self.status_signal.emit(create_msg("Checking Age Verification", "normal"))
 
@@ -166,6 +182,8 @@ class GameStop:
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/checkout/?stage=placeOrder#placeOrder")
 
         self.status_signal.emit(create_msg("Submitting Order..", "normal"))
+        
+        ##### THERE IS NOW A CAPTCHA HERE (POPULATED - NEED TO CLICK)
 
         wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.CLASS_NAME, 'btn.btn-primary.btn-block.place-order')))
 

@@ -139,7 +139,7 @@ class SettingsPage(QtWidgets.QWidget):
         if settings["webhookonfailed"]:
             self.paymentfailed_checkbox.setChecked(True)
         if settings["runheadless"]:
-            print(settings["runheadless"],flush=True)
+            # print(settings["runheadless"],flush=True)
             self.headless_checkbox.setChecked(True)
         if settings["browseronfailed"]:
             self.onfailed_checkbox.setChecked(True)
