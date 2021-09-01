@@ -73,8 +73,8 @@ class Target:
 
     def init_driver(self):
         # TODO: Headless mode is off until sign-in bug with target can be recitified 
-        # if settings.run_headless:
-        # options.add_argument("--headless")
+        if settings.run_headless:
+            options.add_argument("--headless")
 
         driver = webdriver.Chrome(ChromeDriverManager().install(),options=options)
         # driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
