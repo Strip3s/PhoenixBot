@@ -1,0 +1,1 @@
+mypath="Path to chrome profile home and profile folder to use, i.e. C:\\Users\\{user here}\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 4"

@@ -1,13 +1,16 @@
 from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait as wait
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from chromedriver_py import binary_path as driver_path
+
 from utils import random_delay, send_webhook, create_msg
 from utils.selenium_utils import change_driver
-import settings, time
+import settings, time, random
+from test import mypath
 
 options = Options()
 
@@ -16,20 +19,23 @@ options = Options()
 # options.page_load_strategy = "eager"
 # options.add_experimental_option("excludeSwitches", ["enable-automation"])
 # options.add_experimental_option("useAutomationExtension", False)
+options.add_argument('--disable-blink-features=AutomationControlled')
 
 # prefs = {
-#         "profile.managed_default_content_settings.images":2,
-#         # "profile.default_content_setting_values.notifications":2,
-#         # "profile.managed_default_content_settings.stylesheets":2,
-#         # "profile.managed_default_content_settings.cookies":1,
-#         # "profile.managed_default_content_settings.javascript":1,
-#         # "profile.managed_default_content_settings.plugins":1,
-#         # "profile.managed_default_content_settings.popups":2,
-#         # "profile.managed_default_content_settings.geolocation":1,
-#         # "profile.managed_default_content_settings.media_stream":2,
+#         "profile.managed_default_content_settings.images":1,
+#         "profile.default_content_setting_values.notifications":1,
+#         "profile.managed_default_content_settings.stylesheets":1,
+#         "profile.managed_default_content_settings.cookies":1,
+#         "profile.managed_default_content_settings.javascript":1,
+#         "profile.managed_default_content_settings.plugins":1,
+#         "profile.managed_default_content_settings.popups":1,
+#         "profile.managed_default_content_settings.geolocation":1,
+#         "profile.managed_default_content_settings.media_stream":1,
 # }
 
 # options.add_experimental_option("prefs", prefs)
+options.add_argument(f"user-data-dir={mypath}") 
+# options.add_argument("user-data-dir=C:\\Users\\larse\\AppData\\Local\\Google\\Chrome\\User Data\\") 
 options.add_argument(f"User-Agent={settings.userAgent}")
 
 class Target:
@@ -44,9 +50,9 @@ class Target:
             , {'type': 'method', 'path': '//button[@data-test="placeOrderButton"]', 'method': self.submit_order, 'message': 'Submitting order', 'message_type': 'normal', 'optional': False}
         ]
         self.possible_interruptions = [
-            {'type': 'method', 'path': '//input[@id="password"]', 'method': self.fill_and_authenticate, 'message': 'Authenticating', 'message_type': 'normal'}
-            , {'type': 'input', 'path': '//input[@id="creditCardInput-cardNumber"]', 'args': {'value': self.profile['card_number'], 'confirm_button': '//button[@data-test="verify-card-button"]'}, 'message': 'Entering CC #', 'message_type': 'normal'}
-            , {'type': 'input', 'path': '//input[@id="creditCardInput-cvv"]', 'args': {'value': self.profile['card_cvv']}, 'message': 'Entering CC #', 'message_type': 'normal'}
+            {'type': 'method', 'path': '//input[@id="password"]', 'method': self.quick_fill_for_checkout, 'message': 'Authenticating', 'message_type': 'normal'},
+            {'type': 'input', 'path': '//input[@id="creditCardInput-cardNumber"]', 'args': {'value': self.profile['card_number'], 'confirm_button': '//button[@data-test="verify-card-button"]'}, 'message': 'Entering CC #', 'message_type': 'normal'},
+            {'type': 'input', 'path': '//input[@id="creditCardInput-cvv"]', 'args': {'value': self.profile['card_cvv']}, 'message': 'Entering CC #', 'message_type': 'normal'}
         ]
         starting_msg = "Starting Target"
         self.browser = self.init_driver()
@@ -68,46 +74,99 @@ class Target:
     def init_driver(self):
         # TODO: Headless mode is off until sign-in bug with target can be recitified 
         # if settings.run_headless:
-        #     options.add_argument("--headless")
+        # options.add_argument("--headless")
 
         driver = webdriver.Chrome(ChromeDriverManager().install(),options=options)
-        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-            "source": """
-                  Object.defineProperty(navigator, 'webdriver', {
-                   get: () => undefined
-                  })
-                """
-        })
+        # driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        #     "source": """
+        #           Object.defineProperty(navigator, 'webdriver', false)
+        #         """
+        # })
+
+        # driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        # driver.execute_cdp_cmd('Network.setUserAgentOverride', {"userAgent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.53 Safari/537.36'})
+        # print(driver.execute_script("return navigator;"))
 
         return driver
 
     def login(self):
         self.browser.get("https://www.target.com")
-        self.browser.find_element_by_id("account").click()
-        wait(self.browser, self.TIMEOUT_LONG).until(EC.element_to_be_clickable((By.ID, "accountNav-signIn"))).click()
-        
-        wait(self.browser, self.TIMEOUT_LONG).until(EC.presence_of_element_located((By.ID, "username")))
-        self.browser.get(f"https://login.target.com/gsp/static/v1/login/?client_id=ecom-web-1.0.0&ui_namespace=ui-default&back_button_action=browser&keep_me_signed_in=true&kmsi_default=false&actions=create_session_signin&username={settings.target_user}")
-        self.fill_and_authenticate()
+        time.sleep(10)
+        # accountBtn = wait(self.browser, self.TIMEOUT_LONG).until(
+        #     EC.presence_of_element_located((By.ID, "account"))
+        # )
+        # accountBtn.click()
+        # time.sleep(3)
+        # self.browser.find_element_by_id("account").click()
+        # signInBtn = wait(self.browser, self.TIMEOUT_LONG).until(lambda x : self.browser.find_element_by_link_text('Sign In'))
 
+        # test = wait(self.browser, 5).until(
+        #     EC.element_to_be_clickable((By.XPATH,"//li[@id='accountNav-signIn']/a"))
+        # )
+
+        # test.send_keys(Keys.ENTER)
+
+
+        # print(test,flush=True)
+        # test.click()
+        # children = test.find_elements_by_tag_name('li')
+        # for child in children:
+        #     print(child,flush=True)
+        # signInBtn.click()
+        # wait(self.browser, self.TIMEOUT_LONG).until(EC.element_to_be_clickable((By.ID, "accountNav-signIn"))).send_keys(Keys.RETURN)
+        
+        # wait(self.browser, self.TIMEOUT_LONG).until(EC.presence_of_element_located((By.ID, "username")))
+        # self.browser.get(f"https://login.target.com/gsp/static/v1/login/?client_id=ecom-web-1.0.0&ui_namespace=ui-default&back_button_action=browser&keep_me_signed_in=true&kmsi_default=false&actions=create_session_signin")
+        # self.fill_and_authenticate()
+
+# styles__AccountLinkPrimaryText-sc-1t8sb5i-4 jYysFs
+
+        test = self.browser.find_element_by_xpath('//span[@data-test="accountUserName"]')
+        if test.text != "Sign In":
+            self.status_signal.emit(create_msg("Succesfully signed in as {}".format(test.text),"normal"))
         # Gives it time for the login to complete
         time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
 
         #TODO verify we logged in here
 
-    def fill_and_authenticate(self):
-        time.sleep(3)
+    # def fill_and_authenticate(self):
+    #     time.sleep(3)
+    #     self.browser.refresh()
+    #     time.sleep(5)
         
-        #TODO - refactor for target login issue in both headless and non-headless
-        if self.browser.find_elements_by_id('username'):
-            self.browser.find_element_by_xpath('//input[@id="username"]').send_keys(settings.target_user)
-            time.sleep(2)
-        self.browser.find_element_by_xpath('//input[@id="password"]').send_keys(settings.target_pass)
-        time.sleep(2)
-        self.browser.find_element_by_xpath('//button[@id="login"]').click()
-        time.sleep(2)
+    #     #TODO - refactor for target login issue in both headless and non-headless
+    #     if self.browser.find_elements_by_id('username'):
+    #         for key in settings.target_user:
+    #             self.browser.find_element_by_xpath('//input[@id="username"]').send_keys(key)
+    #             time.sleep(random.uniform(0.5,2.5))
+        
+    #     for key in settings.target_pass:
+    #         self.browser.find_element_by_xpath('//input[@id="password"]').send_keys(key)
+    #         time.sleep(random.uniform(0.5,2.5))
 
-        
+    #     time.sleep(2)
+    #     # self.browser.find_element_by_xpath('//button[@id="login"]').click()
+    #     loginBtn = wait(self.browser, self.TIMEOUT_LONG).until(
+    #         EC.presence_of_element_located((By.XPATH,'//button[@id="login"]'))
+    #     )
+    #     loginBtn.click()
+    #     time.sleep(2)
+
+    #     with open("test.html","w+",encoding="utf-8") as f:
+    #         f.write(self.browser.page_source)
+    #         f.close()
+
+    def quick_fill_for_checkout(self):
+        self.browser.find_element_by_xpath('//input[@id="password"]').send_keys(settings.target_pass)
+        time.sleep(random.uniform(0.5,2.5))
+
+        time.sleep(2)
+        # self.browser.find_element_by_xpath('//button[@id="login"]').click()
+        loginBtn = wait(self.browser, 5).until(
+            EC.presence_of_element_located((By.XPATH,'//button[@id="login"]'))
+        )
+        loginBtn.click()
+        time.sleep(2)
 
     def product_loop(self):
         while not self.did_submit and not self.failed:

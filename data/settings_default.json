@@ -1,1 +1,13 @@
-{"webhook": "", "webhookonbrowser": true, "webhookonorder": true, "webhookonfailed": true, "browseronfailed": true, "runheadless": true, "bb_ac_beta": false, "onlybuyone": true, "dont_buy": true, "random_delay_start": "", "random_delay_stop": ""}
+{
+    "webhook": "",
+    "webhookonbrowser": true,
+    "webhookonorder": true,
+    "webhookonfailed": true,
+    "browseronfailed": true,
+    "runheadless": true,
+    "bb_ac_beta": false,
+    "onlybuyone": true,
+    "dont_buy": true,
+    "random_delay_start": "",
+    "random_delay_stop": ""
+}
