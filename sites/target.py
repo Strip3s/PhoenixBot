@@ -122,7 +122,11 @@ class Target:
 # styles__AccountLinkPrimaryText-sc-1t8sb5i-4 jYysFs
 
         test = self.browser.find_element_by_xpath('//span[@data-test="accountUserName"]')
-        if test.text != "Sign In":
+        time.sleep(1)
+        print(type(test.text))
+        if "sign in" in test.text.lower():
+            self.status_signal.emit(create_msg("Did not detect username on target page. Got \"{}\"".format(test.text),"stopnow"))
+        else:
             self.status_signal.emit(create_msg("Succesfully signed in as {}".format(test.text),"normal"))
         # Gives it time for the login to complete
         time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
