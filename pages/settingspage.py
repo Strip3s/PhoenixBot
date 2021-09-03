@@ -138,11 +138,11 @@ class SettingsPage(QtWidgets.QWidget):
             self.order_checkbox.setChecked(True)
         if settings["webhookonfailed"]:
             self.paymentfailed_checkbox.setChecked(True)
+        if settings["browseronfailed"]:
+            self.onfailed_checkbox.setChecked(True)
         if settings["runheadless"]:
             print(settings["runheadless"],flush=True)
             self.headless_checkbox.setChecked(True)
-        if settings["browseronfailed"]:
-            self.onfailed_checkbox.setChecked(True)
         if settings["bb_ac_beta"]:
             self.bb_ac_beta_checkbox.setChecked(True)
         if settings['onlybuyone']:
@@ -194,8 +194,8 @@ class SettingsPage(QtWidgets.QWidget):
                     "webhookonbrowser":   self.browser_checkbox.isChecked(),
                     "webhookonorder":     self.order_checkbox.isChecked(),
                     "webhookonfailed":    self.paymentfailed_checkbox.isChecked(),
-                    "runheadless":        self.headless_checkbox.isChecked(),
                     "browseronfailed":    self.onfailed_checkbox.isChecked(),
+                    "runheadless":        self.headless_checkbox.isChecked(),
                     "bb_ac_beta":         self.bb_ac_beta_checkbox.isChecked(),
                     "onlybuyone":         self.buy_one_checkbox.isChecked(),
                     "dont_buy":           self.dont_buy_checkbox.isChecked(),
@@ -213,8 +213,8 @@ class SettingsPage(QtWidgets.QWidget):
         QtWidgets.QMessageBox.information(self, "Phoenix Bot", "Saved Settings")
 
     def update_settings(self, settings_data):
-        global webhook, webhook_on_browser, webhook_on_order, webhook_on_failed, run_headless, browser_on_failed, bb_ac_beta, dont_buy, random_delay_start, random_delay_stop, target_user, target_pass, gamestop_user, gamestop_pass
-        settings.webhook, settings.webhook_on_browser, settings.webhook_on_order, settings.webhook_on_failed, settings.run_headless, settings.browser_on_failed, settings.bb_ac_beta, settings.buy_one, settings.dont_buy = settings_data["webhook"], settings_data["webhookonbrowser"], settings_data["webhookonorder"], settings_data["webhookonfailed"], settings_data["runheadless"], settings_data["browseronfailed"], settings_data["bb_ac_beta"], settings_data['onlybuyone'], settings_data['dont_buy']
+        global webhook, webhook_on_browser, webhook_on_order, webhook_on_failed, browser_on_failed, run_headless, bb_ac_beta, dont_buy, random_delay_start, random_delay_stop, target_user, target_pass, gamestop_user, gamestop_pass
+        settings.webhook, settings.webhook_on_browser, settings.webhook_on_order, settings.webhook_on_failed, settings.browser_on_failed, settings.run_headless, settings.bb_ac_beta, settings.buy_one, settings.dont_buy = settings_data["webhook"], settings_data["webhookonbrowser"], settings_data["webhookonorder"], settings_data["webhookonfailed"], settings_data["browseronfailed"], settings_data["runheadless"], settings_data["bb_ac_beta"], settings_data['onlybuyone'], settings_data['dont_buy']
 
         if settings_data.get("random_delay_start", "") != "":
             settings.random_delay_start = settings_data["random_delay_start"]

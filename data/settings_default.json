@@ -9,5 +9,11 @@
     "onlybuyone": true,
     "dont_buy": true,
     "random_delay_start": "",
-    "random_delay_stop": ""
+    "random_delay_stop": "",
+    "bestbuy_user": "",
+    "bestbuy_pass": "",
+    "target_user": "",
+    "target_pass": "",
+    "gamestop_user": "",
+    "gamestop_pass": ""
 }
