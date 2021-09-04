@@ -50,4 +50,7 @@ gamestop_user = ""
 
 global gamestop_pass
 gamestop_pass = ""
+
+global geckodriver_path
+geckodriver_path = ""
 #################################################

@@ -20,3 +20,5 @@ venv.bak/
 error_dumps/*
 test.py
 selenium/*
+*.exe
+*.log

@@ -15,5 +15,6 @@
     "target_user": "",
     "target_pass": "",
     "gamestop_user": "",
-    "gamestop_pass": ""
+    "gamestop_pass": "",
+    "geckodriver":""
 }

@@ -71,6 +71,9 @@ Target Signin error work around - Wait for target browser to launch, once it's r
    ```
    python app.py
    ```
+  
+6. To Run Target.com bot, download GeckoDriver and select the folder of it's location in the settings.
+    * Latest Driver releases can be found at: https://github.com/mozilla/geckodriver/releases
 
 ## Quick Install for Mac
 **It is highly recommended you install brew and update python3 to latest version**
@@ -115,6 +118,9 @@ Target Signin error work around - Wait for target browser to launch, once it's r
    ```
    python3 app.py
    ```
+
+5. To Run Target.com bot, download GeckoDriver and select the folder of it's location in the settings.
+    * Latest Driver releases can be found at: https://github.com/mozilla/geckodriver/releases
 
 
 ## Windows FAQs

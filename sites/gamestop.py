@@ -51,6 +51,8 @@ class GameStop:
         self.login()
         self.monitor()
         self.add_to_cart()
+
+        #### Need to setup captcha solvers to work the below
         # self.submit_billing()
         # self.submit_order()
 
@@ -60,6 +62,7 @@ class GameStop:
 
         ## Gamestop does not like it when we do not have a user-agent
 
+        self.status_signal.emit(create_msg("Currently not running headless","normal"))
         driver = webdriver.Chrome(ChromeDriverManager().install(),options=options)
         driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
             "source": """

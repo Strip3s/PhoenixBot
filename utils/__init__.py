@@ -90,11 +90,6 @@ def return_data(path):
 
 
 def validate_data(test_data, control_data):
-    print("test keys",flush=True)
-    print(test_data.keys(),flush=True)
-    print("control keys",flush=True)
-    print(control_data.keys(),flush=True)
-
     return test_data.keys() == control_data.keys()
 
 

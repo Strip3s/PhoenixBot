@@ -167,6 +167,7 @@ class BestBuy:
         # if headless:
         chrome_options = Options()
         if settings.run_headless:
+            self.status_signal.emit(create_msg("Running headless","normal"))
             chrome_options.add_argument("--headless")
         chrome_options.add_argument(f"User-Agent={settings.userAgent}")
 

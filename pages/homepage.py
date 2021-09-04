@@ -199,6 +199,7 @@ class HomePage(QtWidgets.QWidget):
 
     def load_tasks(self):
         tasks_data = return_data("./data/tasks.json")
+        tasks_data = sorted(tasks_data, key= lambda i: i["site"])
         write_data("./data/tasks.json",[])
         try:
             for task in tasks_data:
@@ -246,8 +247,8 @@ class TaskTab(QtWidgets.QWidget):
         task_data = {"task_id": self.task_id,"site":self.site,"product": self.product,"profile": self.profile,"proxies": self.proxies,"monitor_delay": self.monitor_delay,"error_delay": self.error_delay,"max_price": self.max_price}
         tasks_data.append(task_data)
         tasks_data = sorted(tasks_data, key= lambda i: i["site"])
-        print(tasks_data)
         write_data("./data/tasks.json",tasks_data)
+
     def setupUi(self,TaskTab):
         self.running = False
 
