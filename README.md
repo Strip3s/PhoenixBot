@@ -13,9 +13,13 @@ Phoenix Bot is inspired by Natewong1313's Bird Bot project yet due to lack of ac
 |:---:|:---:|:---:|:---:|
 | amazon.com | | |`✔`|
 | bestbuy.com |`✔`|`✔`| |
-| gamestop.com |`✔`| | |
-| target.com |`✔`| | |
+| gamestop.com | |`✔`|`✔`|
+| target.com |`✔`| |`✔`|
 | walmart.com |`✔`| | |
+
+Gamestop - Captcha work-arounds in progress, will attempt to add to cart currently and then open browser for you to click captcha's.
+
+Target Signin error work around - Wait for target browser to launch, once it's refreshing on product page, open new tab in browser, navigate to target.com and signin manually, then close that tab.
 
 <p align="center">
   <img src="https://imgur.com/pILriDO.png" alt="Phoenix Bot UI" width="738">
@@ -67,6 +71,9 @@ Phoenix Bot is inspired by Natewong1313's Bird Bot project yet due to lack of ac
    ```
    python app.py
    ```
+  
+6. To Run Target.com bot, download GeckoDriver and select the folder of it's location in the settings.
+    * Latest Driver releases can be found at: https://github.com/mozilla/geckodriver/releases
 
 ## Quick Install for Mac
 **It is highly recommended you install brew and update python3 to latest version**
@@ -111,6 +118,9 @@ Phoenix Bot is inspired by Natewong1313's Bird Bot project yet due to lack of ac
    ```
    python3 app.py
    ```
+
+5. To Run Target.com bot, download GeckoDriver and select the folder of it's location in the settings.
+    * Latest Driver releases can be found at: https://github.com/mozilla/geckodriver/releases
 
 
 ## Windows FAQs

@@ -55,8 +55,12 @@ class SettingsPage(QtWidgets.QWidget):
         edit.setAttribute(QtCore.Qt.WA_MacShowFocusRect, 0)
         return edit
 
+    def get_folder(self):
+        self.geckodriver_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Folder')
+
     def setup_ui(self, settingspage):
         self.settingspage = settingspage
+        self.geckodriver_path = ''
         self.settingspage.setAttribute(QtCore.Qt.WA_StyledBackground, True)
         self.settingspage.setGeometry(QtCore.QRect(60, 0, 1041, 601))
         self.settingspage.setStyleSheet(
@@ -80,6 +84,17 @@ class SettingsPage(QtWidgets.QWidget):
                 globalStyles["primary"]))
         self.savesettings_btn.setText("Save")
         self.savesettings_btn.clicked.connect(self.save_settings)
+
+        self.geckodriver = QtWidgets.QPushButton(self.settings_card)
+        # self.getfolder_btn.setGeometry(QtCore.QRect(QtCore.QPoint(250,100), QtCore.QSize(10, 5)))
+        self.geckodriver.setGeometry(QtCore.QRect(300, 450, 150, 32))
+        self.geckodriver.setFont(self.small_font)
+        self.geckodriver.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.geckodriver.setStyleSheet("color: #FFFFFF;background-color: {};border-radius: 10px;border: 1px solid #2e2d2d;".format(globalStyles["primary"]))
+        self.geckodriver.setText("GeckoDriver Location")
+        self.geckodriver.clicked.connect(self.get_folder)
+
+        
 
         self.browser_checkbox = self.create_checkbox(QtCore.QRect(30, 90, 300, 20), "Browser Opened")
         self.order_checkbox = self.create_checkbox(QtCore.QRect(30, 120, 221, 20), "Order Placed")
@@ -138,11 +153,10 @@ class SettingsPage(QtWidgets.QWidget):
             self.order_checkbox.setChecked(True)
         if settings["webhookonfailed"]:
             self.paymentfailed_checkbox.setChecked(True)
-        if settings["runheadless"]:
-            print(settings["runheadless"],flush=True)
-            self.headless_checkbox.setChecked(True)
         if settings["browseronfailed"]:
             self.onfailed_checkbox.setChecked(True)
+        if settings["runheadless"]:
+            self.headless_checkbox.setChecked(True)
         if settings["bb_ac_beta"]:
             self.bb_ac_beta_checkbox.setChecked(True)
         if settings['onlybuyone']:
@@ -153,6 +167,13 @@ class SettingsPage(QtWidgets.QWidget):
             self.random_delay_start.setText(settings["random_delay_start"])
         if settings['random_delay_stop']:
             self.random_delay_stop.setText(settings["random_delay_stop"])
+
+        self.geckodriver_path = settings["geckodriver"]
+
+        # try:
+        #     self.geckodriver.setText(settings["geckodriver"])
+        # except:
+        #     self.geckodriver.setText("")
 
         try:
             self.bestbuy_user_edit.setText(settings["bestbuy_user"])
@@ -190,12 +211,13 @@ class SettingsPage(QtWidgets.QWidget):
         self.update_settings(settings)
 
     def save_settings(self):
+        print(f"Saving path: {self.geckodriver_path}")
         settings = {"webhook":            self.webhook_edit.text(),
                     "webhookonbrowser":   self.browser_checkbox.isChecked(),
                     "webhookonorder":     self.order_checkbox.isChecked(),
                     "webhookonfailed":    self.paymentfailed_checkbox.isChecked(),
-                    "runheadless":        self.headless_checkbox.isChecked(),
                     "browseronfailed":    self.onfailed_checkbox.isChecked(),
+                    "runheadless":        self.headless_checkbox.isChecked(),
                     "bb_ac_beta":         self.bb_ac_beta_checkbox.isChecked(),
                     "onlybuyone":         self.buy_one_checkbox.isChecked(),
                     "dont_buy":           self.dont_buy_checkbox.isChecked(),
@@ -206,15 +228,17 @@ class SettingsPage(QtWidgets.QWidget):
                     "target_user": self.target_user_edit.text(),
                     "target_pass": Encryption().encrypt(self.target_pass_edit.text()).decode("utf-8"),
                     "gamestop_user": self.gamestop_user_edit.text(),
-                    "gamestop_pass": Encryption().encrypt(self.gamestop_pass_edit.text()).decode("utf-8")}
+                    "gamestop_pass": Encryption().encrypt(self.gamestop_pass_edit.text()).decode("utf-8"),
+                    "geckodriver" : self.geckodriver_path
+                    }
 
         write_data("./data/settings.json", settings)
         self.update_settings(settings)
         QtWidgets.QMessageBox.information(self, "Phoenix Bot", "Saved Settings")
 
     def update_settings(self, settings_data):
-        global webhook, webhook_on_browser, webhook_on_order, webhook_on_failed, run_headless, browser_on_failed, bb_ac_beta, dont_buy, random_delay_start, random_delay_stop, target_user, target_pass, gamestop_user, gamestop_pass
-        settings.webhook, settings.webhook_on_browser, settings.webhook_on_order, settings.webhook_on_failed, settings.run_headless, settings.browser_on_failed, settings.bb_ac_beta, settings.buy_one, settings.dont_buy = settings_data["webhook"], settings_data["webhookonbrowser"], settings_data["webhookonorder"], settings_data["webhookonfailed"], settings_data["runheadless"], settings_data["browseronfailed"], settings_data["bb_ac_beta"], settings_data['onlybuyone'], settings_data['dont_buy']
+        global webhook, webhook_on_browser, webhook_on_order, webhook_on_failed, browser_on_failed, run_headless, bb_ac_beta, dont_buy, random_delay_start, random_delay_stop, target_user, target_pass, gamestop_user, gamestop_pass, geckodriver
+        settings.webhook, settings.webhook_on_browser, settings.webhook_on_order, settings.webhook_on_failed, settings.browser_on_failed, settings.run_headless, settings.bb_ac_beta, settings.buy_one, settings.dont_buy = settings_data["webhook"], settings_data["webhookonbrowser"], settings_data["webhookonorder"], settings_data["webhookonfailed"], settings_data["browseronfailed"], settings_data["runheadless"], settings_data["bb_ac_beta"], settings_data['onlybuyone'], settings_data['dont_buy']
 
         if settings_data.get("random_delay_start", "") != "":
             settings.random_delay_start = settings_data["random_delay_start"]
@@ -234,3 +258,5 @@ class SettingsPage(QtWidgets.QWidget):
         if settings_data.get("gamestop_pass", "") != "":
             settings.gamestop_pass = (Encryption().decrypt(settings_data["gamestop_pass"].encode("utf-8"))).decode(
                 "utf-8")
+        if settings_data.get("geckodriver","") != "":
+            settings.geckodriver_path = settings_data["geckodriver"]

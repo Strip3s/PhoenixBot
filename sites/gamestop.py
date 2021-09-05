@@ -51,8 +51,10 @@ class GameStop:
         self.login()
         self.monitor()
         self.add_to_cart()
-        # self.submit_billing()
-        # self.submit_order()
+
+        #### Need to setup captcha solvers to work the below, TODO Still needed??
+        self.submit_billing()
+        self.submit_order()
 
     def init_driver(self):
         # if settings.run_headless:
@@ -60,6 +62,7 @@ class GameStop:
 
         ## Gamestop does not like it when we do not have a user-agent
 
+        self.status_signal.emit(create_msg("Currently not running headless","normal"))
         driver = webdriver.Chrome(ChromeDriverManager().install(),options=options)
         driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
             "source": """
@@ -85,12 +88,7 @@ class GameStop:
 
             time.sleep(5)
         
-
-            # wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.LINK_TEXT, "MY ACCOUNT")))
-            # time.sleep(5)
-            #self.browser.find_element_by_link_text('MY ACCOUNT').click()
             self.browser.find_element_by_xpath('//a[@id="account-modal-link-nocache"]').click()
-            # wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.ID, "signIn"))).click()
         else:
             self.browser.get("https://www.gamestop.com/login/")
         
@@ -106,8 +104,6 @@ class GameStop:
 
         time.sleep(2) # slight delay for in-between filling out login info and clicking Sign In
 
-        # wait(self.browser, self.LONG_TIMEOUT).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="signinCheck"]/button')))
-        # sign_in_btn = self.browser.find_element_by_xpath('//button[@class="sign-in-submit"]')
         sign_in_btn = wait(self.browser, self.LONG_TIMEOUT).until(
              EC.presence_of_element_located((By.XPATH, "//button[@class='btn btn-block mb-2 sign-in-submit']"))
         )
@@ -115,7 +111,6 @@ class GameStop:
         time.sleep(10)
 
     def monitor(self):
-        # wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/?openLoginModal=accountModal")
 
         ## verify we have signed successfully else we should abort the task or attempt sign-in again
         # (TODO: add max attempts to sign-in before exiting task)
@@ -147,8 +142,9 @@ class GameStop:
                 in_stock = True
                 self.status_signal.emit(create_msg("Added to cart", "normal"))
                 self.browser.maximize_window()
-                self.status_signal.emit(create_msg("Added to cart, check for captcha","stopnow"))
-                # self.browser.get("https://www.gamestop.com/cart/")
+                # remove stop temporarily to see if gamestop captcha is an issue
+                # self.status_signal.emit(create_msg("Added to cart, check for captcha","stopnow"))
+                self.browser.get("https://www.gamestop.com/cart/")
             except:
                 self.status_signal.emit(create_msg("Waiting For Restock", "normal"))
                 self.browser.refresh()

@@ -119,6 +119,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.proxies_tab.mousePressEvent = lambda event: self.change_page(event, "proxies")
         self.settings_tab.mousePressEvent = lambda event: self.change_page(event, "settings")
         self.homepage.newtask_btn.clicked.connect(self.createdialog.show)
+        
     def change_page(self,event,current_page):
         eval('self.{}_active_tab.setStyleSheet("background-color: transparent;border: none;")'.format(self.current_page))
         # reseting image after deselect

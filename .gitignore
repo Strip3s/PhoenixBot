@@ -18,3 +18,7 @@ venv.bak/
 # OSX
 .DS_Store
 error_dumps/*
+test.py
+selenium/*
+*.exe
+*.log

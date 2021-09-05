@@ -1,1 +1,20 @@
-{"webhook": "", "webhookonbrowser": true, "webhookonorder": true, "webhookonfailed": true, "browseronfailed": true, "runheadless": true, "bb_ac_beta": false, "onlybuyone": true, "dont_buy": true, "random_delay_start": "", "random_delay_stop": ""}
+{
+    "webhook": "",
+    "webhookonbrowser": true,
+    "webhookonorder": true,
+    "webhookonfailed": true,
+    "browseronfailed": true,
+    "runheadless": true,
+    "bb_ac_beta": false,
+    "onlybuyone": true,
+    "dont_buy": true,
+    "random_delay_start": "",
+    "random_delay_stop": "",
+    "bestbuy_user": "",
+    "bestbuy_pass": "",
+    "target_user": "",
+    "target_pass": "",
+    "gamestop_user": "",
+    "gamestop_pass": "",
+    "geckodriver":""
+}
