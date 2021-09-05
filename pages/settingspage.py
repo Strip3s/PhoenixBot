@@ -156,7 +156,6 @@ class SettingsPage(QtWidgets.QWidget):
         if settings["browseronfailed"]:
             self.onfailed_checkbox.setChecked(True)
         if settings["runheadless"]:
-            print(settings["runheadless"],flush=True)
             self.headless_checkbox.setChecked(True)
         if settings["bb_ac_beta"]:
             self.bb_ac_beta_checkbox.setChecked(True)
@@ -260,5 +259,4 @@ class SettingsPage(QtWidgets.QWidget):
             settings.gamestop_pass = (Encryption().decrypt(settings_data["gamestop_pass"].encode("utf-8"))).decode(
                 "utf-8")
         if settings_data.get("geckodriver","") != "":
-            print(f"Updating path: {self.geckodriver_path} - {settings.geckodriver_path} - {settings_data['geckodriver']}")
             settings.geckodriver_path = settings_data["geckodriver"]
