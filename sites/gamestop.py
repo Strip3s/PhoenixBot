@@ -57,12 +57,13 @@ class GameStop:
         self.submit_order()
 
     def init_driver(self):
-        # if settings.run_headless:
-            # options.add_argument("--headless")
+        if settings.run_headless:
+            self.status_signal.emit(create_msg("Running headless","normal"))
+            options.add_argument("--headless")
 
         ## Gamestop does not like it when we do not have a user-agent
 
-        self.status_signal.emit(create_msg("Currently not running headless","normal"))
+        
         driver = webdriver.Chrome(ChromeDriverManager().install(),options=options)
         driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
             "source": """
