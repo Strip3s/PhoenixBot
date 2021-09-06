@@ -177,7 +177,6 @@ def create_msg(msg, status):
 
 def log_webpage(path, output_type, data):
     
-
     filename = f"./output/{path}/{output_type}_{datetime.strftime(datetime.now(),'%Y-%m-%d_%H-%M-%S')}.html"
         
     with open(filename, "w+",encoding="utf-8") as fp:
