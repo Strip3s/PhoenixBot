@@ -90,11 +90,7 @@ class BestBuy:
         self.status_signal, self.image_signal, self.product, self.profile, self.monitor_delay, self.error_delay = status_signal, image_signal, product, profile, float(monitor_delay), float(error_delay)
         self.sku_id = parse.parse_qs(parse.urlparse(self.product).query)['skuId'][0]
         self.session = requests.Session()
-        # TODO: Refactor Bird Bot Auto Checkout Functionality. For now, it will just open the cart link.
-        if settings.bb_ac_beta:
-            self.auto_buy = True
-        else:
-            self.auto_buy = False
+        # TODO: Refactor Bird Bot Auto Checkout Functionality.
         self.browser = self.init_driver()
         starting_msg = "Starting Best Buy Task"
         if settings.dont_buy:
@@ -162,9 +158,6 @@ class BestBuy:
 
     def init_driver(self):
 
-        # TODO - check if this still messes up the cookies for headless
-        # headless = True
-        # if headless:
         chrome_options = Options()
         if settings.run_headless:
             self.status_signal.emit(create_msg("Running headless","normal"))
@@ -244,15 +237,11 @@ class BestBuy:
         while not self.in_stock():
             sleep(5)
         self.status_signal.emit(create_msg(f"Item {self.sku_id} is in stock!", "normal"))
-        # TODO: Refactor Bird Bot Auto Checkout Functionality. For now, it will just open the cart link when in stock.
-        if self.auto_buy:
-            self.auto_checkout()
-        else:
-            # refresh to update add to cart button
-            self.browser.refresh()
-            self.status_signal.emit(create_msg(f"SKU: {self.sku_id} in stock: {BEST_BUY_CART_URL.format(sku=self.sku_id)}", "normal"))
-            self.add_to_cart()
-            sleep(5)
+        # TODO: Refactor Bird Bot Auto Checkout Functionality.
+        self.browser.refresh()
+        self.status_signal.emit(create_msg(f"SKU: {self.sku_id} in stock: {BEST_BUY_CART_URL.format(sku=self.sku_id)}", "normal"))
+        self.add_to_cart()
+        sleep(5)
 
     def in_stock(self):
         self.status_signal.emit(create_msg("Checking stock", "normal"))
