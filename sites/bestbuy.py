@@ -91,10 +91,10 @@ class BestBuy:
         self.sku_id = parse.parse_qs(parse.urlparse(self.product).query)['skuId'][0]
         self.session = requests.Session()
         # TODO: Refactor Bird Bot Auto Checkout Functionality. For now, it will just open the cart link.
-        if settings.bb_ac_beta:
-            self.auto_buy = True
-        else:
-            self.auto_buy = False
+        # if settings.bb_ac_beta:
+        #     self.auto_buy = True
+        # else:
+        #     self.auto_buy = False
         self.browser = self.init_driver()
         starting_msg = "Starting Best Buy Task"
         if settings.dont_buy:
@@ -245,14 +245,14 @@ class BestBuy:
             sleep(5)
         self.status_signal.emit(create_msg(f"Item {self.sku_id} is in stock!", "normal"))
         # TODO: Refactor Bird Bot Auto Checkout Functionality. For now, it will just open the cart link when in stock.
-        if self.auto_buy:
-            self.auto_checkout()
-        else:
-            # refresh to update add to cart button
-            self.browser.refresh()
-            self.status_signal.emit(create_msg(f"SKU: {self.sku_id} in stock: {BEST_BUY_CART_URL.format(sku=self.sku_id)}", "normal"))
-            self.add_to_cart()
-            sleep(5)
+        # if self.auto_buy:
+        #     self.auto_checkout()
+        # else:
+        # refresh to update add to cart button
+        self.browser.refresh()
+        self.status_signal.emit(create_msg(f"SKU: {self.sku_id} in stock: {BEST_BUY_CART_URL.format(sku=self.sku_id)}", "normal"))
+        self.add_to_cart()
+        sleep(5)
 
     def in_stock(self):
         self.status_signal.emit(create_msg("Checking stock", "normal"))
