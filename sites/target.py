@@ -11,7 +11,6 @@ from selenium.webdriver.firefox.options import Options
 from utils import random_delay, send_webhook, create_msg
 from utils.selenium_utils import change_driver
 import settings, time, random
-from test import mypath
 
 # options = Options()
 
@@ -134,7 +133,7 @@ class Target:
                 EC.presence_of_element_located((By.XPATH,'//button[@id="login"]'))
             )
             loginBtn.click()
-            
+
             time.sleep(2)
         else:
             self.browser.find_element_by_xpath('//input[@id="password"]').send_keys(settings.target_pass)
