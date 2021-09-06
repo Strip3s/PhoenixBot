@@ -5,6 +5,7 @@ import json
 import platform
 import random
 import string
+import os
 
 from Crypto import Random
 from Crypto.Cipher import AES
@@ -173,3 +174,14 @@ def random_delay(delay, start, stop):
 
 def create_msg(msg, status):
     return {"msg": msg, "status": status}
+
+def log_webpage(path, output_type, data):
+    
+
+    filename = f"./output/{path}/{output_type}_{datetime.strftime(datetime.now(),'%Y-%m-%d_%H-%M-%S')}.html"
+        
+    with open(filename, "w+",encoding="utf-8") as fp:
+        fp.write(data)
+        fp.close()
+        return filename
+    
