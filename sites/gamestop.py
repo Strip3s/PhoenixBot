@@ -17,21 +17,25 @@ options.add_experimental_option("useAutomationExtension", False)
 
 ### Need to optimize options below for pageload but not piss off gamestop
 
-if settings.run_headless:
-    prefs = {
-            "profile.managed_default_content_settings.images":2,
-            # "profile.default_content_setting_values.notifications":2,
-            # "profile.managed_default_content_settings.stylesheets":2,
-            # "profile.managed_default_content_settings.cookies":1,
-            # "profile.managed_default_content_settings.javascript":1,
-            # "profile.managed_default_content_settings.plugins":1,
-            # "profile.managed_default_content_settings.popups":2,
-            # "profile.managed_default_content_settings.geolocation":1,
-            # "profile.managed_default_content_settings.media_stream":2,
-    }
+# if settings.run_headless:
+#     prefs = {
+#             "profile.managed_default_content_settings.images":2,
+#             # "profile.default_content_setting_values.notifications":2,
+#             # "profile.managed_default_content_settings.stylesheets":2,
+#             # "profile.managed_default_content_settings.cookies":1,
+#             # "profile.managed_default_content_settings.javascript":1,
+#             # "profile.managed_default_content_settings.plugins":1,
+#             # "profile.managed_default_content_settings.popups":2,
+#             # "profile.managed_default_content_settings.geolocation":1,
+#             # "profile.managed_default_content_settings.media_stream":2,
+#     }
 
-    options.add_experimental_option("prefs", prefs)
+#     options.add_experimental_option("prefs", prefs)
 options.add_argument(f"User-Agent={settings.userAgent}")
+
+def maximize_window(driver):
+    if not settings.run_headless:
+        driver.maximize_window()
 
 class GameStop:
     def __init__(self, task_id, status_signal, image_signal, product, profile, proxy, monitor_delay, error_delay, max_price):
@@ -144,7 +148,7 @@ class GameStop:
                     continue
                 in_stock = True
                 self.status_signal.emit(create_msg("Added to cart", "normal"))
-                self.browser.maximize_window()
+                maximize_window(self.browser)
                 # remove stop temporarily to see if gamestop captcha is an issue
                 # self.status_signal.emit(create_msg("Added to cart, check for captcha","stopnow"))
                 self.browser.get("https://www.gamestop.com/cart/")
@@ -156,8 +160,8 @@ class GameStop:
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/cart/")
 
         ##### THERE IS NOW A CAPTCHA HERE (POPUP)
-        if not settings.run_headless:
-            self.browser.maximize_window()
+        
+        maximize_window(self.browser)
         
         self.status_signal.emit(create_msg("Checking Age Verification", "normal"))
 
