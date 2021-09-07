@@ -17,19 +17,20 @@ options.add_experimental_option("useAutomationExtension", False)
 
 ### Need to optimize options below for pageload but not piss off gamestop
 
-prefs = {
-        "profile.managed_default_content_settings.images":2,
-        # "profile.default_content_setting_values.notifications":2,
-        # "profile.managed_default_content_settings.stylesheets":2,
-        # "profile.managed_default_content_settings.cookies":1,
-        # "profile.managed_default_content_settings.javascript":1,
-        # "profile.managed_default_content_settings.plugins":1,
-        # "profile.managed_default_content_settings.popups":2,
-        # "profile.managed_default_content_settings.geolocation":1,
-        # "profile.managed_default_content_settings.media_stream":2,
-}
+if settings.run_headless:
+    prefs = {
+            "profile.managed_default_content_settings.images":2,
+            # "profile.default_content_setting_values.notifications":2,
+            # "profile.managed_default_content_settings.stylesheets":2,
+            # "profile.managed_default_content_settings.cookies":1,
+            # "profile.managed_default_content_settings.javascript":1,
+            # "profile.managed_default_content_settings.plugins":1,
+            # "profile.managed_default_content_settings.popups":2,
+            # "profile.managed_default_content_settings.geolocation":1,
+            # "profile.managed_default_content_settings.media_stream":2,
+    }
 
-options.add_experimental_option("prefs", prefs)
+    options.add_experimental_option("prefs", prefs)
 options.add_argument(f"User-Agent={settings.userAgent}")
 
 class GameStop:
@@ -72,7 +73,8 @@ class GameStop:
                   })
                 """
         })
-        driver.minimize_window()
+        if not settings.run_headless:
+            driver.minimize_window()
         return driver
 
     def login(self):
@@ -154,6 +156,8 @@ class GameStop:
         wait(self.browser, self.LONG_TIMEOUT).until(lambda _: self.browser.current_url == "https://www.gamestop.com/cart/")
 
         ##### THERE IS NOW A CAPTCHA HERE (POPUP)
+        if not settings.run_headless:
+            self.browser.maximize_window()
         
         self.status_signal.emit(create_msg("Checking Age Verification", "normal"))
 
