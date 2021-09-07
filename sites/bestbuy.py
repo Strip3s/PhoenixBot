@@ -14,7 +14,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException,
 
 from utils.json_utils import find_values
 from utils.selenium_utils import enable_headless # not sure this actually works since we call options() below
-from utils import create_msg
+from utils import create_msg, log_webpage
 
 try:
     from Crypto.PublicKey import RSA
@@ -176,45 +176,57 @@ class BestBuy:
         return driver
 
     def login(self):
-        self.status_signal.emit(create_msg("Logging in...", "normal"))
-        self.browser.get("https://www.bestbuy.com/identity/global/signin")
+        try:
+            self.status_signal.emit(create_msg("Logging in...", "normal"))
+            self.browser.get("https://www.bestbuy.com/identity/global/signin")
 
-        time.sleep(5)
-        # set remember me to true, probably don't need this TBH
-        WebDriverWait(self.browser, 10).until(
-            EC.presence_of_element_located((By.ID, "ca-remember-me"))
-        ).click()
-        
-        # Fill email field
-        WebDriverWait(self.browser, 10).until(
-            EC.presence_of_element_located((By.ID, "fld-e"))
-        ).send_keys(settings.bestbuy_user)
-        
-        # Fill password field
-        WebDriverWait(self.browser, 10).until(
-            EC.presence_of_element_located((By.ID, "fld-p1"))
-        ).send_keys(settings.bestbuy_pass)
-        
-        time.sleep(2)
-        signInButton = WebDriverWait(self.browser, 10).until(
-            EC.presence_of_element_located((By.XPATH,"//button[contains(@class,'cia-form__controls__submit')]"))
-        )
-        signInButton.click()
-                
-        WebDriverWait(self.browser, 10).until(
-            lambda x: "Official Online Store" in self.browser.title or "Sign In - Add Recovery Phone" in self.browser.title
-        )
-
-        if "Sign In - Add Recovery Phone" in self.browser.title:
-            self.status_signal.emit(create_msg("Sign In - Add Recovery phone page hit, probably can ignore...","normal"))
-        
-        if not settings.run_headless:
-            closeModal = WebDriverWait(self.browser, 10).until(
-                EC.presence_of_element_located((By.XPATH, "//button[@class='c-close-icon c-modal-close-icon']"))
+            time.sleep(5)
+            # set remember me to true, probably don't need this TBH
+            WebDriverWait(self.browser, 10).until(
+                EC.presence_of_element_located((By.ID, "ca-remember-me"))
+            ).click()
+            
+            # Fill email field
+            WebDriverWait(self.browser, 10).until(
+                EC.presence_of_element_located((By.ID, "fld-e"))
+            ).send_keys(settings.bestbuy_user)
+            
+            # Fill password field
+            WebDriverWait(self.browser, 10).until(
+                EC.presence_of_element_located((By.ID, "fld-p1"))
+            ).send_keys(settings.bestbuy_pass)
+            
+            time.sleep(2)
+            signInButton = WebDriverWait(self.browser, 10).until(
+                EC.presence_of_element_located((By.XPATH,"//button[contains(@class,'cia-form__controls__submit')]"))
             )
-            if closeModal:
-                closeModal.click()
-                self.status_signal.emit(create_msg("Closing annoying modal", "normal"))
+            signInButton.click()
+                    
+            WebDriverWait(self.browser, 10).until(
+                lambda x: "Official Online Store" in self.browser.title or "Sign In - Add Recovery Phone" in self.browser.title
+            )
+
+            if "Sign In - Add Recovery Phone" in self.browser.title:
+                self.status_signal.emit(create_msg("Sign In - Add Recovery phone page hit, probably can ignore...","normal"))
+                # skipBtn = WebDriverWait(self.browser, 10).until(
+                #     EC.presence_of_element_located((By.XPATH,"//button[@text()='Skip for now']"))
+                # )
+                # skipBtn.click()
+                self.browser.get("https://www.bestbuy.com")
+        except Exception as e:
+            self.status_signal.emit(create_msg("Bestbuy login error, see console for details","error"))
+            print(f"Dumped webpage to file: {log_webpage('errors','bby_login',self.browser.page_source)}")
+
+        if not settings.run_headless:
+            try:
+                closeModal = WebDriverWait(self.browser, 10).until(
+                    EC.presence_of_element_located((By.XPATH, "//button[@class='c-close-icon c-modal-close-icon']"))
+                )
+                if closeModal:
+                    closeModal.click()
+                    self.status_signal.emit(create_msg("Closing annoying modal", "normal"))
+            except Exception as e:
+                pass
         
     def verify_signed_in(self):
         signedIn = WebDriverWait(self.browser, 10).until(
@@ -343,6 +355,19 @@ class BestBuy:
 
         self.status_signal.emit(create_msg("Attempting Checkout", "normal"))
 
+        if "Returning Customer" in self.browser.page_source:
+             # Fill password field
+            WebDriverWait(self.browser, 10).until(
+                EC.presence_of_element_located((By.ID, "fld-p1"))
+            ).send_keys(settings.bestbuy_pass)
+            
+            time.sleep(2)
+            signInButton = WebDriverWait(self.browser, 10).until(
+                EC.presence_of_element_located((By.XPATH,"//button[contains(@class,'cia-form__controls__submit')]"))
+            )
+            signInButton.click()
+
+
         #### keep this for now, not sure if we still need it
         # # click shipping option if available, currently sets it to ISPU (in store pick up)
         # try:
@@ -361,7 +386,7 @@ class BestBuy:
         try:
             self.status_signal.emit(create_msg("Trying CVV Number.","normal"))
             security_code = WebDriverWait(self.browser, 5).until(
-                EC.presence_of_element_located((By.ID, "cvv"))
+                EC.presence_of_element_located((By.ID, "credit-card-cvv"))
             )
             # time.sleep(1)
             # security_code = self.browser.find_element_by_id("cvv")

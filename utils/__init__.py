@@ -5,6 +5,8 @@ import json
 import platform
 import random
 import string
+import os
+import pathlib
 
 from Crypto import Random
 from Crypto.Cipher import AES
@@ -173,3 +175,24 @@ def random_delay(delay, start, stop):
 
 def create_msg(msg, status):
     return {"msg": msg, "status": status}
+
+def log_webpage(path, output_type, data):
+    cwd = pathlib.Path().parent.resolve()
+
+    try:
+        os.makedirs(str(cwd) + "/output/errors")
+    except FileExistsError:
+        pass
+
+    try:
+        os.makedirs(str(cwd) + "/output/success")
+    except FileExistsError:
+        pass
+
+    filename = f"{cwd}/output/{path}/{output_type}_{datetime.strftime(datetime.now(),'%Y-%m-%d_%H-%M-%S')}.html"
+        
+    with open(filename, "w+",encoding="utf-8") as fp:
+        fp.write(data)
+        fp.close()
+        return filename
+    

@@ -166,6 +166,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     ui_app = QtWidgets.QApplication(sys.argv)
+    # trayIcon = QtWidgets.QSystemTrayIcon(QtGui.QIcon("images/birdbot.py"), parent=ui_app)
+    # trayIcon.setToolTip('Phoenix Bot')
+    # trayIcon.show()
     ui = MainWindow()
     ui.setWindowIcon(QtGui.QIcon("images/birdbot.png"))
     os._exit(ui_app.exec_())
