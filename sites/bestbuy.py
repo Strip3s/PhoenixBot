@@ -215,7 +215,6 @@ class BestBuy:
                 self.browser.get("https://www.bestbuy.com")
         except Exception as e:
             self.status_signal.emit(create_msg("Bestbuy login error, see console for details","error"))
-            print(f"Bestbuy login error: {e}, writing page to file.")
             print(f"Dumped webpage to file: {log_webpage('errors','bby_login',self.browser.page_source)}")
 
         if not settings.run_headless:
