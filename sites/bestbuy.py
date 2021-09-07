@@ -215,7 +215,7 @@ class BestBuy:
                 self.browser.get("https://www.bestbuy.com")
         except Exception as e:
             self.status_signal.emit(create_msg("Bestbuy login error, see console for details","error"))
-            print(f"Dumped webpage to file: {log_webpage('errors','bby_login',self.browser.page_source)}")
+            log_webpage('errors','bby_login',self.browser.page_source)
 
         if not settings.run_headless:
             try:
@@ -366,7 +366,16 @@ class BestBuy:
                 EC.presence_of_element_located((By.XPATH,"//button[contains(@class,'cia-form__controls__submit')]"))
             )
             signInButton.click()
-
+        
+        if "fullfillment" in self.browser.current_url.lower():
+            try:
+                toPaymentBtn = WebDriverWait(self.browser, 5).until(
+                    EC.presence_of_element_located((By.XPATH,"//*[@class='']"))
+                )
+                toPaymentBtn.click()
+            except (NoSuchElementException, TimeoutException, ElementNotInteractableException):
+                print("Stuck on shipping choice page")
+                log_webpage("errors","bby_checkout_shipping",self.browser.page_source)
 
         #### keep this for now, not sure if we still need it
         # # click shipping option if available, currently sets it to ISPU (in store pick up)
@@ -411,9 +420,11 @@ class BestBuy:
                         self.did_submit = True
                     else:
                         self.status_signal.emit(create_msg("Order Placed", "success"))
+                        log_webpage('success','bby_login',self.browser.page_source)
                         self.did_submit = True
             except (NoSuchElementException, TimeoutException, ElementNotInteractableException):
                 print("Could Not Complete Checkout.",flush=True)
+                log_webpage('errors','bby_checkout',self.browser.page_source)
                 pass
             except:
                 self.status_signal.emit(create_msg('Retrying submit order until success', 'normal'))
