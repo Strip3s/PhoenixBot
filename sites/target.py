@@ -10,7 +10,7 @@ from selenium.webdriver.firefox.options import Options
 
 from utils import random_delay, send_webhook, create_msg
 from utils.selenium_utils import change_driver
-import settings, time, random
+import settings, time, random, re
 
 # options = Options()
 
@@ -56,6 +56,7 @@ class Target:
         ]
         starting_msg = "Starting Target"
         self.browser = self.init_driver()
+        self.sku_id = re.search('\/A\-(\d*)',self.product)[1]
         if self.browser:
             self.product_image = None
             self.TIMEOUT_SHORT = 5
@@ -185,9 +186,12 @@ class Target:
 
         if "product not available" in self.browser.page_source:
             # self.browser.quit()
-            self.status_signal.emit(create_msg("Invalid URL","stopnow"))
+            self.status_signal.emit(create_msg("Invalid URL, sleeping 1 minute","normal"))
+            self.browser.get(self.product)
+            time.sleep(60)
         else:
-            while not self.img_found:
+            img_attempts=0
+            while not self.img_found and img_attempts < 5:
                 try:
                     if not self.img_found:
                         product_img = self.browser.find_elements_by_class_name('slideDeckPicture')[0].find_element_by_tag_name(
@@ -196,7 +200,10 @@ class Target:
                         self.product_image = product_img.get_attribute("src")
                         self.img_found = True
                 except Exception as e:
+                    img_attempts += 1
                     continue
+            if img_attempts >= 5:
+                self.status_signal.emit(create_msg(f"Unable to fetch picture for sku: {self.sku_id}","normal"))
 
             while not self.in_stock:
                 self.in_stock = self.check_stock()
