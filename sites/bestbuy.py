@@ -183,7 +183,7 @@ class BestBuy:
             time.sleep(5)
             # set remember me to true, probably don't need this TBH
             WebDriverWait(self.browser, 10).until(
-                EC.presence_of_element_located((By.ID, "ca-remember-me"))
+                EC.presence_of_element_located((By.ID, "cia-remember-me"))
             ).click()
             
             # Fill email field
