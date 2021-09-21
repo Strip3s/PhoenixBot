@@ -7,6 +7,7 @@ import random
 import string
 import os
 import pathlib
+from beepy import beep
 
 from Crypto import Random
 from Crypto.Cipher import AES
@@ -15,8 +16,24 @@ from colorama import Fore, init
 import settings
 from webhook import DiscordEmbed, DiscordWebhook
 
+from twilio.rest import Client
+
 normal_color = Fore.CYAN
 
+def create_twilio_client():
+    try:
+        if settings.twilio_auth_token != "" and settings.twilio_sid != "":
+            auth_token = settings.twilio_auth_token
+            account_sid = settings.twilio_sid
+            twclient = Client(account_sid, auth_token)
+            # print(twclient)
+            return twclient
+        else:
+        #     print(f"client not set")
+            return None
+    except Exception as e:
+        print(f"Twilio Connect error: {e}")
+        pass
 
 def write_data(path, data):
     with open(path, "w") as file:
@@ -92,7 +109,10 @@ def return_data(path):
 
 
 def validate_data(test_data, control_data):
-    return test_data.keys() == control_data.keys()
+    for key in control_data.keys():
+        if key not in test_data.keys():
+            test_data[key] = control_data[key]
+    return test_data
 
 
 def data_exists(path):
@@ -196,3 +216,33 @@ def log_webpage(path, output_type, data):
         fp.close()
         return filename
     
+def alert(alert_type, msg):
+    # print(f"Alert {alert_type} - {msg}")
+    if alert_type == "error":
+        if settings.audio_on_error:
+            beep(2)
+        if settings.text_on_error:
+            send_text(msg)
+    
+    if alert_type == "stock":
+        if settings.audio_on_stock:
+            beep(4)
+        if settings.text_on_stock:
+            send_text(msg)
+    
+    if alert_type == "success":
+        if settings.audio_on_success:
+            beep(6)
+        if settings.text_on_success:
+            send_text(msg)
+
+def send_text(msg):
+    if settings.twclient:
+        message = settings.twclient.messages.create(
+            to=settings.toNumber,
+            from_=settings.fromNumber,
+            body=msg
+        )
+
+def validate_number():
+    pass

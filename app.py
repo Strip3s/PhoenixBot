@@ -1,14 +1,18 @@
-from theming.styles import globalStyles
-from PyQt5 import QtCore, QtGui, QtWidgets
-from pages.homepage import HomePage, TaskTab
-from pages.createdialog import CreateDialog
-from pages.profilespage import ProfilesPage
-from pages.proxiespage import ProxiesPage
-from pages.settingspage import SettingsPage
-from pages.pollbrowser import PollBrowserDialog
-import sys, os, settings
-from theming.styles import globalStyles
 
+import sys, os, settings
+try:
+    from theming.styles import globalStyles
+    from PyQt5 import QtCore, QtGui, QtWidgets
+    from pages.homepage import HomePage, TaskTab
+    from pages.createdialog import CreateDialog
+    from pages.profilespage import ProfilesPage
+    from pages.proxiespage import ProxiesPage
+    from pages.settingspage import SettingsPage
+    from pages.pollbrowser import PollBrowserDialog
+    from theming.styles import globalStyles
+except ModuleNotFoundError:
+    print("\nMissing necessary modules to run, please install using:\n\npip install -r requirements.txt\n")
+    sys.exit()[0]
 
 def no_abort(a, b, c):
     sys.__excepthook__(a, b, c)
@@ -172,3 +176,4 @@ if __name__ == "__main__":
     ui = MainWindow()
     ui.setWindowIcon(QtGui.QIcon("images/birdbot.png"))
     os._exit(ui_app.exec_())
+

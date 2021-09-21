@@ -14,7 +14,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException,
 
 from utils.json_utils import find_values
 from utils.selenium_utils import enable_headless # not sure this actually works since we call options() below
-from utils import create_msg, log_webpage
+from utils import create_msg, log_webpage, alert
 
 try:
     from Crypto.PublicKey import RSA
@@ -216,6 +216,7 @@ class BestBuy:
         except Exception as e:
             self.status_signal.emit(create_msg("Bestbuy login error, see console for details","error"))
             print(f"Dumped webpage to file: {log_webpage('errors','bby_login',self.browser.page_source)}")
+            alert("error",f"Bestbuy Login Error for sku: {self.sku_id}")
 
         if not settings.run_headless:
             try:
@@ -274,6 +275,7 @@ class BestBuy:
                 "ADD_TO_CART",
                 "PRE_ORDER"
             ]:
+                alert("stock",f"SKU {self.sku_id} for bestbuy is in stock")
                 return True
             else:
                 return False
@@ -283,6 +285,7 @@ class BestBuy:
             self.status_signal.emit(create_msg(f"{e}", "error"))
             if "ADD_TO_CART" in response.text: #TODO: Make this case insensitive
                 self.status_signal.emit(create_msg("Item is in stock!", "normal"))
+                alert("stock",f"SKU {self.sku_id} for bestbuy is in stock")
                 return True
             else:
                 self.status_signal.emit(create_msg("Item is out of stock", "normal"))
@@ -335,6 +338,7 @@ class BestBuy:
                         break
                 except(NoSuchElementException, TimeoutException) as error:
                     print(f'Queue System Refresh Error: ${error}',flush=True)
+                    log_webpage("errors","queue_refresh_error",self.browser.page_source)
             
             self.browser.get('https://www.bestbuy.com/cart')
 
@@ -411,9 +415,13 @@ class BestBuy:
                         self.did_submit = True
                     else:
                         self.status_signal.emit(create_msg("Order Placed", "success"))
+                        alert("success",f"Successfully purchased 1x sku: {self.sku_id}")
+                        log_webpage('success','bby_login',self.browser.page_source)
                         self.did_submit = True
             except (NoSuchElementException, TimeoutException, ElementNotInteractableException):
                 print("Could Not Complete Checkout.",flush=True)
+                alert("error",f"Error during checkout for sku: {self.sku_id}")
+                log_webpage('errors','bby_checkout',self.browser.page_source)
                 pass
             except:
                 self.status_signal.emit(create_msg('Retrying submit order until success', 'normal'))
