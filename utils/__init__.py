@@ -214,6 +214,7 @@ def log_webpage(path, output_type, data):
     with open(filename, "w+",encoding="utf-8") as fp:
         fp.write(data)
         fp.close()
+        print(f"Dumped webpage to file: {filename}")
         return filename
     
 def alert(alert_type, msg):

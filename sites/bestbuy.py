@@ -60,7 +60,6 @@ prefs = {
 }
 options.add_experimental_option("prefs", prefs)
 options.add_argument("user-data-dir=.profile-bb")
-# print(options.to_capabilities(),flush=True)
 
 def driver_click(driver, find_type, selector):
     """Driver Wait and Click Settings."""
@@ -83,6 +82,10 @@ def driver_click(driver, find_type, selector):
                 break
             except NoSuchElementException:
                 driver.implicitly_wait(1)
+
+def maximize_window(driver):
+    if not settings.run_headless:
+        driver.maximize_window()
 
 class BestBuy:
 
@@ -125,6 +128,7 @@ class BestBuy:
 
 
         self.status_signal.emit(create_msg("Loading https://www.bestbuy.com/", "normal"))
+        self.browser.get('https://www.bestbuy.com')
         self.login()
 
         self.browser.get(self.product)
@@ -174,6 +178,15 @@ class BestBuy:
         })
 
         return driver
+        
+    def verify_signed_in(self):
+        signedIn = WebDriverWait(self.browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//span[@class='plButton-label v-ellipsis']"))
+        )
+        if signedIn:
+            return True
+        else:
+            return False
 
     def login(self):
         try:
@@ -190,6 +203,7 @@ class BestBuy:
             WebDriverWait(self.browser, 10).until(
                 EC.presence_of_element_located((By.ID, "fld-e"))
             ).send_keys(settings.bestbuy_user)
+            time.sleep(4)
             
             # Fill password field
             WebDriverWait(self.browser, 10).until(
@@ -201,6 +215,7 @@ class BestBuy:
                 EC.presence_of_element_located((By.XPATH,"//button[contains(@class,'cia-form__controls__submit')]"))
             )
             signInButton.click()
+            time.sleep(3)
                     
             WebDriverWait(self.browser, 10).until(
                 lambda x: "Official Online Store" in self.browser.title or "Sign In - Add Recovery Phone" in self.browser.title
@@ -208,15 +223,15 @@ class BestBuy:
 
             if "Sign In - Add Recovery Phone" in self.browser.title:
                 self.status_signal.emit(create_msg("Sign In - Add Recovery phone page hit, probably can ignore...","normal"))
-                # skipBtn = WebDriverWait(self.browser, 10).until(
-                #     EC.presence_of_element_located((By.XPATH,"//button[@text()='Skip for now']"))
-                # )
-                # skipBtn.click()
                 self.browser.get("https://www.bestbuy.com")
         except Exception as e:
             self.status_signal.emit(create_msg("Bestbuy login error, see console for details","error"))
             print(f"Dumped webpage to file: {log_webpage('errors','bby_login',self.browser.page_source)}")
             alert("error",f"Bestbuy Login Error for sku: {self.sku_id}")
+
+        if self.verify_signed_in():
+            self.status_signal.emit(create_msg("Bestbuy successfully logged in.","normal"))
+        time.sleep(2)
 
         if not settings.run_headless:
             try:
@@ -228,33 +243,20 @@ class BestBuy:
                     self.status_signal.emit(create_msg("Closing annoying modal", "normal"))
             except Exception as e:
                 pass
-        
-    def verify_signed_in(self):
-        signedIn = WebDriverWait(self.browser, 10).until(
-            EC.presence_of_element_located((By.XPATH, "//span[@class='plButton-label v-ellipsis']"))
-        )
-        if signedIn:
-            return True
-        else:
-            return False
-
 
     def check_stock(self):
-        if self.verify_signed_in():
-            self.status_signal.emit(create_msg("Bestbuy successfully logged in.","normal"))
-        time.sleep(2)
         # verify we are on the product page here and prep to add to cart
-        self.browser.get(self.product)
 
+        self.browser.get(self.product)
         # this queries the bestbuy api for stock
         while not self.in_stock():
+            # print("Sleeping for 5")
             sleep(5)
         self.status_signal.emit(create_msg(f"Item {self.sku_id} is in stock!", "normal"))
         # TODO: Refactor Bird Bot Auto Checkout Functionality.
-        self.browser.refresh()
+        # self.browser.refresh()
         self.status_signal.emit(create_msg(f"SKU: {self.sku_id} in stock: {BEST_BUY_CART_URL.format(sku=self.sku_id)}", "normal"))
         self.add_to_cart()
-        sleep(5)
 
     def in_stock(self):
         self.status_signal.emit(create_msg("Checking stock", "normal"))
@@ -293,72 +295,105 @@ class BestBuy:
                 return False
 
 
-    def add_to_cart(self, retry=False):
-        self.status_signal.emit(create_msg("Opening Cart", "normal"))
-        # webbrowser.open_new(BEST_BUY_CART_URL.format(sku=self.sku_id))
+    def add_to_cart(self, retry=False, attempt=0):
+
+        if attempt >= 2:
+            self.status_signal.emit(create_msg("3 Attempts made to add to cart, no success","stopnow"))
         
         if retry:
+            print("hit retry",flush=True)
             self.browser.get(self.product)
 
         atcBtn = WebDriverWait(self.browser, 10).until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, ".add-to-cart-button"))
         )
         if atcBtn:
-            atcBtn.click()
-            self.status_signal.emit(create_msg("Add to cart button is live!", "normal"))
-
-            # Queue system logic - courtesy RTX-3070-BEST-BUY-BOT
-            WebDriverWait(self.browser, 15).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR,".add-to-cart-button"))
-            )
-
-            driver_click(self.browser, 'css', '.add-to-cart-button')
-
-            self.status_signal.emit(create_msg("In Queue, refreshing page until our turn", "normal"))
-            # send text message here
-            time.sleep(5)
-            self.browser.refresh()
-
-            while True:
-                try:
-                    add_to_cart = self.browser.find_element_by_css_selector(".add-to-cart-button")
-                    please_wait_enabled = add_to_cart.get_attribute('aria-describedby')
-
-                    if please_wait_enabled:
-                        print("Please wait enabled",flush=True)
-                        self.browser.refresh()
-                        time.sleep(15)
-                    else:  # When Add to Cart appears. This will click button.
-                        WebDriverWait(self.browser, 5).until(
-                            EC.presence_of_element_located((By.CSS_SELECTOR, ".add-to-cart-button"))
-                        )
-                        time.sleep(2)
-                        driver_click(self.browser, 'css', '.add-to-cart-button')
-                        time.sleep(2)
-                        break
-                except(NoSuchElementException, TimeoutException) as error:
-                    print(f'Queue System Refresh Error: ${error}',flush=True)
-                    log_webpage("errors","queue_refresh_error",self.browser.page_source)
             
-            self.browser.get('https://www.bestbuy.com/cart')
 
+            self.status_signal.emit(create_msg("Add to cart button is live!", "normal"))
+            atcBtn.click()
+
+            try:
+                cart_or_queue = WebDriverWait(self.browser, 10).until(lambda x: self.browser.find_element_by_xpath("//div[@class='shop-commerce-elements']/div/span[@class='added-to-cart']") or self.browser.find_element_by_css_selector(".add-to-cart-button").get_attribute('aria-describedby'))
+            except NoSuchElementException:
+                print("Cart or queue fetch error")
+                maximize_window(self.browser)
+                pass
+
+            # should return an object if we've either added to cart or gone to queue
+            if cart_or_queue:
+                # if we've added cart, skip queue
+                try:
+                    # add to cart
+                    if "Added to cart" in cart_or_queue.text:
+                        self.status_signal.emit(create_msg("Opening Cart", "normal"))
+                        self.browser.get('https://www.bestbuy.com/cart')
+
+                        self.start_checkout(attempt)
+                    else:
+                        # queue
+                        self.status_signal.emit(create_msg("In Queue, refreshing page until our turn", "normal"))
+                        time.sleep(2.5)
+                        while True:   
+                            try:
+                                add_to_cart = self.browser.find_element_by_css_selector(".add-to-cart-button")
+                                please_wait_enabled = add_to_cart.get_attribute('aria-describedby')
+
+                                if please_wait_enabled:
+                                    print("Please wait enabled",flush=True)
+                                    self.browser.refresh()
+                                    time.sleep(15)
+                                else:  # When Add to Cart appears. This will click button.
+                                    addToCartBtn = WebDriverWait(self.browser, 5).until(
+                                        EC.presence_of_element_located((By.CSS_SELECTOR, ".add-to-cart-button"))
+                                    )
+                                    # time.sleep(2)
+                                    # driver_click(self.browser, 'css', '.add-to-cart-button')
+                                    addToCartBtn.click()
+                                    time.sleep(2)
+                                    break
+                            except(NoSuchElementException, TimeoutException) as error:
+                                print(f'Queue System Refresh Error: ${error}',flush=True)
+                                maximize_window(self.browser)
+                        
+                        self.status_signal.emit(create_msg("Opening Cart", "normal"))
+                        self.browser.get('https://www.bestbuy.com/cart')
+
+
+                        self.start_checkout(attempt)
+                except (NoSuchElementException, TimeoutException, ElementNotInteractableException, AttributeError) as e:
+                    print(f"Cart or queue error: {e}")
+                    maximize_window(self.browser)
+                    pass
+        
+    def start_checkout(self, attempt=0):
+        self.status_signal.emit(create_msg("Attempting Checkout", "normal"))
+        check_item = WebDriverWait(self.browser, 5).until(
+            EC.presence_of_element_located((By.XPATH,f"//a[@id='cart-{self.sku_id}']"))
+        )
+        # print(check_item)
+        if check_item:
+
+            self.status_signal.emit(create_msg("Product still in cart", "normal"))
             try:
                 WebDriverWait(self.browser, 15).until(
                     EC.presence_of_element_located((By.XPATH, "//*[@class='btn btn-lg btn-block btn-primary']"))
                 )
                 time.sleep(1)
                 driver_click(self.browser, 'xpath', 'btn btn-lg btn-block btn-primary')
-                self.status_signal.emit(create_msg("Product still in cart", "normal"))
-                self.start_checkout()
-            except (NoSuchElementException, TimeoutException):
-                self.status_signal.emit(create_msg("Item is not in cart anymore, Retrying...","normal"))
-                time.sleep(3)
-                self.add_to_cart(True)
-        
-    def start_checkout(self):
+            except (NoSuchElementException, TimeoutException) as e:
+                print(f"Check cart: {e}")
+                maximize_window(self.browser)
+                pass
+        else:
+            self.status_signal.emit(create_msg("Item is not in cart anymore, Retrying...","normal"))
+            time.sleep(3)
+            self.add_to_cart(True, attempt + 1)
 
-        self.status_signal.emit(create_msg("Attempting Checkout", "normal"))
+        ### tweak lambda check for fullfillment page, payment page, or checkout page        
+        # test4 = WebDriverWait(self.browser, 5).until(lambda x: "fullfillment" in self.browser.current_url.lower() or "payment" in self.browser.current_url.lower())
 
+        # returning customer password prompt
         if "Returning Customer" in self.browser.page_source:
              # Fill password field
             WebDriverWait(self.browser, 10).until(
@@ -371,43 +406,39 @@ class BestBuy:
             )
             signInButton.click()
 
+        # hit go on default shipping option (usually free or pickup)
+        try:
+            toPaymentBtn = WebDriverWait(self.browser, 10).until(
+                EC.presence_of_element_located((By.XPATH,"//*[@class='btn btn-lg btn-block btn-secondary']"))
+            )
+            toPaymentBtn.click()
+        except (NoSuchElementException, TimeoutException, ElementNotInteractableException):
+            print("Stuck on shipping choice page")
+            maximize_window(self.browser)
+            log_webpage("errors","bby_checkout_shipping",self.browser.page_source)
 
-        #### keep this for now, not sure if we still need it
-        # # click shipping option if available, currently sets it to ISPU (in store pick up)
-        # try:
-
-        #     self.status_signal.emit(create_msg("Selecting Shipping Checkout", "normal"))
-        #     WebDriverWait(self.browser, 5).until(
-        #         EC.presence_of_element_located((By.XPATH, "//*[@class='btn btn-lg btn-block btn-primary button__fast-track']"))
-        #     )
-        #     time.sleep(2)
-        #     shipping_class = self.browser.find_element_by_xpath("//*[@class='ispu-card__switch']")
-        #     shipping_class.click()
-        # except (NoSuchElementException, TimeoutException, ElementNotInteractableException, ElementClickInterceptedException) as error:
-        #     print(f'shipping error: {error}',flush=True)
-
-
+        # try CVV number
         try:
             self.status_signal.emit(create_msg("Trying CVV Number.","normal"))
             security_code = WebDriverWait(self.browser, 5).until(
                 EC.presence_of_element_located((By.ID, "credit-card-cvv"))
             )
-            # time.sleep(1)
-            # security_code = self.browser.find_element_by_id("cvv")
             time.sleep(1)
             security_code.send_keys(self.profile['card_cvv'])
         except (NoSuchElementException, TimeoutException):
+            self.status_signal.emit(create_msg("CVV Entry Issue","normal"))
+            maximize_window(self.browser)
             pass
 
         self.did_submit = False
         while not self.did_submit:
             try:
                 WebDriverWait(self.browser, 5).until(
-                    EC.presence_of_element_located((By.XPATH, "//*[@class='btn btn-lg btn-block btn-primary button__fast-track']"))
+                    EC.presence_of_element_located((By.XPATH, "//*[@class='btn btn-lg btn-block btn-primary']"))
                 )
-                # comment the one down below. vv
+
                 if not settings.dont_buy:
-                    driver_click(self.browser, 'xpath', 'btn btn-lg btn-block btn-primary button__fast-track')
+                    driver_click(self.browser, 'xpath', 'btn btn-lg btn-block btn-primary')
                 
                 if 'https://www.bestbuy.com/checkout/r/thank-you' in self.browser.current_url or settings.dont_buy:
                     if settings.dont_buy:
@@ -416,12 +447,16 @@ class BestBuy:
                     else:
                         self.status_signal.emit(create_msg("Order Placed", "success"))
                         alert("success",f"Successfully purchased 1x sku: {self.sku_id}")
+
                         log_webpage('success','bby_login',self.browser.page_source)
                         self.did_submit = True
             except (NoSuchElementException, TimeoutException, ElementNotInteractableException):
                 print("Could Not Complete Checkout.",flush=True)
+
                 alert("error",f"Error during checkout for sku: {self.sku_id}")
                 log_webpage('errors','bby_checkout',self.browser.page_source)
-                pass
+                maximize_window(self.browser)
+                break
             except:
                 self.status_signal.emit(create_msg('Retrying submit order until success', 'normal'))
+                pass
