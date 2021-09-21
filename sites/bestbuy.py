@@ -229,6 +229,10 @@ class BestBuy:
             print(f"Dumped webpage to file: {log_webpage('errors','bby_login',self.browser.page_source)}")
             alert("error",f"Bestbuy Login Error for sku: {self.sku_id}")
 
+        if self.verify_signed_in():
+            self.status_signal.emit(create_msg("Bestbuy successfully logged in.","normal"))
+        time.sleep(2)
+
         if not settings.run_headless:
             try:
                 closeModal = WebDriverWait(self.browser, 10).until(

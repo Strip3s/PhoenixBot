@@ -191,7 +191,6 @@ class Target:
             self.browser.get(self.product)
             time.sleep(60)
         else:
-            
             try:
                 TitleFetch = wait(self.browser, 5).until(
                     EC.presence_of_element_located((By.XPATH,"//h1[@data-test='product-title']"))
