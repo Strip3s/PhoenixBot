@@ -5,7 +5,7 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from theming.styles import globalStyles
-from utils import return_data, write_data, Encryption, data_exists, BirdLogger, validate_data, create_twilio_client
+from utils import return_data, send_text, write_data, Encryption, data_exists, BirdLogger, validate_data, create_twilio_client
 
 
 def no_abort(a, b, c):
@@ -57,6 +57,9 @@ class SettingsPage(QtWidgets.QWidget):
 
     def get_folder(self):
         self.geckodriver_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Folder')
+    
+    def send_test_text(self):
+        send_text("This is a test text from your PhoenixBot.")
 
     def setup_ui(self, settingspage):
         self.settingspage = settingspage
@@ -129,23 +132,32 @@ class SettingsPage(QtWidgets.QWidget):
                                                    self.small_font, "Gamestop.com Password")  
 
         # Twilio stuff
-        self.twilio_auth_token_edit = self.create_edit(self.settings_card, QtCore.QRect(500, 50, 235, 20),
+        self.twilio_auth_token_edit = self.create_edit(self.settings_card, QtCore.QRect(600, 50, 235, 20),
                                                    self.small_font, "Twilio Auth Token")
-        self.twilio_sid_edit = self.create_edit(self.settings_card, QtCore.QRect(500, 75, 235, 20),
+        self.twilio_sid_edit = self.create_edit(self.settings_card, QtCore.QRect(600, 75, 235, 20),
                                                    self.small_font, "Twilio SID")
-        self.toNumber_edit = self.create_edit(self.settings_card, QtCore.QRect(500, 100, 235, 20),
+        self.toNumber_edit = self.create_edit(self.settings_card, QtCore.QRect(600, 100, 235, 20),
                                                    self.small_font, "To Number")
-        self.fromNumber_edit = self.create_edit(self.settings_card, QtCore.QRect(500, 125, 235, 20),
+        self.fromNumber_edit = self.create_edit(self.settings_card, QtCore.QRect(600, 125, 235, 20),
                                                    self.small_font, "From Number")
-        self.text_on_error_checkbox = self.create_checkbox(QtCore.QRect(500, 150, 400, 20), "Send Text on Error")
-        self.text_on_success_checkbox = self.create_checkbox(QtCore.QRect(500, 175, 400, 20), "Send Text on Success")
-        self.text_on_stock_checkbox = self.create_checkbox(QtCore.QRect(500, 200, 400, 20), "Send Text on Stock Alert")
+        self.text_on_error_checkbox = self.create_checkbox(QtCore.QRect(600, 150, 400, 20), "Send Text on Error")
+        self.text_on_success_checkbox = self.create_checkbox(QtCore.QRect(600, 175, 400, 20), "Send Text on Success")
+        self.text_on_stock_checkbox = self.create_checkbox(QtCore.QRect(600, 200, 400, 20), "Send Text on Stock Alert")
 
         # Audio stuff
-        self.audio_on_error_checkbox = self.create_checkbox(QtCore.QRect(500, 225, 400, 20), "Audio Alert on Error")
-        self.audio_on_success_checkbox = self.create_checkbox(QtCore.QRect(500, 250, 400, 20), "Audio Alert on Success")
-        self.audio_on_stock_checkbox = self.create_checkbox(QtCore.QRect(500, 275, 400, 20), "Audio Alert on Stock")
+        self.audio_on_error_checkbox = self.create_checkbox(QtCore.QRect(600, 225, 400, 20), "Audio Alert on Error")
+        self.audio_on_success_checkbox = self.create_checkbox(QtCore.QRect(600, 250, 400, 20), "Audio Alert on Success")
+        self.audio_on_stock_checkbox = self.create_checkbox(QtCore.QRect(600, 275, 400, 20), "Audio Alert on Stock")
 
+        self.testtext_btn = QtWidgets.QPushButton(self.settings_card)
+        self.testtext_btn.setGeometry(QtCore.QRect(600, 325, 86, 32))
+        self.testtext_btn.setFont(self.small_font)
+        self.testtext_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.testtext_btn.setStyleSheet(
+            "color: #FFFFFF;background-color: {};border-radius: 10px;border: 1px solid #2e2d2d;".format(
+                globalStyles["primary"]))
+        self.testtext_btn.setText("Send Test Text")
+        self.testtext_btn.clicked.connect(self.send_test_text)
 
         self.set_data()
         QtCore.QMetaObject.connectSlotsByName(settingspage)
