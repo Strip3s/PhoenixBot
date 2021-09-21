@@ -30,7 +30,7 @@ class HomePage(QtWidgets.QWidget):
         self.tasks_card.setGeometry(QtCore.QRect(30, 110, 991, 461))
         self.tasks_card.setStyleSheet("background-color: {};border-radius: 20px;border: 1px solid #2e2d2d;".format(globalStyles["backgroundLight"]))
         self.scrollArea = QtWidgets.QScrollArea(self.tasks_card)
-        self.scrollArea.setGeometry(QtCore.QRect(20, 30, 951, 421))
+        self.scrollArea.setGeometry(QtCore.QRect(20, 30, 961, 400))
         self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.scrollArea.setStyleSheet("border:none;")
         self.scrollArea.setWidgetResizable(True)
