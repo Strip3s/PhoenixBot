@@ -7,8 +7,9 @@ from selenium.webdriver.support.ui import WebDriverWait as wait
 from webdriver_manager.chrome import ChromeDriverManager
 from chromedriver_py import binary_path as driver_path
 from selenium.webdriver.firefox.options import Options
+from selenium.common.exceptions import TimeoutException
 
-from utils import random_delay, send_webhook, create_msg
+from utils import random_delay, send_webhook, create_msg, alert
 from utils.selenium_utils import change_driver
 import settings, time, random, re
 
@@ -190,6 +191,14 @@ class Target:
             self.browser.get(self.product)
             time.sleep(60)
         else:
+            try:
+                TitleFetch = wait(self.browser, 5).until(
+                    EC.presence_of_element_located((By.XPATH,"//h1[@data-test='product-title']"))
+                )
+                if TitleFetch:
+                    self.title = TitleFetch.text
+            except TimeoutException:
+                pass
             img_attempts=0
             while not self.img_found and img_attempts < 5:
                 try:
@@ -208,6 +217,7 @@ class Target:
             while not self.in_stock:
                 self.in_stock = self.check_stock()
                 if self.in_stock:
+                    alert("stock",f"Target {self.title} in stock, sku:{self.sku_id}\n\n{self.product}")
                     continue
                 else:
                     self.status_signal.emit(create_msg("Waiting on Restock", "normal"))
@@ -249,6 +259,7 @@ class Target:
                         self.status_signal.emit(create_msg("Mock Order Placed", "success"))
                     else:
                         self.status_signal.emit(create_msg("Order Placed", "success"))
+                        alert("success",f"Target succesful order for {self.sku_id}")
                     send_webhook("OP", "Target", self.profile["profile_name"], self.task_id, self.product_image)
                     self.did_submit = True
             except:

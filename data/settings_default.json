@@ -16,5 +16,15 @@
     "target_pass": "",
     "gamestop_user": "",
     "gamestop_pass": "",
-    "geckodriver":""
+    "geckodriver": "",
+    "twilio_auth_token": "",
+    "twilio_sid": "",
+    "toNumber": "",
+    "fromNumber": "",
+    "text_on_error": false,
+    "text_on_success": true,
+    "text_on_stock": true,
+    "audio_on_error": false,
+    "audio_on_success": false,
+    "audio_on_stock": false
 }

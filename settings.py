@@ -53,4 +53,39 @@ gamestop_pass = ""
 
 global geckodriver_path
 geckodriver_path = ""
+
+## Twilio Settings
+global twclient
+twclient = None
+
+global text_on_error
+text_on_error = False
+
+global text_on_success
+text_on_success = False
+
+global text_on_stock
+text_on_stock = False
+
+global twilio_auth_token
+twilio_auth_token = ""
+
+global twilio_sid
+twilio_sid = ""
+
+global toNumber
+toNumber = ""
+
+global fromNumber
+fromNumber = ""
+
+## Audio Settings
+global audio_on_error
+audio_on_error = False
+
+global audio_on_success
+audio_on_success = False
+
+global audio_on_stock
+audio_on_stock = False
 #################################################

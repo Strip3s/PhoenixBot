@@ -5,7 +5,7 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from theming.styles import globalStyles
-from utils import return_data, write_data, Encryption, data_exists, BirdLogger, validate_data
+from utils import return_data, send_text, write_data, Encryption, data_exists, BirdLogger, validate_data, create_twilio_client
 
 
 def no_abort(a, b, c):
@@ -57,6 +57,9 @@ class SettingsPage(QtWidgets.QWidget):
 
     def get_folder(self):
         self.geckodriver_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Folder')
+    
+    def send_test_text(self):
+        send_text("This is a test text from your PhoenixBot.")
 
     def setup_ui(self, settingspage):
         self.settingspage = settingspage
@@ -126,7 +129,35 @@ class SettingsPage(QtWidgets.QWidget):
         self.gamestop_user_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 390, 235, 20),
                                                    self.small_font, "Gamestop.com Username (Email)")
         self.gamestop_pass_edit = self.create_edit(self.settings_card, QtCore.QRect(300, 415, 235, 20),
-                                                   self.small_font, "Gamestop.com Password")
+                                                   self.small_font, "Gamestop.com Password")  
+
+        # Twilio stuff
+        self.twilio_auth_token_edit = self.create_edit(self.settings_card, QtCore.QRect(600, 50, 235, 20),
+                                                   self.small_font, "Twilio Auth Token")
+        self.twilio_sid_edit = self.create_edit(self.settings_card, QtCore.QRect(600, 75, 235, 20),
+                                                   self.small_font, "Twilio SID")
+        self.toNumber_edit = self.create_edit(self.settings_card, QtCore.QRect(600, 100, 235, 20),
+                                                   self.small_font, "To Number")
+        self.fromNumber_edit = self.create_edit(self.settings_card, QtCore.QRect(600, 125, 235, 20),
+                                                   self.small_font, "From Number")
+        self.text_on_error_checkbox = self.create_checkbox(QtCore.QRect(600, 150, 400, 20), "Send Text on Error")
+        self.text_on_success_checkbox = self.create_checkbox(QtCore.QRect(600, 175, 400, 20), "Send Text on Success")
+        self.text_on_stock_checkbox = self.create_checkbox(QtCore.QRect(600, 200, 400, 20), "Send Text on Stock Alert")
+
+        # Audio stuff
+        self.audio_on_error_checkbox = self.create_checkbox(QtCore.QRect(600, 225, 400, 20), "Audio Alert on Error")
+        self.audio_on_success_checkbox = self.create_checkbox(QtCore.QRect(600, 250, 400, 20), "Audio Alert on Success")
+        self.audio_on_stock_checkbox = self.create_checkbox(QtCore.QRect(600, 275, 400, 20), "Audio Alert on Stock")
+
+        self.testtext_btn = QtWidgets.QPushButton(self.settings_card)
+        self.testtext_btn.setGeometry(QtCore.QRect(600, 325, 86, 32))
+        self.testtext_btn.setFont(self.small_font)
+        self.testtext_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.testtext_btn.setStyleSheet(
+            "color: #FFFFFF;background-color: {};border-radius: 10px;border: 1px solid #2e2d2d;".format(
+                globalStyles["primary"]))
+        self.testtext_btn.setText("Send Test Text")
+        self.testtext_btn.clicked.connect(self.send_test_text)
 
         self.set_data()
         QtCore.QMetaObject.connectSlotsByName(settingspage)
@@ -141,10 +172,9 @@ class SettingsPage(QtWidgets.QWidget):
             write_data("./data/settings.json", settings_default)
             settings = return_data("./data/settings.json")
 
-        if not validate_data(settings, settings_default):
-            logger.error("Set-Settings-Data", "Parsed settings data is malformed! "
-                                              "This will most likely cause a fatal exception. "
-                                              "Try removing existing settings.json")
+        settings = validate_data(settings, settings_default)
+        # add missing settings to user specific setting file just to be sure
+        write_data("./data/settings.json", settings)
 
         self.webhook_edit.setText(settings["webhook"])
         if settings["webhookonbrowser"]:
@@ -208,6 +238,48 @@ class SettingsPage(QtWidgets.QWidget):
         except:
             self.gamestop_pass_edit.setText("")
 
+        # Twilio Settings
+        try:
+            self.twilio_auth_token_edit.setText(
+                (Encryption().decrypt(settings["twilio_auth_token"].encode("utf-8"))).decode("utf-8"))
+        except:
+            self.twilio_auth_token_edit.setText("")
+        
+        try:
+            self.twilio_sid_edit.setText(
+                (Encryption().decrypt(settings["twilio_sid"].encode("utf-8"))).decode("utf-8"))
+        except:
+            self.twilio_sid_edit.setText("")
+
+        try:
+            self.toNumber_edit.setText(
+                (Encryption().decrypt(settings["toNumber"].encode("utf-8"))).decode("utf-8"))
+        except:
+            self.toNumber_edit.setText("")
+            
+        try:
+            self.fromNumber_edit.setText(
+                (Encryption().decrypt(settings["fromNumber"].encode("utf-8"))).decode("utf-8"))
+        except:
+            self.fromNumber_edit.setText("")
+
+        if settings['text_on_error']:
+            self.text_on_error_checkbox.setChecked(settings["text_on_error"])
+            
+        if settings['text_on_success']:
+            self.text_on_success_checkbox.setChecked(settings["text_on_success"])
+
+        if settings['text_on_stock']:
+            self.text_on_stock_checkbox.setChecked(settings["text_on_stock"])
+
+        # Audio Settings
+        if settings['audio_on_error']:
+            self.audio_on_error_checkbox.setChecked(settings["audio_on_error"])
+        if settings['audio_on_success']:
+            self.audio_on_success_checkbox.setChecked(settings["audio_on_success"])
+        if settings['audio_on_stock']:
+            self.audio_on_stock_checkbox.setChecked(settings["audio_on_stock"])
+
         self.update_settings(settings)
 
     def save_settings(self):
@@ -229,7 +301,17 @@ class SettingsPage(QtWidgets.QWidget):
                     "target_pass": Encryption().encrypt(self.target_pass_edit.text()).decode("utf-8"),
                     "gamestop_user": self.gamestop_user_edit.text(),
                     "gamestop_pass": Encryption().encrypt(self.gamestop_pass_edit.text()).decode("utf-8"),
-                    "geckodriver" : self.geckodriver_path
+                    "geckodriver" : self.geckodriver_path,
+                    "twilio_auth_token" : Encryption().encrypt(self.twilio_auth_token_edit.text()).decode('utf-8'),
+                    "twilio_sid" : Encryption().encrypt(self.twilio_sid_edit.text()).decode('utf-8'),
+                    "toNumber" : Encryption().encrypt(self.toNumber_edit.text()).decode('utf-8'),
+                    "fromNumber" : Encryption().encrypt(self.fromNumber_edit.text()).decode('utf-8'),
+                    "text_on_error":self.text_on_error_checkbox.isChecked(),
+                    "text_on_success":self.text_on_success_checkbox.isChecked(),
+                    "text_on_stock":self.text_on_stock_checkbox.isChecked(),
+                    "audio_on_error":self.audio_on_error_checkbox.isChecked(),
+                    "audio_on_success":self.audio_on_success_checkbox.isChecked(),
+                    "audio_on_stock":self.audio_on_stock_checkbox.isChecked()
                     }
 
         write_data("./data/settings.json", settings)
@@ -237,8 +319,49 @@ class SettingsPage(QtWidgets.QWidget):
         QtWidgets.QMessageBox.information(self, "Phoenix Bot", "Saved Settings")
 
     def update_settings(self, settings_data):
-        global webhook, webhook_on_browser, webhook_on_order, webhook_on_failed, browser_on_failed, run_headless, bb_ac_beta, dont_buy, random_delay_start, random_delay_stop, target_user, target_pass, gamestop_user, gamestop_pass, geckodriver
-        settings.webhook, settings.webhook_on_browser, settings.webhook_on_order, settings.webhook_on_failed, settings.browser_on_failed, settings.run_headless, settings.bb_ac_beta, settings.buy_one, settings.dont_buy = settings_data["webhook"], settings_data["webhookonbrowser"], settings_data["webhookonorder"], settings_data["webhookonfailed"], settings_data["browseronfailed"], settings_data["runheadless"], settings_data["bb_ac_beta"], settings_data['onlybuyone'], settings_data['dont_buy']
+        global \
+            webhook, \
+            webhook_on_browser, \
+            webhook_on_order, \
+            webhook_on_failed, \
+            browser_on_failed, \
+            run_headless, \
+            bb_ac_beta, \
+            buy_one, \
+            dont_buy, \
+            random_delay_start, \
+            random_delay_stop, \
+            target_user, \
+            target_pass, \
+            gamestop_user, \
+            gamestop_pass, \
+            geckodriver, \
+            twilio_auth_token, \
+            twilio_sid, \
+            toNumber, \
+            fromNumber, \
+            text_on_error, \
+            text_on_success, \
+            text_on_stock, \
+            audio_on_error, \
+            audio_on_success, \
+            audio_on_stock
+
+        settings.webhook = settings_data["webhook"]
+        settings.webhook_on_browser = settings_data["webhookonbrowser"]
+        settings.webhook_on_order = settings_data["webhookonorder"]
+        settings.webhook_on_failed = settings_data["webhookonfailed"]
+        settings.browser_on_failed = settings_data["browseronfailed"]
+        settings.run_headless = settings_data["runheadless"]
+        settings.bb_ac_beta = settings_data["bb_ac_beta"]
+        settings.buy_one = settings_data["onlybuyone"]
+        settings.dont_buy = settings_data["dont_buy"]
+        settings.text_on_error = settings_data["text_on_error"]
+        settings.text_on_success = settings_data["text_on_success"]
+        settings.text_on_stock = settings_data["text_on_stock"]
+        settings.audio_on_error = settings_data["audio_on_error"]
+        settings.audio_on_success = settings_data["audio_on_success"]
+        settings.audio_on_stock = settings_data["audio_on_stock"]
 
         if settings_data.get("random_delay_start", "") != "":
             settings.random_delay_start = settings_data["random_delay_start"]
@@ -260,3 +383,18 @@ class SettingsPage(QtWidgets.QWidget):
                 "utf-8")
         if settings_data.get("geckodriver","") != "":
             settings.geckodriver_path = settings_data["geckodriver"]
+
+        # Twilio
+        if settings_data.get("twilio_auth_token","") != "":
+            settings.twilio_auth_token = (Encryption().decrypt(settings_data["twilio_auth_token"].encode("utf-8"))).decode("utf-8")
+        
+        if settings_data.get("twilio_sid","") != "":
+            settings.twilio_sid = (Encryption().decrypt(settings_data["twilio_sid"].encode("utf-8"))).decode("utf-8")
+            
+        if settings_data.get("toNumber","") != "":
+            settings.toNumber = (Encryption().decrypt(settings_data["toNumber"].encode("utf-8"))).decode("utf-8")
+
+        if settings_data.get("fromNumber","") != "":
+            settings.fromNumber = (Encryption().decrypt(settings_data["fromNumber"].encode("utf-8"))).decode("utf-8")
+        
+        settings.twclient = create_twilio_client()
