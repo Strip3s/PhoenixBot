@@ -67,6 +67,14 @@ Target Signin error work around - Wait for target browser to launch, once it's r
      ```
      pip install pycryptodomex
      ```
+    * If you get an error regarding executing scripts in Powershell, first ensure running powershell as administrator. Otherwise try this first
+    ```
+    powershell -ExecutionPolicy Bypass -File ./env/scripts/Activate.ps1
+    ```
+    If that doesn't work, try the below followed by a "Y"
+    ```
+    Set-ExecutionPolicy RemoteSigned
+    ```
 5. Run the following command:
    ```
    python app.py
