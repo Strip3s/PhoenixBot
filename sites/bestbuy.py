@@ -230,7 +230,6 @@ class BestBuy:
             print(f"Error: {e}")
             alert("error",f"Bestbuy Login Error for sku: {self.sku_id}")
 
-
         if self.verify_signed_in():
             self.status_signal.emit(create_msg("Bestbuy successfully logged in.","normal"))
         time.sleep(2)
