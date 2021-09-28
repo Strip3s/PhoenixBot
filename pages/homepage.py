@@ -388,8 +388,8 @@ class TaskTab(QtWidgets.QWidget):
             carted_count.setText(str(int(carted_count.text())+1))
         elif msg["status"] == "stopnow":
             self.status_label.setStyleSheet("color: rgb(252, 81, 81);")
-            logger.error(self.task_id,msg["msg"])
             self.stop(msg["msg"])
+            logger.error(self.task_id, msg["msg"])
 
 
     
