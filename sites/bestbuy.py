@@ -225,9 +225,11 @@ class BestBuy:
                 self.status_signal.emit(create_msg("Sign In - Add Recovery phone page hit, probably can ignore...","normal"))
                 self.browser.get("https://www.bestbuy.com")
         except Exception as e:
-            self.status_signal.emit(create_msg("Bestbuy login error, see console for details","error"))
+            self.status_signal.emit(create_msg("Bestbuy login error, see console for details","stopnow"))
             print(f"Dumped webpage to file: {log_webpage('errors','bby_login',self.browser.page_source)}")
+            print(f"Error: {e}")
             alert("error",f"Bestbuy Login Error for sku: {self.sku_id}")
+
 
         if self.verify_signed_in():
             self.status_signal.emit(create_msg("Bestbuy successfully logged in.","normal"))
