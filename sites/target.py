@@ -3,6 +3,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait as wait
+from selenium.webdriver.support.wait import WebDriverWait
 # from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from chromedriver_py import binary_path as driver_path
@@ -102,8 +103,10 @@ class Target:
             EC.presence_of_element_located((By.XPATH,"//li[@id='accountNav-signIn']/a"))
         )
         test.click()
-        self.fill_and_authenticate()
+        WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.XPATH, '//input[@id="username"]')))
 
+        self.fill_and_authenticate()
+        
         test = self.browser.find_element_by_xpath('//span[@data-test="accountUserName"]')
         time.sleep(1)
         if "sign in" in test.text.lower():
