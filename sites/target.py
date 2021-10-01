@@ -10,7 +10,7 @@ from chromedriver_py import binary_path as driver_path
 from selenium.webdriver.firefox.options import Options
 from selenium.common.exceptions import TimeoutException
 
-from utils import random_delay, send_webhook, create_msg, alert
+from utils import random_delay, send_webhook, create_msg, alert, stock_log
 from utils.selenium_utils import change_driver
 import settings, time, random, re
 
@@ -49,6 +49,7 @@ class Target:
             , {'type': 'button', 'path': '//button[@data-test="espModalContent-declineCoverageButton"]', 'message': 'Declining Coverage', 'message_type': 'normal', 'optional': True}
             , {'type': 'button', 'path': '//button[@data-test="addToCartModalViewCartCheckout"]', 'message': 'Viewing Cart before Checkout', 'message_type': 'normal', 'optional': False}
             , {'type': 'button', 'path': '//button[@data-test="checkout-button"]', 'message': 'Checking out', 'message_type': 'normal', 'optional': False}
+            , {'type': 'button', 'path' : '//button[@data-test="confirm-button"]', 'message': 'Confirming CVV', 'message_type' : 'normal', 'optional' : False}
             , {'type': 'method', 'path': '//button[@data-test="placeOrderButton"]', 'method': self.submit_order, 'message': 'Submitting order', 'message_type': 'normal', 'optional': False}
         ]
         self.possible_interruptions = [
@@ -107,15 +108,15 @@ class Target:
 
         self.fill_and_authenticate()
         
-        test = self.browser.find_element_by_xpath('//span[@data-test="accountUserName"]')
+        act_uname = WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.XPATH, '//span[@data-test="accountUserName"]')))
         time.sleep(1)
-        if "sign in" in test.text.lower():
+        if "sign in" in act_uname.text.lower():
             if settings.run_headless:
-                self.status_signal.emit(create_msg("Did not detect username on target page. Got \"{}\"".format(test.text),"stopnow"))
+                self.status_signal.emit(create_msg("Did not detect username on target page. Got \"{}\"".format(act_uname.text),"stopnow"))
             else:
-                self.status_signal.emit(create_msg("Did not detect username on target page. Got \"{}\"".format(test.text),"normal"))
+                self.status_signal.emit(create_msg("Did not detect username on target page. Got \"{}\"".format(act_uname.text),"normal"))
         else:
-            self.status_signal.emit(create_msg("Succesfully signed in as {}".format(test.text),"normal"))
+            self.status_signal.emit(create_msg("Succesfully signed in as {}".format(act_uname.text),"normal"))
         # # Gives it time for the login to complete
         time.sleep(random_delay(self.monitor_delay, settings.random_delay_start, settings.random_delay_stop))
 
@@ -221,6 +222,7 @@ class Target:
                 self.in_stock = self.check_stock()
                 if self.in_stock:
                     alert("stock",f"Target {self.title} in stock, sku:{self.sku_id}\n\n{self.product}")
+                    stock_log(f"Target,{self.sku_id},{self.product}")
                     continue
                 else:
                     self.status_signal.emit(create_msg("Waiting on Restock", "normal"))

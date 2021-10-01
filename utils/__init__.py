@@ -205,6 +205,11 @@ def log_webpage(path, output_type, data):
         pass
 
     try:
+        os.makedirs(str(cwd) + "/output/stock")
+    except FileExistsError:
+        pass
+
+    try:
         os.makedirs(str(cwd) + "/output/success")
     except FileExistsError:
         pass
@@ -216,6 +221,20 @@ def log_webpage(path, output_type, data):
         fp.close()
         print(f"Dumped webpage to file: {filename}")
         return filename
+
+def stock_log(data):
+    cwd = pathlib.Path().parent.resolve()
+
+    try:
+        os.makedirs(str(cwd) + "/output")
+    except FileExistsError:
+        pass
+
+    filename = f"{cwd}/output/stock_alerts.csv"
+
+    with open(filename, "a+", encoding="utf-8") as fp:
+        fp.write(f"{datetime.strftime(datetime.now(),'%Y-%m-%d_%H-%M-%S')},{data}\n")
+        fp.close()
     
 def alert(alert_type, msg):
     # print(f"Alert {alert_type} - {msg}")

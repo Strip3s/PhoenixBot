@@ -1,5 +1,5 @@
 from sites.walmart_encryption import walmart_encryption as w_e
-from utils import send_webhook, random_delay
+from utils import send_webhook, random_delay, stock_log
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from PyQt5 import QtCore
@@ -103,7 +103,7 @@ class Walmart:
                 "location": {"postalCode": self.profile["shipping_zipcode"], "city": self.profile["shipping_city"],
                              "state": self.profile["shipping_state"], "isZipLocated": True},
                 "shipMethodDefaultRule": "SHIP_RULE_1"}
-
+        stock_log(f"Walmart,,{self.product}")
         while True:
             self.status_signal.emit({"msg": "Adding To Cart", "status": "normal"})
             try:
