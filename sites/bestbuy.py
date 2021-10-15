@@ -14,7 +14,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException,
 
 from utils.json_utils import find_values
 from utils.selenium_utils import enable_headless # not sure this actually works since we call options() below
-from utils import create_msg, log_webpage, alert
+from utils import create_msg, log_webpage, alert, stock_log
 
 try:
     from Crypto.PublicKey import RSA
@@ -279,6 +279,7 @@ class BestBuy:
                 "PRE_ORDER"
             ]:
                 alert("stock",f"SKU {self.sku_id} for bestbuy is in stock")
+                stock_log(f"Best Buy,{self.sku_id},{self.product}")
                 return True
             else:
                 return False
