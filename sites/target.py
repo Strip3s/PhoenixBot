@@ -126,13 +126,17 @@ class Target:
         # slowly enters username and password with random waits between each character
 
         if self.browser.find_elements_by_id('username'):
-            for key in settings.target_user:
-                self.browser.find_element_by_xpath('//input[@id="username"]').send_keys(key)
-                time.sleep(random.uniform(0.5, 1.5))
+            # for key in settings.target_user:
+            #     self.browser.find_element_by_xpath('//input[@id="username"]').send_keys(key)
+            #     time.sleep(random.uniform(0.5, 1.5))
+            
+            self.browser.find_element_by_xpath('//input[@id="username"]').send_keys(settings.target_user)
         
-            for key in settings.target_pass:
-                self.browser.find_element_by_xpath('//input[@id="password"]').send_keys(key)
-                time.sleep(random.uniform(0.5, 1.5))
+            # for key in settings.target_pass:
+            #     self.browser.find_element_by_xpath('//input[@id="password"]').send_keys(key)
+            #     time.sleep(random.uniform(0.5, 1.5))
+            
+            self.browser.find_element_by_xpath('//input[@id="password"]').send_keys(settings.target_pass)
                 
             loginBtn = wait(self.browser, self.TIMEOUT_LONG).until(
                 EC.presence_of_element_located((By.XPATH,'//button[@id="login"]'))
