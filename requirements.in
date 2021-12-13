@@ -1,6 +1,6 @@
 pyqt5==5.15.4
 js2py==0.70
-lxml==4.6.3
+lxml==4.6.5
 darkdetect==0.2.0
 colorama==0.4.4
 selenium==3.141.0
