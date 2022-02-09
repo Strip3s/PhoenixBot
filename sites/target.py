@@ -100,6 +100,7 @@ class Target:
             EC.presence_of_element_located((By.XPATH,"//li[@id='accountNav-signIn']/a"))
         )
         test.click()
+        time.sleep(10)
         self.fill_and_authenticate()
 
         test = self.browser.find_element_by_xpath('//span[@data-test="accountUserName"]')
