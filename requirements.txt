@@ -4,9 +4,9 @@
 #
 #    pip-compile --generate-hashes --no-index --output-file=requirements.txt requirements.in
 #
-certifi==2020.11.8 \
-    --hash=sha256:1f422849db327d534e3d0c5f02a263458c3955ec0aae4ff09b95f195c59f4edd \
-    --hash=sha256:f05def092c44fbf25834a51509ef6e631dc19765ab8a57b4e7ab85531f0a9cf4
+certifi==2022.12.7 \
+    --hash=sha256:35824b4c3a97115964b408844d64aa14db1cc518f6562e8d7261699d1350a9e3 \
+    --hash=sha256:4ad3232f5e926d6718ec31cfc1fcadfde020920e278684144551c91769c7bc18
     # via requests
 chardet==3.0.4 \
     --hash=sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae \
@@ -217,7 +217,7 @@ urllib3==1.26.5 \
     # via
     #   requests
     #   selenium
-webdriver_manager==3.3.0 \
+webdriver-manager==3.3.0 \
     --hash=sha256:22ae0ace4da117472302c21ead8ec05eb5c1312eeeba97547395d79f83afb241 \
     --hash=sha256:6b54b18f75379f97f9e49f504a8e79010d47af1da8e7b5d7d7a103ca535b1e46
     # via -r requirements.in
